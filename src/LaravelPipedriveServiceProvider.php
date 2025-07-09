@@ -5,6 +5,7 @@ namespace Keggermont\LaravelPipedrive;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Keggermont\LaravelPipedrive\Commands\LaravelPipedriveCommand;
+use Keggermont\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
@@ -24,7 +25,8 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-pipedrive')
-            ->hasConfigFile() 
+            ->hasConfigFile()
+            ->hasRoutes(['webhooks'])
             ->hasMigrations([
                 'create_pipedrive_activities_table',
                 'create_pipedrive_deals_table',
@@ -44,6 +46,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 SyncPipedriveCustomFieldsCommand::class,
                 SyncPipedriveEntitiesCommand::class,
                 TestPipedriveConnectionCommand::class,
+                ManagePipedriveWebhooksCommand::class,
             ]);
     }
 

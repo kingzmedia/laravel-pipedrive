@@ -61,4 +61,57 @@ return [
             'activity',
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Webhooks Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure webhook handling for real-time data synchronization
+    |
+    */
+    'webhooks' => [
+        // Enable automatic data synchronization from webhooks
+        'auto_sync' => env('PIPEDRIVE_WEBHOOKS_AUTO_SYNC', true),
+
+        // Webhook route configuration
+        'route' => [
+            'path' => env('PIPEDRIVE_WEBHOOK_PATH', 'pipedrive/webhook'),
+            'name' => 'pipedrive.webhook',
+            'middleware' => ['api'],
+        ],
+
+        // Security configuration
+        'security' => [
+            // HTTP Basic Authentication
+            'basic_auth' => [
+                'enabled' => env('PIPEDRIVE_WEBHOOK_BASIC_AUTH', false),
+                'username' => env('PIPEDRIVE_WEBHOOK_USERNAME'),
+                'password' => env('PIPEDRIVE_WEBHOOK_PASSWORD'),
+            ],
+
+            // IP Whitelist (Pipedrive IPs)
+            'ip_whitelist' => [
+                'enabled' => env('PIPEDRIVE_WEBHOOK_IP_WHITELIST', false),
+                'ips' => [
+                    // Add Pipedrive webhook IPs here
+                    // Example: '185.166.142.0/24',
+                ],
+            ],
+
+            // Custom signature verification
+            'signature' => [
+                'enabled' => env('PIPEDRIVE_WEBHOOK_SIGNATURE', false),
+                'secret' => env('PIPEDRIVE_WEBHOOK_SECRET'),
+                'header' => 'X-Pipedrive-Signature',
+            ],
+        ],
+
+        // Logging configuration
+        'logging' => [
+            'enabled' => env('PIPEDRIVE_WEBHOOK_LOGGING', true),
+            'channel' => env('PIPEDRIVE_WEBHOOK_LOG_CHANNEL', 'daily'),
+            'level' => env('PIPEDRIVE_WEBHOOK_LOG_LEVEL', 'info'),
+        ],
+    ],
 ];

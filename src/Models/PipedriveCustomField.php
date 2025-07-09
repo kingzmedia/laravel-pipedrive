@@ -128,7 +128,7 @@ class PipedriveCustomField extends Model
      */
     public function scopeCustomOnly(Builder $query): Builder
     {
-        return $query->where('edit_flag', true);
+        return $query->whereRaw("JSON_EXTRACT(pipedrive_data, '$.edit_flag') = true");
     }
 
 
@@ -138,7 +138,7 @@ class PipedriveCustomField extends Model
      */
     public function scopeMandatory(Builder $query): Builder
     {
-        return $query->where('mandatory_flag', true);
+        return $query->whereRaw("JSON_EXTRACT(pipedrive_data, '$.mandatory_flag') = true");
     }
 
     /**
@@ -146,7 +146,7 @@ class PipedriveCustomField extends Model
      */
     public function scopeVisibleInAdd(Builder $query): Builder
     {
-        return $query->where('add_visible_flag', true);
+        return $query->whereRaw("JSON_EXTRACT(pipedrive_data, '$.add_visible_flag') = true");
     }
 
     /**
@@ -154,7 +154,7 @@ class PipedriveCustomField extends Model
      */
     public function scopeVisibleInDetails(Builder $query): Builder
     {
-        return $query->where('details_visible_flag', true);
+        return $query->whereRaw("JSON_EXTRACT(pipedrive_data, '$.details_visible_flag') = true");
     }
 
     /**
@@ -162,7 +162,7 @@ class PipedriveCustomField extends Model
      */
     public function isCustomField(): bool
     {
-        return $this->edit_flag;
+        return $this->pipedrive_data['edit_flag'] ?? false;
     }
 
 
@@ -172,7 +172,7 @@ class PipedriveCustomField extends Model
      */
     public function isMandatory(): bool
     {
-        return $this->mandatory_flag;
+        return $this->pipedrive_data['mandatory_flag'] ?? false;
     }
 
     /**
@@ -180,7 +180,8 @@ class PipedriveCustomField extends Model
      */
     public function hasOptions(): bool
     {
-        return in_array($this->field_type, [self::TYPE_SET, self::TYPE_ENUM]) && !empty($this->options);
+        $options = $this->pipedrive_data['options'] ?? null;
+        return in_array($this->field_type, [self::TYPE_SET, self::TYPE_ENUM]) && !empty($options);
     }
 
     /**
@@ -188,7 +189,7 @@ class PipedriveCustomField extends Model
      */
     public function getOptions(): array
     {
-        return $this->hasOptions() ? $this->options : [];
+        return $this->hasOptions() ? ($this->pipedrive_data['options'] ?? []) : [];
     }
 
     /**
@@ -264,28 +265,15 @@ class PipedriveCustomField extends Model
 
         return self::updateOrCreate(
             [
-                'pipedrive_field_id' => $data['id'],
+                'pipedrive_id' => $data['id'],
                 'entity_type' => $entityType,
             ],
             [
-                'field_key' => $safeValue($data['key']),
+                'key' => $safeValue($data['key']),
                 'name' => $safeValue($data['name']),
                 'field_type' => $safeValue($data['field_type']),
-                'order_nr' => is_numeric($data['order_nr'] ?? null) ? $data['order_nr'] : null,
-                'options' => is_array($data['options'] ?? null) ? $data['options'] : null,
-                'mandatory_flag' => (bool) ($data['mandatory_flag'] ?? false),
                 'active_flag' => (bool) ($data['active_flag'] ?? true),
-                'edit_flag' => (bool) ($data['edit_flag'] ?? true),
-                'add_visible_flag' => (bool) ($data['add_visible_flag'] ?? true),
-                'details_visible_flag' => (bool) ($data['details_visible_flag'] ?? true),
-                'index_visible_flag' => (bool) ($data['index_visible_flag'] ?? true),
-                'important_flag' => (bool) ($data['important_flag'] ?? false),
-                'bulk_edit_allowed' => (bool) ($data['bulk_edit_allowed'] ?? true),
-                'filtering_allowed' => (bool) ($data['filtering_allowed'] ?? true),
-                'sortable_flag' => (bool) ($data['sortable_flag'] ?? true),
-                'searchable_flag' => (bool) ($data['searchable_flag'] ?? false),
-                'json_column_flag' => (bool) ($data['json_column_flag'] ?? false),
-                'last_updated_by_user_id' => is_numeric($data['last_updated_by_user_id'] ?? null) ? $data['last_updated_by_user_id'] : null,
+                'pipedrive_data' => $data,
                 'pipedrive_add_time' => $safeTimestamp($data['add_time'] ?? null),
                 'pipedrive_update_time' => $safeTimestamp($data['update_time'] ?? null),
             ]

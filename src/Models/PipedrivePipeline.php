@@ -70,4 +70,15 @@ class PipedrivePipeline extends BasePipedriveModel
     {
         return $this->url_title ?? str_slug($this->name);
     }
+
+    // Relations
+    public function stages()
+    {
+        return $this->hasMany(PipedriveStage::class, 'pipeline_id', 'pipedrive_id');
+    }
+
+    public function goals()
+    {
+        return $this->hasMany(PipedriveGoal::class, 'pipeline_id', 'pipedrive_id');
+    }
 }

@@ -1,221 +1,256 @@
-# Laravel Pipedrive Package
+# 🚀 Laravel Pipedrive Integration
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/kingzmedia/laravel-pipedrive.svg?style=flat-square)](https://packagist.org/packages/kingzmedia/laravel-pipedrive)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/kingzmedia/laravel-pipedrive/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/kingzmedia/laravel-pipedrive/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/kingzmedia/laravel-pipedrive/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/kingzmedia/laravel-pipedrive/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/kingzmedia/laravel-pipedrive.svg?style=flat-square)](https://packagist.org/packages/kingzmedia/laravel-pipedrive)
 
-Un wrapper Laravel pour l'API Pipedrive avec support complet des custom fields. Ce package utilise [devio/pipedrive](https://github.com/IsraelOrtuno/pipedrive) et ajoute des fonctionnalités spécifiques à Laravel pour gérer les custom fields de toutes les entités Pipedrive.
+A comprehensive Laravel package for seamless Pipedrive CRM integration. Sync entities, manage custom fields, and leverage Eloquent relationships with a robust JSON-based data structure for maximum flexibility and performance.
 
-## Fonctionnalités
+## ✨ **Features**
 
-- 🔧 **Gestion complète des custom fields** - Synchronisation et gestion de tous les custom fields Pipedrive
-- 📊 **Support de toutes les entités** - Activities, Deals, Files, Goals, Notes, Organizations, Persons, Pipelines, Products, Stages, Users
-- 🎯 **16 types de champs supportés** - Text, Date, Options, Relations, etc.
-- 🔄 **Synchronisation automatique** - Commandes Artisan pour synchroniser les fields et entités
-- ✅ **Validation intégrée** - Validation des valeurs selon le type de champ
-- 🎨 **Formatage automatique** - Formatage des valeurs pour l'affichage
-- 🏗️ **Service et Façade** - API Laravel intuitive
-- 🗃️ **Modèles Eloquent** - Modèles Laravel pour toutes les entités Pipedrive
-- 🔍 **Scopes et relations** - Requêtes optimisées avec des scopes prédéfinis
+- 🔄 **Complete Entity Synchronization** - Activities, Deals, Files, Notes, Organizations, Persons, Pipelines, Products, Stages, Users, Goals
+- 🔔 **Real-Time Webhooks** - Instant synchronization with secure webhook handling
+- 🔗 **Eloquent Relationships** - Navigate between entities with Laravel's relationship system
+- 🎯 **Custom Fields Management** - Full support for Pipedrive custom fields with validation
+- 🏗️ **Hybrid Data Structure** - Essential columns + JSON storage for maximum flexibility
+- 🔐 **Dual Authentication** - Support for both API tokens and OAuth
+- ⚡ **Performance Optimized** - Efficient queries with proper indexing
+- 📊 **Rich Querying** - Advanced filtering and relationship queries
 
-## Support us
+## 📦 **Installation**
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-pipedrive.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-pipedrive)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
-
-## Installation
-
-You can install the package via composer:
+Install the package via Composer:
 
 ```bash
 composer require kingzmedia/laravel-pipedrive
 ```
 
-You can publish and run the migrations with:
+Publish and run the migrations:
 
 ```bash
 php artisan vendor:publish --tag="laravel-pipedrive-migrations"
 php artisan migrate
 ```
 
-You can publish the config file with:
+Publish the config file:
 
 ```bash
 php artisan vendor:publish --tag="laravel-pipedrive-config"
 ```
 
-## Configuration
+## ⚙️ **Configuration**
 
-Ce package supporte deux méthodes d'authentification avec Pipedrive :
+Add your Pipedrive credentials to your `.env` file:
 
-### 1. Authentification par Token API (Recommandée pour débuter)
-
-Ajoutez votre token API dans votre fichier `.env` :
-
+### **API Token Authentication (Recommended)**
 ```env
-PIPEDRIVE_AUTH_METHOD=token
-PIPEDRIVE_TOKEN=your_pipedrive_api_token_here
+PIPEDRIVE_TOKEN=your_api_token_here
 ```
 
-### 2. Authentification OAuth 2.0 (Pour les applications publiques)
-
-Pour utiliser OAuth, configurez votre application dans le Pipedrive Developer Hub, puis ajoutez dans votre `.env` :
-
+### **OAuth Authentication**
 ```env
-PIPEDRIVE_AUTH_METHOD=oauth
 PIPEDRIVE_CLIENT_ID=your_client_id
 PIPEDRIVE_CLIENT_SECRET=your_client_secret
 PIPEDRIVE_REDIRECT_URL=https://your-app.com/pipedrive/callback
 ```
 
-### Test de la connexion
+## 🚀 **Quick Start**
 
-Testez votre configuration avec :
-
+### **Test Your Connection**
 ```bash
 php artisan pipedrive:test-connection
 ```
 
-Optionally, you can publish the views using
-
+### **Sync Entities from Pipedrive**
 ```bash
-php artisan vendor:publish --tag="laravel-pipedrive-views"
-```
-
-## Usage
-
-### Synchronisation des Custom Fields
-
-Synchronisez tous les custom fields depuis Pipedrive :
-
-```bash
-# Synchroniser tous les custom fields
-php artisan pipedrive:sync-custom-fields
-
-# Synchroniser une entité spécifique
-php artisan pipedrive:sync-custom-fields --entity=deal
-
-# Forcer la mise à jour
-php artisan pipedrive:sync-custom-fields --force
-
-# Synchroniser les entités Pipedrive
+# Sync all entities
 php artisan pipedrive:sync-entities
 
-# Synchroniser une entité spécifique
-php artisan pipedrive:sync-entities --entity=deals
+# Sync specific entity
+php artisan pipedrive:sync-entities --entity=deals --limit=50
 
-# Limiter le nombre d'enregistrements
-php artisan pipedrive:sync-entities --entity=activities --limit=50
+# Verbose output
+php artisan pipedrive:sync-entities --entity=users --verbose
 ```
 
-### Utilisation du Service
+### **Sync Custom Fields**
+```bash
+# Sync all custom fields
+php artisan pipedrive:sync-custom-fields
+
+# Sync specific entity fields
+php artisan pipedrive:sync-custom-fields --entity=deal --verbose
+```
+
+### **Real-Time Webhooks**
+```bash
+# Setup webhook for real-time sync
+php artisan pipedrive:webhooks create \
+    --url=https://your-app.com/pipedrive/webhook \
+    --event=*.* \
+    --auth-user=webhook_user \
+    --auth-pass=secure_password
+
+# List existing webhooks
+php artisan pipedrive:webhooks list
+
+# Test webhook endpoint
+curl https://your-app.com/pipedrive/webhook/health
+```
+
+## 📊 **Models & Relationships**
+
+All Pipedrive entities are available as Eloquent models with full relationship support:
 
 ```php
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Keggermont\LaravelPipedrive\Models\{
+    PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
+    PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
+    PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal
+};
+
+// Navigate relationships
+$deal = PipedriveDeal::with(['user', 'person', 'organization', 'stage'])->first();
+echo $deal->user->name;         // Deal owner
+echo $deal->person->name;       // Contact person
+echo $deal->organization->name; // Company
+echo $deal->stage->name;        // Current stage
+
+// Reverse relationships
+$user = PipedriveUser::with(['deals', 'activities'])->first();
+echo $user->deals->count();     // Number of deals
+echo $user->activities->count(); // Number of activities
+```
+
+## 🔍 **Querying Data**
+
+### **Basic Queries**
+```php
+// Active deals with high value
+$deals = PipedriveDeal::where('status', 'open')
+    ->where('value', '>', 10000)
+    ->active()
+    ->get();
+
+// Overdue activities
+$activities = PipedriveActivity::where('done', false)
+    ->where('due_date', '<', now())
+    ->with('user')
+    ->get();
+```
+
+### **Relationship Queries**
+```php
+// Deals from specific organization
+$deals = PipedriveDeal::whereHas('organization', function($query) {
+    $query->where('name', 'like', '%Acme Corp%');
+})->get();
+
+// Activities assigned to specific user
+$activities = PipedriveActivity::whereHas('user', function($query) {
+    $query->where('email', 'john@example.com');
+})->get();
+```
+
+### **JSON Data Access**
+```php
+$activity = PipedriveActivity::first();
+
+// Essential data (columns)
+echo $activity->subject;
+echo $activity->type;
+echo $activity->done;
+
+// Extended data (JSON)
+echo $activity->getPipedriveAttribute('note');
+echo $activity->getPipedriveAttribute('duration');
+echo $activity->getPipedriveAttribute('location');
+
+// Direct JSON access
+$allData = $activity->pipedrive_data;
+$customField = $activity->pipedrive_data['custom_field_hash'] ?? null;
+```
+
+## 🎯 **Custom Fields**
+
+```php
 use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
 
-$service = app(PipedriveCustomFieldService::class);
-
-// Récupérer les custom fields pour les deals
-$dealFields = $service->getFieldsForEntity('deal');
-
-// Récupérer seulement les custom fields (pas les champs par défaut)
-$customFields = $service->getCustomFieldsForEntity('deal');
-
-// Rechercher un field par sa clé
-$field = $service->findByKey('dcf558aac1ae4e8c4f849ba5e668430d8df9be12', 'deal');
-
-// Valider une valeur
-$errors = $service->validateFieldValue($field, $value);
-
-// Formater une valeur pour l'affichage
-$formatted = $service->formatFieldValue($field, $rawValue);
-```
-
-### Utilisation avec la Façade
-
-```php
-use Keggermont\LaravelPipedrive\Facades\PipedriveCustomField;
-
-$fields = PipedriveCustomField::getFieldsForEntity('deal');
-$stats = PipedriveCustomField::getFieldStatistics('deal');
-```
-
-### Utilisation du Modèle
-
-```php
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
-
-// Tous les fields actifs pour les deals
+// Get all deal fields
 $dealFields = PipedriveCustomField::forEntity('deal')->active()->get();
 
-// Seulement les custom fields
+// Get only custom fields (not default Pipedrive fields)
 $customFields = PipedriveCustomField::forEntity('deal')->customOnly()->get();
 
-// Fields obligatoires
+// Get mandatory fields
 $mandatoryFields = PipedriveCustomField::forEntity('deal')->mandatory()->get();
 
-// Fields par type
-$textFields = PipedriveCustomField::forEntity('deal')->ofType('varchar')->get();
+// Access field properties
+foreach ($dealFields as $field) {
+    echo "Field: {$field->name} ({$field->field_type})\n";
+    echo "Mandatory: " . ($field->isMandatory() ? 'Yes' : 'No') . "\n";
+    
+    if ($field->hasOptions()) {
+        echo "Options: " . implode(', ', $field->getOptions()) . "\n";
+    }
+}
 ```
 
-### Entités Supportées
+## 📚 **Documentation**
 
-- `deal` - Champs des deals (les leads héritent des champs deals)
-- `person` - Champs des personnes
-- `organization` - Champs des organisations
-- `product` - Champs des produits
-- `activity` - Champs des activités
-- `note` - Champs des notes
+- [📖 **Models & Relationships**](docs/models-relationships.md) - Complete guide to all models and their relationships
+- [🔄 **Data Synchronization**](docs/synchronization.md) - Entity and custom field sync strategies
+- [🔔 **Real-Time Webhooks**](docs/webhooks.md) - Instant synchronization with webhook handling
+- [🎯 **Custom Fields**](docs/custom-fields.md) - Working with Pipedrive custom fields
+- [🏗️ **Database Structure**](docs/database-structure.md) - Understanding the hybrid data approach
+- [⚡ **Performance**](docs/performance.md) - Optimization tips and best practices
+- [🔐 **Authentication**](docs/authentication.md) - API token and OAuth setup
 
-### Types de Champs Supportés
+## 🛠️ **Commands Reference**
 
-- **Text** (`varchar`) - Texte jusqu'à 255 caractères
-- **Autocomplete** (`varchar_auto`) - Texte avec autocomplétion
-- **Large text** (`text`) - Texte long
-- **Numerical** (`double`) - Valeur numérique
-- **Monetary** (`monetary`) - Valeur monétaire
-- **Multiple options** (`set`) - Sélection multiple
-- **Single option** (`enum`) - Sélection unique
-- **User** (`user`) - Utilisateur Pipedrive
-- **Organization** (`org`) - Organisation
-- **Person** (`people`) - Personne
-- **Phone** (`phone`) - Numéro de téléphone
-- **Time** (`time`) - Heure
-- **Time range** (`timerange`) - Plage horaire
-- **Date** (`date`) - Date
-- **Date range** (`daterange`) - Plage de dates
-- **Address** (`address`) - Adresse
+| Command | Description | Options |
+|---------|-------------|---------|
+| `pipedrive:test-connection` | Test Pipedrive API connection | - |
+| `pipedrive:sync-entities` | Sync Pipedrive entities | `--entity`, `--limit`, `--force`, `--verbose` |
+| `pipedrive:sync-custom-fields` | Sync custom fields | `--entity`, `--force`, `--verbose` |
+| `pipedrive:webhooks` | Manage webhooks (list/create/delete) | `--url`, `--event`, `--id`, `--verbose` |
 
-Pour plus de détails, consultez la [documentation complète des custom fields](docs/CUSTOM_FIELDS.md).
+## 🏗️ **Database Structure**
 
-## Testing
+Each Pipedrive entity table follows this hybrid structure:
 
-```bash
-composer test
+```sql
+-- Essential columns (indexed, queryable)
+id                    -- Laravel auto-increment
+pipedrive_id          -- Unique Pipedrive ID
+name/title/subject    -- Main identifier
+[relationships]       -- Foreign keys (user_id, person_id, etc.)
+active_flag           -- Status flag
+
+-- JSON storage (flexible, all other data)
+pipedrive_data        -- Complete Pipedrive data as JSON
+
+-- Timestamps
+pipedrive_add_time    -- Pipedrive creation time
+pipedrive_update_time -- Pipedrive modification time
+created_at/updated_at -- Laravel timestamps
 ```
 
-## Changelog
+## 🤝 **Contributing**
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## Contributing
+## 🔒 **Security**
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+If you discover any security-related issues, please email security@kingzmedia.com instead of using the issue tracker.
 
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [EGGERMONT Kévin](https://github.com/kingzmedia)
-- [All Contributors](../../contributors)
-
-## License
+## 📄 **License**
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## 🙏 **Credits**
+
+- Built on top of [devio/pipedrive](https://github.com/IsraelOrtuno/pipedrive)
+- Uses [spatie/laravel-package-tools](https://github.com/spatie/laravel-package-tools)
+- Powered by [Laravel](https://laravel.com)

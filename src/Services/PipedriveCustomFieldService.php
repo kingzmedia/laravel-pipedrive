@@ -18,7 +18,7 @@ class PipedriveCustomFieldService
             $query->active();
         }
         
-        return $query->orderBy('order_nr')->get();
+        return $query->orderBy('name')->get();
     }
 
     /**
@@ -32,7 +32,7 @@ class PipedriveCustomFieldService
             $query->active();
         }
         
-        return $query->orderBy('order_nr')->get();
+        return $query->orderBy('name')->get();
     }
 
     /**
@@ -46,7 +46,7 @@ class PipedriveCustomFieldService
             $query->active();
         }
         
-        return $query->orderBy('order_nr')->get();
+        return $query->orderBy('name')->get();
     }
 
     /**
@@ -57,7 +57,7 @@ class PipedriveCustomFieldService
         return PipedriveCustomField::forEntity($entityType)
             ->mandatory()
             ->active()
-            ->orderBy('order_nr')
+            ->orderBy('name')
             ->get();
     }
 
@@ -69,7 +69,7 @@ class PipedriveCustomFieldService
         return PipedriveCustomField::forEntity($entityType)
             ->visibleInAdd()
             ->active()
-            ->orderBy('order_nr')
+            ->orderBy('name')
             ->get();
     }
 
@@ -81,7 +81,7 @@ class PipedriveCustomFieldService
         return PipedriveCustomField::forEntity($entityType)
             ->visibleInDetails()
             ->active()
-            ->orderBy('order_nr')
+            ->orderBy('name')
             ->get();
     }
 
@@ -90,7 +90,7 @@ class PipedriveCustomFieldService
      */
     public function findByKey(string $fieldKey, string $entityType): ?PipedriveCustomField
     {
-        return PipedriveCustomField::where('field_key', $fieldKey)
+        return PipedriveCustomField::where('key', $fieldKey)
             ->where('entity_type', $entityType)
             ->first();
     }
@@ -100,7 +100,7 @@ class PipedriveCustomFieldService
      */
     public function findById(int $pipedriveFieldId, string $entityType): ?PipedriveCustomField
     {
-        return PipedriveCustomField::where('pipedrive_field_id', $pipedriveFieldId)
+        return PipedriveCustomField::where('pipedrive_id', $pipedriveFieldId)
             ->where('entity_type', $entityType)
             ->first();
     }
@@ -113,7 +113,7 @@ class PipedriveCustomFieldService
         return PipedriveCustomField::forEntity($entityType)
             ->whereIn('field_type', [PipedriveCustomField::TYPE_SET, PipedriveCustomField::TYPE_ENUM])
             ->active()
-            ->orderBy('order_nr')
+            ->orderBy('name')
             ->get();
     }
 
@@ -129,7 +129,7 @@ class PipedriveCustomFieldService
                 PipedriveCustomField::TYPE_PEOPLE
             ])
             ->active()
-            ->orderBy('order_nr')
+            ->orderBy('name')
             ->get();
     }
 

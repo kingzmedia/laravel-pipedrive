@@ -180,4 +180,41 @@ class PipedriveDeal extends BasePipedriveModel
     {
         return ($this->probability ?? 0) . '%';
     }
+
+    // Relations
+    public function user()
+    {
+        return $this->belongsTo(PipedriveUser::class, 'user_id', 'pipedrive_id');
+    }
+
+    public function person()
+    {
+        return $this->belongsTo(PipedrivePerson::class, 'person_id', 'pipedrive_id');
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(PipedriveOrganization::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function stage()
+    {
+        return $this->belongsTo(PipedriveStage::class, 'stage_id', 'pipedrive_id');
+    }
+
+    // Reverse relations
+    public function activities()
+    {
+        return $this->hasMany(PipedriveActivity::class, 'deal_id', 'pipedrive_id');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(PipedriveNote::class, 'deal_id', 'pipedrive_id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(PipedriveFile::class, 'deal_id', 'pipedrive_id');
+    }
 }

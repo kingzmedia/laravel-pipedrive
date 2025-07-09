@@ -88,4 +88,15 @@ class PipedriveStage extends BasePipedriveModel
 
         return $this->rotten_days . ' day' . ($this->rotten_days > 1 ? 's' : '');
     }
+
+    // Relations
+    public function pipeline()
+    {
+        return $this->belongsTo(PipedrivePipeline::class, 'pipeline_id', 'pipedrive_id');
+    }
+
+    public function deals()
+    {
+        return $this->hasMany(PipedriveDeal::class, 'stage_id', 'pipedrive_id');
+    }
 }

@@ -105,4 +105,25 @@ class PipedriveFile extends BasePipedriveModel
             'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'
         ]);
     }
+
+    // Relations
+    public function user()
+    {
+        return $this->belongsTo(PipedriveUser::class, 'user_id', 'pipedrive_id');
+    }
+
+    public function person()
+    {
+        return $this->belongsTo(PipedrivePerson::class, 'person_id', 'pipedrive_id');
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(PipedriveOrganization::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function deal()
+    {
+        return $this->belongsTo(PipedriveDeal::class, 'deal_id', 'pipedrive_id');
+    }
 }

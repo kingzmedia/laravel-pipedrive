@@ -68,4 +68,35 @@ class PipedriveOrganization extends BasePipedriveModel
     {
         return $this->address_formatted;
     }
+
+    // Relations
+    public function owner()
+    {
+        return $this->belongsTo(PipedriveUser::class, 'owner_id', 'pipedrive_id');
+    }
+
+    public function persons()
+    {
+        return $this->hasMany(PipedrivePerson::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(PipedriveActivity::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function deals()
+    {
+        return $this->hasMany(PipedriveDeal::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(PipedriveNote::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(PipedriveFile::class, 'org_id', 'pipedrive_id');
+    }
 }

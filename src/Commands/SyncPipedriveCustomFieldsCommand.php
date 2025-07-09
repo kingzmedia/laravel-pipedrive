@@ -9,9 +9,10 @@ use Devio\Pipedrive\Pipedrive;
 
 class SyncPipedriveCustomFieldsCommand extends Command
 {
-    public $signature = 'pipedrive:sync-custom-fields 
+    public $signature = 'pipedrive:sync-custom-fields
                         {--entity= : Sync fields for specific entity (deal, person, organization, product, activity)}
-                        {--force : Force sync even if fields already exist}';
+                        {--force : Force sync even if fields already exist}
+                        {--v|verbose : Show detailed output}';
 
     public $description = 'Synchronize custom fields from Pipedrive API';
 
@@ -39,8 +40,10 @@ class SyncPipedriveCustomFieldsCommand extends Command
                 return self::FAILURE;
             }
 
-            $this->info('Connected to Pipedrive as: ' . $connectionTest['user'] . ' (' . $connectionTest['company'] . ')');
-            $this->info('Using authentication method: ' . $this->authService->getAuthMethod());
+            if ($this->option('verbose')) {
+                $this->info('Connected to Pipedrive as: ' . $connectionTest['user'] . ' (' . $connectionTest['company'] . ')');
+                $this->info('Using authentication method: ' . $this->authService->getAuthMethod());
+            }
 
         } catch (\Exception $e) {
             $this->error('Error initializing Pipedrive client: ' . $e->getMessage());
@@ -97,12 +100,14 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
                 // Skip fields without an ID (system/primary fields)
                 if (!isset($fieldData['id']) || $fieldData['id'] === null) {
-                    $this->warn("  ⚠ Skipped system field: {$fieldData['name']} ({$fieldData['key']})");
+                    if ($this->option('verbose')) {
+                        $this->warn("  ⚠ Skipped system field: {$fieldData['name']} ({$fieldData['key']})");
+                    }
                     $skipped++;
                     continue;
                 }
 
-                $existingField = PipedriveCustomField::where('pipedrive_field_id', $fieldData['id'])
+                $existingField = PipedriveCustomField::where('pipedrive_id', $fieldData['id'])
                     ->where('entity_type', $entityType)
                     ->first();
 
@@ -116,13 +121,20 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
                     if ($field->wasRecentlyCreated) {
                         $synced++;
-                        $this->line("  ✓ Created: {$field->name} ({$field->field_key})");
+                        if ($this->option('verbose')) {
+                            $this->line("  ✓ Created: {$field->name} ({$field->key})");
+                        }
                     } else {
                         $updated++;
-                        $this->line("  ↻ Updated: {$field->name} ({$field->field_key})");
+                        if ($this->option('verbose')) {
+                            $this->line("  ↻ Updated: {$field->name} ({$field->key})");
+                        }
                     }
                 } catch (\Exception $e) {
                     $this->error("  ✗ Error processing field {$fieldData['name']}: " . $e->getMessage());
+                    if ($this->option('verbose')) {
+                        $this->error("    Stack trace: " . $e->getTraceAsString());
+                    }
                     continue;
                 }
             }

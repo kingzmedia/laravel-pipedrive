@@ -109,4 +109,10 @@ class PipedriveProduct extends BasePipedriveModel
 
         return $this->prices[0] ?? null;
     }
+
+    // Relations
+    public function owner()
+    {
+        return $this->belongsTo(PipedriveUser::class, 'owner_id', 'pipedrive_id');
+    }
 }

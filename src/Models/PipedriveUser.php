@@ -106,4 +106,45 @@ class PipedriveUser extends BasePipedriveModel
         $offset = $this->timezone_offset ? " ({$this->timezone_offset})" : '';
         return $this->timezone_name . $offset;
     }
+
+    // Relations
+    public function activities()
+    {
+        return $this->hasMany(PipedriveActivity::class, 'user_id', 'pipedrive_id');
+    }
+
+    public function deals()
+    {
+        return $this->hasMany(PipedriveDeal::class, 'user_id', 'pipedrive_id');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(PipedriveNote::class, 'user_id', 'pipedrive_id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(PipedriveFile::class, 'user_id', 'pipedrive_id');
+    }
+
+    public function ownedPersons()
+    {
+        return $this->hasMany(PipedrivePerson::class, 'owner_id', 'pipedrive_id');
+    }
+
+    public function ownedOrganizations()
+    {
+        return $this->hasMany(PipedriveOrganization::class, 'owner_id', 'pipedrive_id');
+    }
+
+    public function ownedProducts()
+    {
+        return $this->hasMany(PipedriveProduct::class, 'owner_id', 'pipedrive_id');
+    }
+
+    public function ownedGoals()
+    {
+        return $this->hasMany(PipedriveGoal::class, 'owner_id', 'pipedrive_id');
+    }
 }

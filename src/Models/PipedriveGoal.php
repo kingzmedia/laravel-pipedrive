@@ -147,4 +147,15 @@ class PipedriveGoal extends BasePipedriveModel
 
         return number_format($this->outcome ?? 0, 2);
     }
+
+    // Relations
+    public function owner()
+    {
+        return $this->belongsTo(PipedriveUser::class, 'owner_id', 'pipedrive_id');
+    }
+
+    public function pipeline()
+    {
+        return $this->belongsTo(PipedrivePipeline::class, 'pipeline_id', 'pipedrive_id');
+    }
 }

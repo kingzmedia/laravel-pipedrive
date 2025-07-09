@@ -97,4 +97,35 @@ class PipedrivePerson extends BasePipedriveModel
     {
         return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? '')) ?: $this->name;
     }
+
+    // Relations
+    public function owner()
+    {
+        return $this->belongsTo(PipedriveUser::class, 'owner_id', 'pipedrive_id');
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(PipedriveOrganization::class, 'org_id', 'pipedrive_id');
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(PipedriveActivity::class, 'person_id', 'pipedrive_id');
+    }
+
+    public function deals()
+    {
+        return $this->hasMany(PipedriveDeal::class, 'person_id', 'pipedrive_id');
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(PipedriveNote::class, 'person_id', 'pipedrive_id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(PipedriveFile::class, 'person_id', 'pipedrive_id');
+    }
 }
