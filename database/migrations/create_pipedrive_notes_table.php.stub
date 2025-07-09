@@ -33,6 +33,7 @@ return new class extends Migration
             
             // Additional fields
             $table->boolean('active')->default(true);
+            $table->boolean('active_flag')->default(true);
             $table->timestamp('last_update_user_id')->nullable();
             
             // Pipedrive timestamps

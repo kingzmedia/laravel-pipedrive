@@ -24,12 +24,10 @@ class PipedriveUser extends BasePipedriveModel
         'timezone_offset',
         'icon_url',
         'is_you',
-        'last_login',
         'created',
         'modified',
         'signup_flow_variation',
         'has_created_company',
-        'access',
         'active_flag',
         'pipedrive_add_time',
         'pipedrive_update_time',
@@ -43,12 +41,10 @@ class PipedriveUser extends BasePipedriveModel
             'is_you' => 'boolean',
             'signup_flow_variation' => 'boolean',
             'has_created_company' => 'boolean',
-            'access' => 'boolean',
             'role_id' => 'integer',
             'icon_url' => 'integer',
             'created' => 'datetime',
             'modified' => 'datetime',
-            'last_login' => 'datetime',
         ]);
     }
 
@@ -102,11 +98,6 @@ class PipedriveUser extends BasePipedriveModel
     public function isCurrentUser(): bool
     {
         return $this->is_you ?? false;
-    }
-
-    public function hasAccess(): bool
-    {
-        return $this->access ?? false;
     }
 
     public function hasCreatedCompany(): bool

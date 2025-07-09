@@ -103,12 +103,15 @@ class SyncPipedriveEntitiesCommand extends Command
 
         try {
             $modelClass = $this->entities[$entityType];
+            $this->line("  → Fetching data from Pipedrive API...");
             $data = $this->getDataFromPipedrive($entityType, $limit);
-            
+
             if (empty($data)) {
                 $this->warn("No data found for entity type: {$entityType}");
                 return;
             }
+
+            $this->line("  → Found " . count($data) . " records to process");
 
             $synced = 0;
             $updated = 0;
@@ -120,7 +123,9 @@ class SyncPipedriveEntitiesCommand extends Command
                 $data = json_decode(json_encode($data), true);
             }
 
-            foreach ($data as $itemData) {
+            foreach ($data as $index => $itemData) {
+                $this->line("  → Processing item " . ($index + 1) . "/" . count($data));
+
                 // Convert individual item data to array if it's an object
                 if (is_object($itemData)) {
                     $itemData = json_decode(json_encode($itemData), true);
@@ -141,8 +146,10 @@ class SyncPipedriveEntitiesCommand extends Command
                 }
 
                 try {
+                    $this->line("  → Creating/updating record with ID: {$itemData['id']}");
+
                     $record = $modelClass::createOrUpdateFromPipedriveData($itemData);
-                    
+
                     if ($record->wasRecentlyCreated) {
                         $synced++;
                         $this->line("  ✓ Created: {$this->getRecordDisplayName($record, $itemData)}");
@@ -153,6 +160,7 @@ class SyncPipedriveEntitiesCommand extends Command
                 } catch (\Exception $e) {
                     $errors++;
                     $this->error("  ✗ Error processing {$entityType} item {$itemData['id']}: " . $e->getMessage());
+                    $this->error("  ✗ Stack trace: " . $e->getTraceAsString());
                     continue;
                 }
             }
@@ -161,6 +169,7 @@ class SyncPipedriveEntitiesCommand extends Command
 
         } catch (\Exception $e) {
             $this->error("Error syncing {$entityType}: " . $e->getMessage());
+            $this->error("Stack trace: " . $e->getTraceAsString());
         }
     }
 

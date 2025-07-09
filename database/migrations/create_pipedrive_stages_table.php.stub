@@ -20,6 +20,8 @@ return new class extends Migration
             $table->boolean('active_flag')->default(true);
             $table->integer('deal_probability')->default(0); // 0-100
             $table->unsignedInteger('pipeline_id');
+            $table->string('pipeline_name')->nullable();
+            $table->string('pipeline_deal_probability')->nullable();
             
             // Rotation settings
             $table->boolean('rotten_flag')->default(false);

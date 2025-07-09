@@ -31,6 +31,7 @@ return new class extends Migration
             
             // Visibility
             $table->string('visible_to')->nullable(); // 1, 3, or owner_and_followers
+            $table->string('first_char', 1)->nullable(); // First character of name
             $table->boolean('active_flag')->default(true);
             
             // Billing (for subscription products)

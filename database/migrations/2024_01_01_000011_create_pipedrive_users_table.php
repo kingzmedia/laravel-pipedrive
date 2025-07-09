@@ -30,7 +30,6 @@ return new class extends Migration
             // Additional fields
             $table->integer('icon_url')->nullable();
             $table->boolean('is_you')->nullable();
-            $table->timestamp('last_login')->nullable();
             $table->timestamp('created')->nullable();
             $table->timestamp('modified')->nullable();
             $table->boolean('signup_flow_variation')->nullable();

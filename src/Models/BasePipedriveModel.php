@@ -54,23 +54,83 @@ abstract class BasePipedriveModel extends Model
     }
 
     /**
-     * Create or update from Pipedrive API data using DTO
+     * Create or update from Pipedrive API data using manual preparation
      */
     public static function createOrUpdateFromPipedriveData(array $data): static
     {
-        // Get the DTO class for this model
-        $dtoClass = static::getDtoClass();
-
-        // Create DTO from Pipedrive API data
-        $dto = $dtoClass::fromPipedriveApi($data);
-
-        // Convert DTO to database format
-        $preparedData = $dto->toDatabase();
+        // Use manual data preparation for now (DTOs are causing issues)
+        $preparedData = static::prepareDataManually($data);
 
         return static::updateOrCreate(
             ['pipedrive_id' => $data['id']],
             $preparedData
         );
+    }
+
+    /**
+     * Manually prepare data when DTO fails
+     */
+    protected static function prepareDataManually(array $data): array
+    {
+        $model = new static();
+        $fillable = $model->getFillable();
+        $casts = $model->getCasts();
+        $preparedData = [];
+
+        // Map basic fields
+        $preparedData['pipedrive_id'] = $data['id'];
+
+        // Map common fields that exist in fillable
+        foreach ($fillable as $field) {
+            if ($field === 'pipedrive_id') continue;
+
+            // Handle timestamp fields
+            if (in_array($field, ['pipedrive_add_time', 'pipedrive_update_time'])) {
+                $apiField = str_replace('pipedrive_', '', $field);
+                if (isset($data[$apiField]) && !empty($data[$apiField])) {
+                    try {
+                        $parsed = \Carbon\Carbon::parse($data[$apiField]);
+                        $preparedData[$field] = $parsed->year > 1970 ? $parsed : null;
+                    } catch (\Exception $e) {
+                        $preparedData[$field] = null;
+                    }
+                } else {
+                    $preparedData[$field] = null;
+                }
+                continue;
+            }
+
+            // Handle direct field mapping
+            if (isset($data[$field])) {
+                $value = $data[$field];
+
+                // Handle empty values based on cast type
+                if ($value === '' || $value === null) {
+                    $castType = $casts[$field] ?? null;
+                    if (in_array($castType, ['integer', 'int', 'decimal', 'float', 'double'])) {
+                        $preparedData[$field] = null;
+                    } elseif ($castType === 'boolean') {
+                        $preparedData[$field] = false;
+                    } elseif ($castType === 'array') {
+                        $preparedData[$field] = null;
+                    } else {
+                        $preparedData[$field] = null;
+                    }
+                } else {
+                    // Handle array fields (JSON)
+                    if (isset($casts[$field]) && $casts[$field] === 'array' && is_array($value)) {
+                        $preparedData[$field] = $value;
+                    } elseif (is_array($value)) {
+                        // If value is array but field is not cast as array, convert to string or null
+                        $preparedData[$field] = null;
+                    } else {
+                        $preparedData[$field] = $value;
+                    }
+                }
+            }
+        }
+
+        return $preparedData;
     }
 
     /**

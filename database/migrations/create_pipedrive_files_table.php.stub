@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('file_name')->nullable();
             $table->string('file_type')->nullable();
-            $table->string('file_size')->nullable(); // in bytes
+            $table->unsignedBigInteger('file_size')->nullable(); // in bytes
             $table->string('extension')->nullable();
             
             // URLs and paths
@@ -40,7 +40,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('active')->default(true);
             $table->boolean('inline_flag')->default(false);
-            $table->boolean('remote_location')->default(false);
+            $table->boolean('active_flag')->default(true);
+            $table->string('remote_location')->nullable();
             $table->string('remote_id')->nullable();
             
             // Pipedrive timestamps

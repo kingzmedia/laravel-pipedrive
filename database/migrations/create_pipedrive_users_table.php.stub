@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('default_currency')->nullable();
             $table->string('locale')->nullable();
             $table->string('timezone_name')->nullable();
-            $table->integer('timezone_offset')->nullable();
+            $table->string('timezone_offset', 10)->nullable(); // e.g., "+02:00"
             $table->string('lang')->nullable();
             
             // Phone
