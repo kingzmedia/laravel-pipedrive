@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('pipedrive_stages', function (Blueprint $table) {
+            $table->id();
+            
+            // Pipedrive identification
+            $table->unsignedInteger('pipedrive_id')->unique()->index();
+            
+            // Stage info
+            $table->string('name');
+            $table->integer('order_nr')->default(0);
+            $table->boolean('active_flag')->default(true);
+            $table->integer('deal_probability')->default(0); // 0-100
+            $table->unsignedInteger('pipeline_id');
+            
+            // Rotation settings
+            $table->boolean('rotten_flag')->default(false);
+            $table->integer('rotten_days')->nullable();
+            
+            // Pipedrive timestamps
+            $table->timestamp('pipedrive_add_time')->nullable();
+            $table->timestamp('pipedrive_update_time')->nullable();
+            
+            // Laravel timestamps
+            $table->timestamps();
+            
+            // Indexes
+            $table->index(['pipeline_id', 'active_flag', 'order_nr']);
+            $table->index(['name', 'active_flag']);
+            $table->index(['deal_probability', 'active_flag']);
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('pipedrive_stages');
+    }
+};

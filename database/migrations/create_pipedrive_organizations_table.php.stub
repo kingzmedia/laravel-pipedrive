@@ -1,0 +1,82 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('pipedrive_organizations', function (Blueprint $table) {
+            $table->id();
+            
+            // Pipedrive identification
+            $table->unsignedInteger('pipedrive_id')->unique()->index();
+            
+            // Basic organization info
+            $table->string('name');
+            $table->string('label')->nullable();
+            $table->unsignedInteger('owner_id')->nullable();
+            
+            // Contact information
+            $table->json('address')->nullable();
+            $table->string('address_formatted')->nullable();
+            $table->decimal('address_lat', 10, 8)->nullable();
+            $table->decimal('address_lng', 11, 8)->nullable();
+            
+            // Counters
+            $table->integer('people_count')->default(0);
+            $table->integer('open_deals_count')->default(0);
+            $table->integer('related_open_deals_count')->default(0);
+            $table->integer('closed_deals_count')->default(0);
+            $table->integer('related_closed_deals_count')->default(0);
+            $table->integer('won_deals_count')->default(0);
+            $table->integer('related_won_deals_count')->default(0);
+            $table->integer('lost_deals_count')->default(0);
+            $table->integer('related_lost_deals_count')->default(0);
+            $table->integer('activities_count')->default(0);
+            $table->integer('done_activities_count')->default(0);
+            $table->integer('undone_activities_count')->default(0);
+            $table->integer('files_count')->default(0);
+            $table->integer('notes_count')->default(0);
+            $table->integer('followers_count')->default(0);
+            $table->integer('email_messages_count')->default(0);
+            
+            // Visibility and status
+            $table->string('visible_to')->nullable(); // 1, 3, or owner_and_followers
+            $table->boolean('active_flag')->default(true);
+            $table->string('category_id')->nullable();
+            
+            // Dates
+            $table->timestamp('next_activity_date')->nullable();
+            $table->timestamp('last_activity_date')->nullable();
+            $table->timestamp('last_incoming_mail_time')->nullable();
+            $table->timestamp('last_outgoing_mail_time')->nullable();
+            
+            // Additional fields
+            $table->unsignedInteger('picture_id')->nullable();
+            $table->string('country_code')->nullable();
+            $table->string('timezone')->nullable();
+            
+            // Pipedrive timestamps
+            $table->timestamp('pipedrive_add_time')->nullable();
+            $table->timestamp('pipedrive_update_time')->nullable();
+            
+            // Laravel timestamps
+            $table->timestamps();
+            
+            // Indexes
+            $table->index(['owner_id', 'active_flag']);
+            $table->index(['name', 'active_flag']);
+            $table->index(['category_id', 'active_flag']);
+            $table->index(['country_code', 'active_flag']);
+            $table->index(['visible_to', 'active_flag']);
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('pipedrive_organizations');
+    }
+};

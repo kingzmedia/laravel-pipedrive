@@ -1,0 +1,65 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('pipedrive_products', function (Blueprint $table) {
+            $table->id();
+            
+            // Pipedrive identification
+            $table->unsignedInteger('pipedrive_id')->unique()->index();
+            
+            // Product info
+            $table->string('name');
+            $table->string('code')->nullable();
+            $table->text('description')->nullable();
+            $table->string('unit')->nullable();
+            $table->decimal('tax', 5, 2)->default(0); // percentage
+            $table->string('category')->nullable();
+            
+            // Pricing
+            $table->json('prices')->nullable(); // array of prices for different currencies
+            $table->boolean('selectable')->default(true);
+            
+            // Relationships
+            $table->unsignedInteger('owner_id')->nullable();
+            
+            // Visibility
+            $table->string('visible_to')->nullable(); // 1, 3, or owner_and_followers
+            $table->boolean('active_flag')->default(true);
+            
+            // Billing (for subscription products)
+            $table->string('billing_frequency')->nullable(); // one-time, monthly, quarterly, yearly
+            $table->integer('billing_frequency_cycles')->nullable();
+            
+            // Files
+            $table->integer('files_count')->default(0);
+            $table->integer('followers_count')->default(0);
+            
+            // Pipedrive timestamps
+            $table->timestamp('pipedrive_add_time')->nullable();
+            $table->timestamp('pipedrive_update_time')->nullable();
+            
+            // Laravel timestamps
+            $table->timestamps();
+            
+            // Indexes
+            $table->index(['owner_id', 'active_flag']);
+            $table->index(['name', 'active_flag']);
+            $table->index(['code', 'active_flag']);
+            $table->index(['category', 'active_flag']);
+            $table->index(['selectable', 'active_flag']);
+            $table->index(['visible_to', 'active_flag']);
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('pipedrive_products');
+    }
+};

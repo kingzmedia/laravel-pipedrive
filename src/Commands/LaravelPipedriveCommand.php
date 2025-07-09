@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Keggermont\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LaravelPipedriveCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-pipedrive';
 
     public $description = 'My command';
 

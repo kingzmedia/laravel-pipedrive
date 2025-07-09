@@ -1,0 +1,62 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('pipedrive_custom_fields', function (Blueprint $table) {
+            $table->id();
+
+            // Pipedrive field identification
+            $table->unsignedInteger('pipedrive_field_id')->index(); // ID from Pipedrive API
+            $table->string('field_key', 255)->index(); // 40-character hash key or default field key
+            $table->string('entity_type', 50)->index(); // deal, person, organization, product, activity
+
+            // Field metadata
+            $table->string('name', 255); // Human-readable field name
+            $table->string('field_type', 50); // varchar, text, double, monetary, set, enum, etc.
+            $table->unsignedInteger('order_nr')->nullable(); // Display order
+
+            // Field configuration
+            $table->json('options')->nullable(); // For set/enum fields - stores available options
+            $table->boolean('mandatory_flag')->default(false);
+            $table->boolean('active_flag')->default(true);
+            $table->boolean('edit_flag')->default(true); // true = custom field, false = default field
+
+            // Visibility settings
+            $table->boolean('add_visible_flag')->default(true); // Show in "Add new" dialog
+            $table->boolean('details_visible_flag')->default(true); // Show in detail view
+            $table->boolean('index_visible_flag')->default(true); // Show in list view
+            $table->boolean('important_flag')->default(false); // Mark as important
+
+            // Functionality flags
+            $table->boolean('bulk_edit_allowed')->default(true);
+            $table->boolean('filtering_allowed')->default(true);
+            $table->boolean('sortable_flag')->default(true);
+            $table->boolean('searchable_flag')->default(false);
+            $table->boolean('json_column_flag')->default(false); // Stored as JSON in Pipedrive
+
+            // Audit fields
+            $table->unsignedInteger('last_updated_by_user_id')->nullable();
+            $table->timestamp('pipedrive_add_time')->nullable(); // When created in Pipedrive
+            $table->timestamp('pipedrive_update_time')->nullable(); // When last updated in Pipedrive
+
+            // Laravel timestamps
+            $table->timestamps();
+
+            // Indexes for performance
+            $table->unique(['pipedrive_field_id', 'entity_type'], 'unique_field_per_entity');
+            $table->index(['entity_type', 'active_flag'], 'entity_active_fields');
+            $table->index(['field_type', 'entity_type'], 'field_type_entity');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('pipedrive_custom_fields');
+    }
+};
