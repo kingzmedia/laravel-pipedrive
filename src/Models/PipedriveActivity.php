@@ -9,32 +9,20 @@ class PipedriveActivity extends BasePipedriveModel
 {
     protected $table = 'pipedrive_activities';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'subject',
-        'note',
-        'done',
         'type',
+        'done',
         'due_date',
-        'due_time',
-        'duration',
-        'marked_as_done_time',
-        'user_id',
-        'created_by_user_id',
-        'deal_id',
         'person_id',
         'org_id',
-        'lead_id',
-        'location',
-        'location_lat',
-        'location_lng',
-        'public_description',
-        'busy_flag',
-        'attendees',
-        'participants',
+        'deal_id',
+        'user_id',
+        'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
-        'last_notification_time',
     ];
 
     protected function casts(): array

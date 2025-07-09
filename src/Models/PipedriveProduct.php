@@ -9,22 +9,15 @@ class PipedriveProduct extends BasePipedriveModel
 {
     protected $table = 'pipedrive_products';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'name',
         'code',
-        'description',
         'unit',
         'tax',
-        'category',
-        'prices',
         'owner_id',
-        'deals_count',
-        'files_count',
-        'followers_count',
-        'visible_to',
-        'first_char',
         'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

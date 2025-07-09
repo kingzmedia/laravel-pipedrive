@@ -9,14 +9,12 @@ class PipedrivePipeline extends BasePipedriveModel
 {
     protected $table = 'pipedrive_pipelines';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'name',
-        'url_title',
         'order_nr',
-        'active',
-        'deal_probability',
-        'selected',
+        'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

@@ -26,11 +26,9 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
             ->name('laravel-pipedrive')
             ->hasConfigFile() 
             ->hasMigrations([
-                'create_pipedrive_custom_fields_table',
                 'create_pipedrive_activities_table',
                 'create_pipedrive_deals_table',
                 'create_pipedrive_files_table',
-                'create_pipedrive_goals_table',
                 'create_pipedrive_notes_table',
                 'create_pipedrive_organizations_table',
                 'create_pipedrive_persons_table',
@@ -38,6 +36,8 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 'create_pipedrive_products_table',
                 'create_pipedrive_stages_table',
                 'create_pipedrive_users_table',
+                'create_pipedrive_goals_table',
+                'create_pipedrive_custom_fields_table',
             ])
             ->hasCommands([
                 LaravelPipedriveCommand::class,

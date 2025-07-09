@@ -9,26 +9,13 @@ class PipedriveUser extends BasePipedriveModel
 {
     protected $table = 'pipedrive_users';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'name',
         'email',
-        'default_currency',
-        'locale',
-        'lang',
-        'phone',
-        'activated',
         'is_admin',
-        'role_id',
-        'timezone_name',
-        'timezone_offset',
-        'icon_url',
-        'is_you',
-        'created',
-        'modified',
-        'signup_flow_variation',
-        'has_created_company',
         'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

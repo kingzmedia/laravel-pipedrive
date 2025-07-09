@@ -9,17 +9,14 @@ class PipedriveStage extends BasePipedriveModel
 {
     protected $table = 'pipedrive_stages';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'name',
-        'pipeline_id',
         'order_nr',
-        'active',
         'deal_probability',
-        'rotten_flag',
-        'rotten_days',
-        'pipeline_name',
-        'pipeline_deal_probability',
+        'pipeline_id',
+        'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

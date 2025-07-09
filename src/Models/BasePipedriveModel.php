@@ -18,6 +18,7 @@ abstract class BasePipedriveModel extends Model
             'pipedrive_update_time' => 'datetime',
             'active_flag' => 'boolean',
             'active' => 'boolean',
+            'pipedrive_data' => 'array',
         ];
     }
 
@@ -26,15 +27,7 @@ abstract class BasePipedriveModel extends Model
      */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where(function ($q) {
-            if ($this->getTable() === 'pipedrive_pipelines' || 
-                $this->getTable() === 'pipedrive_stages' || 
-                $this->getTable() === 'pipedrive_goals') {
-                $q->where('active', true);
-            } else {
-                $q->where('active_flag', true);
-            }
-        });
+        return $query->where('active_flag', true);
     }
 
     /**
@@ -80,9 +73,12 @@ abstract class BasePipedriveModel extends Model
         // Map basic fields
         $preparedData['pipedrive_id'] = $data['id'];
 
-        // Map common fields that exist in fillable
+        // Store all original data in JSON field
+        $preparedData['pipedrive_data'] = $data;
+
+        // Map only essential fields that exist in fillable (excluding pipedrive_data)
         foreach ($fillable as $field) {
-            if ($field === 'pipedrive_id') continue;
+            if (in_array($field, ['pipedrive_id', 'pipedrive_data'])) continue;
 
             // Handle timestamp fields
             if (in_array($field, ['pipedrive_add_time', 'pipedrive_update_time'])) {
@@ -100,7 +96,7 @@ abstract class BasePipedriveModel extends Model
                 continue;
             }
 
-            // Handle direct field mapping
+            // Handle direct field mapping for essential fields only
             if (isset($data[$field])) {
                 $value = $data[$field];
 
@@ -111,17 +107,13 @@ abstract class BasePipedriveModel extends Model
                         $preparedData[$field] = null;
                     } elseif ($castType === 'boolean') {
                         $preparedData[$field] = false;
-                    } elseif ($castType === 'array') {
-                        $preparedData[$field] = null;
                     } else {
                         $preparedData[$field] = null;
                     }
                 } else {
-                    // Handle array fields (JSON)
-                    if (isset($casts[$field]) && $casts[$field] === 'array' && is_array($value)) {
-                        $preparedData[$field] = $value;
-                    } elseif (is_array($value)) {
-                        // If value is array but field is not cast as array, convert to string or null
+                    // Simple value assignment for essential fields
+                    if (is_array($value)) {
+                        // Skip array values for essential fields (they're in JSON already)
                         $preparedData[$field] = null;
                     } else {
                         $preparedData[$field] = $value;
@@ -201,5 +193,23 @@ abstract class BasePipedriveModel extends Model
         }
 
         return $this->pipedrive_update_time->diffInDays(now());
+    }
+
+    /**
+     * Get a value from the pipedrive_data JSON field
+     */
+    public function getPipedriveAttribute($key, $default = null)
+    {
+        return $this->pipedrive_data[$key] ?? $default;
+    }
+
+    /**
+     * Set a value in the pipedrive_data JSON field
+     */
+    public function setPipedriveAttribute($key, $value)
+    {
+        $data = $this->pipedrive_data ?? [];
+        $data[$key] = $value;
+        $this->pipedrive_data = $data;
     }
 }

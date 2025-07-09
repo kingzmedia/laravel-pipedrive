@@ -9,30 +9,19 @@ class PipedriveFile extends BasePipedriveModel
 {
     protected $table = 'pipedrive_files';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'name',
         'file_name',
-        'file_size',
         'file_type',
+        'file_size',
         'url',
-        'remote_location',
-        'remote_id',
-        'cid',
-        's3_bucket',
-        'mail_message_id',
-        'mail_template_id',
-        'deal_id',
         'person_id',
         'org_id',
-        'product_id',
-        'activity_id',
-        'note_id',
-        'log_id',
+        'deal_id',
         'user_id',
-        'description',
-        'inline_flag',
         'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

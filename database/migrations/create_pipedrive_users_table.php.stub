@@ -14,44 +14,16 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // User info
+            // Essential fields
             $table->string('name');
-            $table->string('email')->unique();
-            $table->boolean('has_pic')->default(false);
-            $table->string('pic_hash')->nullable();
+            $table->string('email')->nullable();
+            $table->boolean('is_admin')->default(false);
+            
+            // Status
             $table->boolean('active_flag')->default(true);
             
-            // Role and permissions
-            $table->string('role_id')->nullable();
-            $table->boolean('is_admin')->default(false);
-            $table->boolean('is_you')->default(false);
-            
-            // Settings
-            $table->string('default_currency')->nullable();
-            $table->string('locale')->nullable();
-            $table->string('timezone_name')->nullable();
-            $table->string('timezone_offset', 10)->nullable(); // e.g., "+02:00"
-            $table->string('lang')->nullable();
-            
-            // Phone
-            $table->string('phone')->nullable();
-            
-            // Company info
-            $table->string('company_name')->nullable();
-            $table->string('company_domain')->nullable();
-            $table->string('company_country')->nullable();
-            $table->string('company_industry')->nullable();
-            
-            // Access info
-            $table->timestamp('last_login_time')->nullable();
-            $table->timestamp('created')->nullable();
-            $table->timestamp('modified')->nullable();
-            $table->boolean('signup_flow_variation')->nullable();
-            $table->boolean('has_created_company')->default(false);
-            
-            // Icon and avatar
-            $table->string('icon_url')->nullable();
-            $table->boolean('is_deleted')->default(false);
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             
             // Pipedrive timestamps
             $table->timestamp('pipedrive_add_time')->nullable();
@@ -61,11 +33,9 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes
-            $table->index(['active_flag', 'is_deleted']);
-            $table->index(['email', 'active_flag']);
-            $table->index(['name', 'active_flag']);
-            $table->index(['role_id', 'active_flag']);
-            $table->index(['company_name', 'active_flag']);
+            $table->index('email');
+            $table->index('is_admin');
+            $table->index('active_flag');
         });
     }
 

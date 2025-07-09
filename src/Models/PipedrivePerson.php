@@ -9,17 +9,17 @@ class PipedrivePerson extends BasePipedriveModel
 {
     protected $table = 'pipedrive_persons';
 
-    protected $fillable = [
-        'pipedrive_id', 'name', 'first_name', 'last_name', 'phone', 'email',
-        'owner_id', 'org_id', 'open_deals_count', 'related_open_deals_count',
-        'closed_deals_count', 'related_closed_deals_count', 'won_deals_count',
-        'related_won_deals_count', 'lost_deals_count', 'related_lost_deals_count',
-        'activities_count', 'done_activities_count', 'undone_activities_count',
-        'files_count', 'notes_count', 'followers_count', 'email_messages_count',
-        'visible_to', 'active_flag', 'label', 'label_ids', 'next_activity_date',
-        'last_activity_date', 'last_incoming_mail_time', 'last_outgoing_mail_time',
-        'picture_id', 'im', 'job_title', 'department', 'language', 'marketing_status',
-        'pipedrive_add_time', 'pipedrive_update_time',
+        protected $fillable = [
+        'pipedrive_id',
+        'name',
+        'email',
+        'phone',
+        'org_id',
+        'owner_id',
+        'active_flag',
+        'pipedrive_data',
+        'pipedrive_add_time',
+        'pipedrive_update_time',
     ];
 
     protected function casts(): array

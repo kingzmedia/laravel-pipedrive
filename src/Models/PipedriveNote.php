@@ -9,21 +9,15 @@ class PipedriveNote extends BasePipedriveModel
 {
     protected $table = 'pipedrive_notes';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'content',
-        'subject',
-        'deal_id',
         'person_id',
         'org_id',
-        'lead_id',
+        'deal_id',
         'user_id',
-        'pinned_to_deal_flag',
-        'pinned_to_person_flag',
-        'pinned_to_organization_flag',
-        'pinned_to_lead_flag',
-        'last_update_user_id',
         'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

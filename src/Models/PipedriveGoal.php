@@ -9,23 +9,15 @@ class PipedriveGoal extends BasePipedriveModel
 {
     protected $table = 'pipedrive_goals';
 
-    protected $fillable = [
+        protected $fillable = [
         'pipedrive_id',
         'title',
-        'owner_id',
         'type',
-        'assignee_type',
-        'interval',
-        'duration_start',
-        'duration_end',
         'expected_outcome',
-        'currency',
-        'active',
-        'outcome',
-        'progress',
+        'owner_id',
         'pipeline_id',
-        'stage_id',
-        'activity_type_id',
+        'active_flag',
+        'pipedrive_data',
         'pipedrive_add_time',
         'pipedrive_update_time',
     ];

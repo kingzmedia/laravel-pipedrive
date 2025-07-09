@@ -14,51 +14,20 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // Basic person info
+            // Essential fields
             $table->string('name');
-            $table->string('first_name')->nullable();
-            $table->string('last_name')->nullable();
-            $table->json('phone')->nullable(); // array of phone numbers
-            $table->json('email')->nullable(); // array of emails
-            $table->unsignedInteger('owner_id')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            
+            // Relationships
             $table->unsignedInteger('org_id')->nullable();
+            $table->unsignedInteger('owner_id')->nullable();
             
-            // Counters
-            $table->integer('open_deals_count')->default(0);
-            $table->integer('related_open_deals_count')->default(0);
-            $table->integer('closed_deals_count')->default(0);
-            $table->integer('related_closed_deals_count')->default(0);
-            $table->integer('won_deals_count')->default(0);
-            $table->integer('related_won_deals_count')->default(0);
-            $table->integer('lost_deals_count')->default(0);
-            $table->integer('related_lost_deals_count')->default(0);
-            $table->integer('activities_count')->default(0);
-            $table->integer('done_activities_count')->default(0);
-            $table->integer('undone_activities_count')->default(0);
-            $table->integer('files_count')->default(0);
-            $table->integer('notes_count')->default(0);
-            $table->integer('followers_count')->default(0);
-            $table->integer('email_messages_count')->default(0);
-            
-            // Visibility and status
-            $table->string('visible_to')->nullable(); // 1, 3, or owner_and_followers
+            // Status
             $table->boolean('active_flag')->default(true);
-            $table->json('label')->nullable();
-            $table->json('label_ids')->nullable();
             
-            // Dates
-            $table->timestamp('next_activity_date')->nullable();
-            $table->timestamp('last_activity_date')->nullable();
-            $table->timestamp('last_incoming_mail_time')->nullable();
-            $table->timestamp('last_outgoing_mail_time')->nullable();
-            
-            // Additional fields
-            $table->unsignedInteger('picture_id')->nullable();
-            $table->string('im')->nullable(); // instant messenger
-            $table->string('job_title')->nullable();
-            $table->string('department')->nullable();
-            $table->string('language')->nullable();
-            $table->string('marketing_status')->nullable();
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             
             // Pipedrive timestamps
             $table->timestamp('pipedrive_add_time')->nullable();
@@ -70,10 +39,8 @@ return new class extends Migration
             // Indexes
             $table->index(['owner_id', 'active_flag']);
             $table->index(['org_id', 'active_flag']);
-            $table->index(['name', 'active_flag']);
-            $table->index(['first_name', 'last_name']);
-            $table->index(['visible_to', 'active_flag']);
-            $table->index(['marketing_status', 'active_flag']);
+            $table->index('email');
+            $table->index('name');
         });
     }
 

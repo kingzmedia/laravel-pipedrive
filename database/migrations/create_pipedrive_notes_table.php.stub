@@ -14,27 +14,20 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // Note content
-            $table->text('content');
-            $table->string('subject')->nullable();
+            // Essential fields
+            $table->text('content')->nullable();
             
             // Relationships
             $table->unsignedInteger('user_id')->nullable(); // author
             $table->unsignedInteger('deal_id')->nullable();
             $table->unsignedInteger('person_id')->nullable();
             $table->unsignedInteger('org_id')->nullable();
-            $table->unsignedInteger('lead_id')->nullable();
             
-            // Pinning flags
-            $table->boolean('pinned_to_deal_flag')->default(false);
-            $table->boolean('pinned_to_person_flag')->default(false);
-            $table->boolean('pinned_to_organization_flag')->default(false);
-            $table->boolean('pinned_to_lead_flag')->default(false);
-            
-            // Additional fields
-            $table->boolean('active')->default(true);
+            // Status
             $table->boolean('active_flag')->default(true);
-            $table->timestamp('last_update_user_id')->nullable();
+            
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             
             // Pipedrive timestamps
             $table->timestamp('pipedrive_add_time')->nullable();
@@ -44,14 +37,10 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes
-            $table->index(['user_id', 'active']);
-            $table->index(['deal_id', 'active']);
-            $table->index(['person_id', 'active']);
-            $table->index(['org_id', 'active']);
-            $table->index(['lead_id', 'active']);
-            $table->index(['pinned_to_deal_flag', 'deal_id']);
-            $table->index(['pinned_to_person_flag', 'person_id']);
-            $table->index(['pinned_to_organization_flag', 'org_id']);
+            $table->index(['user_id', 'active_flag']);
+            $table->index(['deal_id', 'active_flag']);
+            $table->index(['person_id', 'active_flag']);
+            $table->index(['org_id', 'active_flag']);
         });
     }
 

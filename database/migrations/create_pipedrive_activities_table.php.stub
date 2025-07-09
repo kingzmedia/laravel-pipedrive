@@ -14,45 +14,31 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // Basic activity info
+            // Essential fields
             $table->string('subject')->nullable();
-            $table->text('note')->nullable();
             $table->boolean('done')->default(false);
             $table->string('type')->nullable(); // call, meeting, task, etc.
-            
-            // Dates and times
-            $table->date('due_date')->nullable();
-            $table->time('due_time')->nullable();
-            $table->integer('duration')->nullable(); // in minutes
-            $table->timestamp('marked_as_done_time')->nullable();
-            
+            $table->datetime('due_date')->nullable();
+
             // Relationships
             $table->unsignedInteger('user_id')->nullable(); // assigned user
-            $table->unsignedInteger('created_by_user_id')->nullable();
             $table->unsignedInteger('deal_id')->nullable();
             $table->unsignedInteger('person_id')->nullable();
             $table->unsignedInteger('org_id')->nullable();
-            $table->unsignedInteger('lead_id')->nullable();
-            
-            // Location
-            $table->string('location')->nullable();
-            $table->decimal('location_lat', 10, 8)->nullable();
-            $table->decimal('location_lng', 11, 8)->nullable();
-            
-            // Additional fields
-            $table->string('public_description')->nullable();
-            $table->boolean('busy_flag')->default(false);
-            $table->json('attendees')->nullable();
-            $table->json('participants')->nullable();
+
+            // Status
+            $table->boolean('active_flag')->default(true);
+
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             
             // Pipedrive timestamps
             $table->timestamp('pipedrive_add_time')->nullable();
             $table->timestamp('pipedrive_update_time')->nullable();
-            $table->timestamp('last_notification_time')->nullable();
-            
+
             // Laravel timestamps
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['user_id', 'done']);
             $table->index(['deal_id', 'done']);

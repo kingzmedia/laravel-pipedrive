@@ -14,15 +14,15 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // Pipeline info
+            // Essential fields
             $table->string('name');
-            $table->string('url_title')->nullable();
             $table->integer('order_nr')->default(0);
-            $table->boolean('active')->default(true);
-            $table->boolean('deal_probability')->default(true);
             
-            // Configuration
-            $table->boolean('selected')->default(false);
+            // Status
+            $table->boolean('active_flag')->default(true);
+            
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             
             // Pipedrive timestamps
             $table->timestamp('pipedrive_add_time')->nullable();
@@ -32,8 +32,8 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes
-            $table->index(['active', 'order_nr']);
-            $table->index(['name', 'active']);
+            $table->index('order_nr');
+            $table->index('active_flag');
         });
     }
 

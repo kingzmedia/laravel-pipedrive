@@ -14,35 +14,20 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // Goal info
+            // Essential fields
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('type')->nullable(); // deals_progressed, deals_won, revenue, activities_completed, etc.
-            $table->string('assignee_type')->nullable(); // person, team, company
-            $table->string('interval')->nullable(); // weekly, monthly, quarterly, yearly
-            
-            // Target and progress
-            $table->decimal('target_amount', 15, 2)->nullable();
-            $table->string('currency', 3)->nullable();
-            $table->decimal('progress', 15, 2)->default(0);
-            $table->decimal('progress_percentage', 5, 2)->default(0);
+            $table->string('type')->nullable(); // deals_progressed, deals_won, revenue, activities_completed
+            $table->decimal('expected_outcome', 15, 2)->nullable();
             
             // Relationships
-            $table->unsignedInteger('owner_id')->nullable(); // user who owns this goal
-            $table->unsignedInteger('assignee_id')->nullable(); // user/team assigned to achieve this goal
+            $table->unsignedInteger('owner_id')->nullable();
             $table->unsignedInteger('pipeline_id')->nullable();
-            $table->unsignedInteger('stage_id')->nullable();
-            $table->unsignedInteger('activity_type_id')->nullable();
-            
-            // Period
-            $table->date('period_start')->nullable();
-            $table->date('period_end')->nullable();
-            $table->string('duration')->nullable(); // duration in days/weeks/months
             
             // Status
-            $table->boolean('active')->default(true);
-            $table->boolean('is_achieved')->default(false);
-            $table->decimal('expected_outcome', 15, 2)->nullable();
+            $table->boolean('active_flag')->default(true);
+            
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             
             // Pipedrive timestamps
             $table->timestamp('pipedrive_add_time')->nullable();
@@ -52,12 +37,8 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes
-            $table->index(['owner_id', 'active']);
-            $table->index(['assignee_id', 'active']);
-            $table->index(['type', 'active']);
-            $table->index(['interval', 'active']);
-            $table->index(['period_start', 'period_end']);
-            $table->index(['is_achieved', 'active']);
+            $table->index(['owner_id', 'active_flag']);
+            $table->index(['pipeline_id', 'type']);
         });
     }
 

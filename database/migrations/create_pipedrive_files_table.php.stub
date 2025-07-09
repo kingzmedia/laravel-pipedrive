@@ -14,33 +14,24 @@ return new class extends Migration
             // Pipedrive identification
             $table->unsignedInteger('pipedrive_id')->unique()->index();
             
-            // File info
+            // Essential fields
             $table->string('name');
             $table->string('file_name')->nullable();
             $table->string('file_type')->nullable();
             $table->unsignedBigInteger('file_size')->nullable(); // in bytes
-            $table->string('extension')->nullable();
-            
-            // URLs and paths
             $table->text('url')->nullable();
-            $table->text('download_url')->nullable();
-            $table->string('s3_bucket')->nullable();
-            
+
             // Relationships
             $table->unsignedInteger('user_id')->nullable(); // uploader
             $table->unsignedInteger('deal_id')->nullable();
             $table->unsignedInteger('person_id')->nullable();
             $table->unsignedInteger('org_id')->nullable();
-            $table->unsignedInteger('product_id')->nullable();
-            $table->unsignedInteger('activity_id')->nullable();
-            $table->unsignedInteger('note_id')->nullable();
-            $table->unsignedInteger('lead_id')->nullable();
-            
-            // File metadata
-            $table->text('description')->nullable();
-            $table->boolean('active')->default(true);
-            $table->boolean('inline_flag')->default(false);
+
+            // Status
             $table->boolean('active_flag')->default(true);
+
+            // All other Pipedrive data as JSON
+            $table->json('pipedrive_data')->nullable();
             $table->string('remote_location')->nullable();
             $table->string('remote_id')->nullable();
             
@@ -52,12 +43,11 @@ return new class extends Migration
             $table->timestamps();
             
             // Indexes
-            $table->index(['user_id', 'active']);
-            $table->index(['deal_id', 'active']);
-            $table->index(['person_id', 'active']);
-            $table->index(['org_id', 'active']);
-            $table->index(['file_type', 'active']);
-            $table->index(['extension', 'active']);
+            $table->index(['user_id', 'active_flag']);
+            $table->index(['deal_id', 'active_flag']);
+            $table->index(['person_id', 'active_flag']);
+            $table->index(['org_id', 'active_flag']);
+            $table->index('file_type');
         });
     }
 
