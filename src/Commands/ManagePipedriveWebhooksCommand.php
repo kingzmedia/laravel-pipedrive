@@ -7,14 +7,13 @@ use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 
 class ManagePipedriveWebhooksCommand extends Command
 {
-    public $signature = 'pipedrive:webhooks 
+    public $signature = 'pipedrive:webhooks
                         {action : Action to perform (list, create, delete)}
                         {--url= : Webhook URL for create action}
                         {--event= : Event pattern (e.g., *.*, added.deal, updated.person)}
                         {--id= : Webhook ID for delete action}
                         {--auth-user= : HTTP Basic Auth username}
-                        {--auth-pass= : HTTP Basic Auth password}
-                        {--v|verbose : Show detailed output}';
+                        {--auth-pass= : HTTP Basic Auth password}';
 
     public $description = 'Manage Pipedrive webhooks (list, create, delete)';
 
@@ -37,7 +36,7 @@ class ManagePipedriveWebhooksCommand extends Command
             return self::FAILURE;
         }
 
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->info('Connected to Pipedrive as: ' . $connectionTest['user'] . ' (' . $connectionTest['company'] . ')');
         }
 
@@ -55,7 +54,7 @@ class ManagePipedriveWebhooksCommand extends Command
             }
         } catch (\Exception $e) {
             $this->error('Error: ' . $e->getMessage());
-            if ($this->option('verbose')) {
+            if ($this->getOutput()->isVerbose()) {
                 $this->error('Stack trace: ' . $e->getTraceAsString());
             }
             return self::FAILURE;
@@ -85,7 +84,7 @@ class ManagePipedriveWebhooksCommand extends Command
             $this->line("Version: {$webhook['version']}");
             $this->line("Active: " . ($webhook['active_flag'] ? 'Yes' : 'No'));
             
-            if ($this->option('verbose')) {
+            if ($this->getOutput()->isVerbose()) {
                 $this->line("Created: {$webhook['add_time']}");
                 $this->line("Updated: {$webhook['update_time']}");
                 if (!empty($webhook['http_auth_user'])) {
@@ -134,7 +133,7 @@ class ManagePipedriveWebhooksCommand extends Command
         }
 
         $this->info("Creating webhook...");
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line("URL: {$url}");
             $this->line("Event: {$event}");
         }

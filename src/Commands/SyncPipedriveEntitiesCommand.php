@@ -25,8 +25,7 @@ class SyncPipedriveEntitiesCommand extends Command
     public $signature = 'pipedrive:sync-entities
                         {--entity= : Sync specific entity (activities, deals, files, goals, notes, organizations, persons, pipelines, products, stages, users)}
                         {--limit=100 : Limit number of records to sync per entity}
-                        {--force : Force sync even if records already exist}
-                        {--v|verbose : Show detailed output}';
+                        {--force : Force sync even if records already exist}';
 
     public $description = 'Synchronize entities from Pipedrive API';
 

@@ -362,7 +362,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 
 ## 🔒 **Security**
 
-If you discover any security-related issues, please email security@kingzmedia.com instead of using the issue tracker.
+If you discover any security-related issues, please email kevin.eggermont@gmail.com instead of using the issue tracker.
 
 ## 📄 **License**
 
@@ -371,5 +371,5 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 ## 🙏 **Credits**
 
 - Built on top of [devio/pipedrive](https://github.com/IsraelOrtuno/pipedrive)
-- Uses [spatie/laravel-package-tools](https://github.com/spatie/laravel-package-tools)
+- Plugin template from [spatie/laravel-package-tools](https://github.com/spatie/laravel-package-tools)
 - Powered by [Laravel](https://laravel.com)

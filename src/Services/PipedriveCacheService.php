@@ -420,7 +420,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     protected function forgetByPattern(string $pattern): bool
     {
-        $driver = $this->config['driver'] ?? config('cache.default');
+        $driver = config('cache.default');
 
         if ($driver === 'redis') {
             try {
@@ -438,9 +438,39 @@ class PipedriveCacheService implements PipedriveCacheInterface
             }
         }
 
-        // For non-Redis drivers, we need to track keys manually
-        // This is a simplified approach - in production you might want to maintain a key registry
-        Log::warning("Pattern-based cache clearing not fully supported for driver: {$driver}");
-        return true;
+        // For non-Redis drivers, clear individual known keys
+        return $this->clearKnownKeys();
+    }
+
+    /**
+     * Clear known cache keys for non-Redis drivers
+     */
+    protected function clearKnownKeys(): bool
+    {
+        $success = true;
+
+        // Clear custom fields for known entity types
+        $entityTypes = ['deal', 'person', 'organization', 'product', 'activity'];
+        foreach ($entityTypes as $entityType) {
+            try {
+                Cache::forget($this->getCacheKey('custom_fields', $entityType));
+            } catch (\Exception $e) {
+                Log::error("Failed to clear cache for entity {$entityType}: " . $e->getMessage());
+                $success = false;
+            }
+        }
+
+        // Clear other known cache keys
+        $otherKeys = ['pipelines', 'stages', 'users'];
+        foreach ($otherKeys as $key) {
+            try {
+                Cache::forget($this->getCacheKey($key));
+            } catch (\Exception $e) {
+                Log::error("Failed to clear cache for {$key}: " . $e->getMessage());
+                $success = false;
+            }
+        }
+
+        return $success;
     }
 }

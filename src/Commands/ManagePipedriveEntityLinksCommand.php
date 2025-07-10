@@ -8,13 +8,12 @@ use Keggermont\LaravelPipedrive\Models\PipedriveEntityLink;
 
 class ManagePipedriveEntityLinksCommand extends Command
 {
-    protected $signature = 'pipedrive:entity-links 
+    protected $signature = 'pipedrive:entity-links
                             {action : Action to perform (stats|sync|cleanup|list)}
                             {--entity-type= : Filter by entity type (deals, persons, etc.)}
                             {--model-type= : Filter by Laravel model type}
                             {--status= : Filter by sync status (pending, synced, error)}
-                            {--limit=100 : Limit results}
-                            {--verbose : Show detailed output}';
+                            {--limit=100 : Limit results}';
 
     protected $description = 'Manage Pipedrive entity links';
 
@@ -118,7 +117,7 @@ class ManagePipedriveEntityLinksCommand extends Command
             $this->warn("❌ Failed: {$failedCount}");
         }
 
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('');
             $this->info('📋 Detailed Results:');
             
@@ -206,7 +205,7 @@ class ManagePipedriveEntityLinksCommand extends Command
             'Entity ID', 'Primary', 'Status', 'Created'
         ], $tableData);
 
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('');
             $this->info('📊 Summary:');
             $this->line("Total links: {$links->count()}");

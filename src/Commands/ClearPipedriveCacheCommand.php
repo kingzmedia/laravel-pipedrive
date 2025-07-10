@@ -16,13 +16,12 @@ class ClearPipedriveCacheCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'pipedrive:cache:clear 
+    protected $signature = 'pipedrive:cache:clear
                             {--type= : Specific cache type to clear (custom_fields, pipelines, stages, users, field_options)}
                             {--entity= : Specific entity type for custom fields (deal, person, organization, etc.)}
                             {--field= : Specific field key for field options}
                             {--all : Clear all Pipedrive cache}
-                            {--stats : Show cache statistics before clearing}
-                            {--verbose : Show detailed output}';
+                            {--stats : Show cache statistics before clearing}';
 
     /**
      * The console command description.
@@ -127,7 +126,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info('🗑️ Clearing all Pipedrive cache...');
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('→ Executing clearAll() method...');
         }
 
@@ -222,7 +221,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info('🗑️ Clearing all custom fields cache...');
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('→ Executing invalidateCustomFieldsCache() method...');
         }
 
@@ -244,7 +243,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info("🗑️ Clearing cache for entity: {$entity}");
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line("→ Executing invalidateEntityCache('{$entity}') method...");
         }
 
@@ -266,7 +265,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info('🗑️ Clearing pipelines cache...');
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('→ Executing invalidatePipelinesCache() method...');
         }
 
@@ -288,7 +287,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info('🗑️ Clearing stages cache...');
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('→ Executing invalidateStagesCache() method...');
         }
 
@@ -310,7 +309,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info('🗑️ Clearing users cache...');
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line('→ Executing invalidateUsersCache() method...');
         }
 
@@ -332,7 +331,7 @@ class ClearPipedriveCacheCommand extends Command
     {
         $this->info("🗑️ Clearing field options cache for: {$field}");
         
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line("→ Executing invalidateFieldOptionsCache('{$field}') method...");
         }
 

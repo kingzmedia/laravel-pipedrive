@@ -11,8 +11,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
 {
     public $signature = 'pipedrive:sync-custom-fields
                         {--entity= : Sync fields for specific entity (deal, person, organization, product, activity)}
-                        {--force : Force sync even if fields already exist}
-                        {--v|verbose : Show detailed output}';
+                        {--force : Force sync even if fields already exist}';
 
     public $description = 'Synchronize custom fields from Pipedrive API';
 
@@ -40,7 +39,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
                 return self::FAILURE;
             }
 
-            if ($this->option('verbose')) {
+            if ($this->getOutput()->isVerbose()) {
                 $this->info('Connected to Pipedrive as: ' . $connectionTest['user'] . ' (' . $connectionTest['company'] . ')');
                 $this->info('Using authentication method: ' . $this->authService->getAuthMethod());
             }
@@ -100,7 +99,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
                 // Skip fields without an ID (system/primary fields)
                 if (!isset($fieldData['id']) || $fieldData['id'] === null) {
-                    if ($this->option('verbose')) {
+                    if ($this->getOutput()->isVerbose()) {
                         $this->warn("  ⚠ Skipped system field: {$fieldData['name']} ({$fieldData['key']})");
                     }
                     $skipped++;
@@ -121,18 +120,18 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
                     if ($field->wasRecentlyCreated) {
                         $synced++;
-                        if ($this->option('verbose')) {
+                        if ($this->getOutput()->isVerbose()) {
                             $this->line("  ✓ Created: {$field->name} ({$field->key})");
                         }
                     } else {
                         $updated++;
-                        if ($this->option('verbose')) {
+                        if ($this->getOutput()->isVerbose()) {
                             $this->line("  ↻ Updated: {$field->name} ({$field->key})");
                         }
                     }
                 } catch (\Exception $e) {
                     $this->error("  ✗ Error processing field {$fieldData['name']}: " . $e->getMessage());
-                    if ($this->option('verbose')) {
+                    if ($this->getOutput()->isVerbose()) {
                         $this->error("    Stack trace: " . $e->getTraceAsString());
                     }
                     continue;
