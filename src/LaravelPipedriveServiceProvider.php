@@ -9,6 +9,7 @@ use Keggermont\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
 use Keggermont\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
+use Keggermont\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
 use Keggermont\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
@@ -52,6 +53,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 LaravelPipedriveCommand::class,
                 SyncPipedriveCustomFieldsCommand::class,
                 SyncPipedriveEntitiesCommand::class,
+                ScheduledSyncPipedriveCommand::class,
                 TestPipedriveConnectionCommand::class,
                 ManagePipedriveWebhooksCommand::class,
                 ManagePipedriveEntityLinksCommand::class,
@@ -72,5 +74,58 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
 
         // Bind the cache interface to the default implementation
         $this->app->bind(PipedriveCacheInterface::class, PipedriveCacheService::class);
+    }
+
+    public function packageBooted(): void
+    {
+        // Register scheduled sync if enabled
+        $this->registerScheduledSync();
+    }
+
+    protected function registerScheduledSync(): void
+    {
+        if (!$this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->app->booted(function () {
+            $schedule = $this->app->make(\Illuminate\Console\Scheduling\Schedule::class);
+
+            // Check if scheduler is enabled
+            if (config('pipedrive.sync.scheduler.enabled', false)) {
+                $frequency = config('pipedrive.sync.scheduler.frequency_hours', 24);
+                $time = config('pipedrive.sync.scheduler.time');
+
+                $scheduledCommand = $schedule->command('pipedrive:scheduled-sync');
+
+                if ($time) {
+                    // Run at specific time daily
+                    $scheduledCommand->dailyAt($time);
+                } else {
+                    // Run based on frequency
+                    if ($frequency >= 24) {
+                        $scheduledCommand->daily();
+                    } elseif ($frequency >= 12) {
+                        $scheduledCommand->twiceDaily();
+                    } elseif ($frequency >= 6) {
+                        $scheduledCommand->everySixHours();
+                    } elseif ($frequency >= 3) {
+                        $scheduledCommand->everyThreeHours();
+                    } else {
+                        $scheduledCommand->hourly();
+                    }
+                }
+
+                $scheduledCommand
+                    ->withoutOverlapping()
+                    ->runInBackground()
+                    ->onFailure(function () {
+                        \Log::error('Pipedrive scheduled sync failed');
+                    })
+                    ->onSuccess(function () {
+                        \Log::info('Pipedrive scheduled sync completed successfully');
+                    });
+            }
+        });
     }
 }

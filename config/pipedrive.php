@@ -42,10 +42,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Custom Fields Sync Configuration
+    | Sync Configuration
     |--------------------------------------------------------------------------
     |
-    | Configuration for custom fields synchronization
+    | Configuration for data synchronization from Pipedrive API
     |
     */
     'sync' => [
@@ -59,6 +59,41 @@ return [
             'organization',
             'product',
             'activity',
+        ],
+
+        // API rate limiting configuration
+        'api' => [
+            // Delay between API calls in seconds (default: 0.3s)
+            // This helps prevent hitting Pipedrive API rate limits
+            'delay' => env('PIPEDRIVE_API_DELAY', 0.3),
+
+            // Enable/disable API delay (useful for testing)
+            'delay_enabled' => env('PIPEDRIVE_API_DELAY_ENABLED', true),
+        ],
+
+        // Automatic scheduled synchronization
+        'scheduler' => [
+            // Enable/disable automatic scheduled sync
+            'enabled' => env('PIPEDRIVE_SCHEDULER_ENABLED', false),
+
+            // Sync frequency in hours (default: 24 hours)
+            'frequency_hours' => env('PIPEDRIVE_SCHEDULER_FREQUENCY', 24),
+
+            // Time of day to run sync (24-hour format, e.g., '02:00')
+            // Leave null to run based on frequency from app start
+            'time' => env('PIPEDRIVE_SCHEDULER_TIME', '02:00'),
+
+            // Include full data sync (WARNING: This can be resource intensive)
+            'full_data' => env('PIPEDRIVE_SCHEDULER_FULL_DATA', true),
+
+            // Force sync (skip confirmations and overwrite existing data)
+            'force' => env('PIPEDRIVE_SCHEDULER_FORCE', true),
+
+            // Sync custom fields along with entities
+            'sync_custom_fields' => env('PIPEDRIVE_SCHEDULER_SYNC_CUSTOM_FIELDS', true),
+
+            // Memory limit for scheduled sync (in MB, 0 = no limit)
+            'memory_limit' => env('PIPEDRIVE_SCHEDULER_MEMORY_LIMIT', 2048),
         ],
     ],
 

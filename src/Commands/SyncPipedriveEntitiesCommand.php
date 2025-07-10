@@ -4,6 +4,7 @@ namespace Keggermont\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 use Devio\Pipedrive\Pipedrive;
@@ -479,10 +480,35 @@ class SyncPipedriveEntitiesCommand extends Command
     }
 
     /**
-     * Make API call for specific entity type
+     * Apply API delay to prevent rate limiting
+     */
+    protected function applyApiDelay(): void
+    {
+        $delayEnabled = Config::get('pipedrive.sync.api.delay_enabled', true);
+        $delay = Config::get('pipedrive.sync.api.delay', 0.3);
+
+        if ($delayEnabled && $delay > 0) {
+            if ($this->getOutput()->isVerbose()) {
+                $this->line("  → Applying API delay: {$delay}s");
+            }
+
+            // Convert to microseconds for usleep
+            usleep((int)($delay * 1000000));
+        }
+    }
+
+    /**
+     * Make API call for specific entity type with rate limiting
      */
     protected function makeApiCall(string $entityType, array $options)
     {
+        // Apply delay before API call to prevent rate limiting
+        $this->applyApiDelay();
+
+        if ($this->getOutput()->isVerbose()) {
+            $this->line("  → Making API call for {$entityType} with options: " . json_encode($options));
+        }
+
         return match ($entityType) {
             'activities' => $this->pipedrive->activities->all($options),
             'deals' => $this->pipedrive->deals->all($options),

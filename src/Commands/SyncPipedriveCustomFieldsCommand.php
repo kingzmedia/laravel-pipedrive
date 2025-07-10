@@ -3,6 +3,7 @@
 namespace Keggermont\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 use Devio\Pipedrive\Pipedrive;
@@ -283,10 +284,35 @@ class SyncPipedriveCustomFieldsCommand extends Command
     }
 
     /**
-     * Make API call for specific field entity type
+     * Apply API delay to prevent rate limiting
+     */
+    protected function applyApiDelay(): void
+    {
+        $delayEnabled = Config::get('pipedrive.sync.api.delay_enabled', true);
+        $delay = Config::get('pipedrive.sync.api.delay', 0.3);
+
+        if ($delayEnabled && $delay > 0) {
+            if ($this->getOutput()->isVerbose()) {
+                $this->line("  → Applying API delay: {$delay}s");
+            }
+
+            // Convert to microseconds for usleep
+            usleep((int)($delay * 1000000));
+        }
+    }
+
+    /**
+     * Make API call for specific field entity type with rate limiting
      */
     protected function makeFieldApiCall(string $entityType, array $options)
     {
+        // Apply delay before API call to prevent rate limiting
+        $this->applyApiDelay();
+
+        if ($this->getOutput()->isVerbose()) {
+            $this->line("  → Making API call for {$entityType} fields with options: " . json_encode($options));
+        }
+
         return match ($entityType) {
             PipedriveCustomField::ENTITY_DEAL => $this->pipedrive->dealFields->all($options),
             PipedriveCustomField::ENTITY_PERSON => $this->pipedrive->personFields->all($options),

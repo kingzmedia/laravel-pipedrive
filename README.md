@@ -6,7 +6,9 @@ A comprehensive Laravel package for seamless Pipedrive CRM integration. Sync ent
 
 - 🔄 **Complete Entity Synchronization** - Activities, Deals, Files, Notes, Organizations, Persons, Pipelines, Products, Stages, Users, Goals
 - 🔔 **Real-Time Webhooks** - Instant synchronization with secure webhook handling
-- 🔗 **Eloquent Relationships** - Navigate between entities with Laravel's relationship system
+- � **Scheduled Synchronization** - Automated background sync with configurable frequency
+- 🛡️ **API Rate Limiting** - Built-in delays to prevent API rate limit issues
+- �🔗 **Eloquent Relationships** - Navigate between entities with Laravel's relationship system
 - 🎯 **Custom Fields Management** - Full support for Pipedrive custom fields with validation
 - 🏗️ **Hybrid Data Structure** - Essential columns + JSON storage for maximum flexibility
 - 🔐 **Dual Authentication** - Support for both API tokens and OAuth
@@ -50,6 +52,19 @@ PIPEDRIVE_CLIENT_SECRET=your_client_secret
 PIPEDRIVE_REDIRECT_URL=https://your-app.com/pipedrive/callback
 ```
 
+### **Scheduled Synchronization & API Rate Limiting**
+```env
+# Enable scheduled sync
+PIPEDRIVE_SCHEDULER_ENABLED=true
+PIPEDRIVE_SCHEDULER_FREQUENCY=24
+PIPEDRIVE_SCHEDULER_TIME=02:00
+PIPEDRIVE_SCHEDULER_MEMORY_LIMIT=2048
+
+# API rate limiting (prevents hitting Pipedrive limits)
+PIPEDRIVE_API_DELAY=0.3
+PIPEDRIVE_API_DELAY_ENABLED=true
+```
+
 ## 🚀 **Quick Start**
 
 ### **Test Your Connection**
@@ -77,6 +92,20 @@ php artisan pipedrive:sync-custom-fields
 # Sync specific entity fields
 php artisan pipedrive:sync-custom-fields --entity=deal --verbose
 ```
+
+### **Scheduled Synchronization**
+```bash
+# Run scheduled sync manually
+php artisan pipedrive:scheduled-sync
+
+# Test configuration (dry run)
+php artisan pipedrive:scheduled-sync --dry-run
+
+# Verbose output for debugging
+php artisan pipedrive:scheduled-sync --verbose
+```
+
+**Note**: All sync commands now include automatic API rate limiting (0.3s delay between calls) to prevent hitting Pipedrive's API limits.
 
 ### **Real-Time Webhooks**
 ```bash
@@ -350,6 +379,7 @@ foreach ($dealFields as $field) {
 | `pipedrive:test-connection` | Test Pipedrive API connection | - |
 | `pipedrive:sync-entities` | Sync Pipedrive entities | `--entity`, `--limit`, `--force`, `--verbose` |
 | `pipedrive:sync-custom-fields` | Sync custom fields | `--entity`, `--force`, `--verbose` |
+| `pipedrive:scheduled-sync` | Automated scheduled sync | `--dry-run`, `--verbose` |
 | `pipedrive:webhooks` | Manage webhooks (list/create/delete) | `action`, `--url`, `--event`, `--id`, `--auth-user`, `--auth-pass`, `--verbose` |
 | `pipedrive:entity-links` | Manage entity links (stats/sync/cleanup/list) | `action`, `--entity-type`, `--model-type`, `--status`, `--limit`, `--verbose` |
 
@@ -373,6 +403,27 @@ pipedrive_add_time    -- Pipedrive creation time
 pipedrive_update_time -- Pipedrive modification time
 created_at/updated_at -- Laravel timestamps
 ```
+
+## 📚 **Documentation**
+
+Comprehensive documentation is available in the `docs/` directory:
+
+### Core Features
+- [Authentication](docs/authentication.md) - API token and OAuth setup
+- [Synchronization](docs/synchronization.md) - Data sync strategies and best practices
+- [Custom Fields](docs/custom-fields.md) - Managing Pipedrive custom fields
+- [Webhooks](docs/webhooks.md) - Real-time data synchronization
+- [Entity Linking](docs/entity-linking.md) - Connect Laravel models to Pipedrive entities
+
+### Commands
+- [Sync Commands](docs/commands/sync-commands.md) - Complete sync command reference
+- [Scheduled Sync](docs/commands/scheduled-sync.md) - Automated synchronization setup
+
+### Advanced Topics
+- [Models & Relationships](docs/models-relationships.md) - Eloquent relationships and querying
+- [Performance](docs/performance.md) - Optimization and best practices
+- [Database Structure](docs/database-structure.md) - Table schemas and indexing
+- [Events](docs/events.md) - Event system and listeners
 
 ## 🤝 **Contributing**
 
