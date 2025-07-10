@@ -33,7 +33,18 @@ All notable changes to `laravel-pipedrive` will be documented in this file.
 - **Rate Limiting Protection**: Built-in safeguards to prevent API rate limit exhaustion
 - **Confirmation Prompts**: Required confirmation for potentially resource-intensive operations
 
+### Removed
+- **PHPStan Analysis**: Removed PHPStan and related packages to prevent CI/CD failures
+  - Removed `larastan/larastan`, `phpstan/extension-installer`, `phpstan/phpstan-deprecation-rules`, `phpstan/phpstan-phpunit`
+  - Removed `phpstan.neon.dist`, `phpstan-baseline.neon` configuration files
+  - Removed `.github/workflows/phpstan.yml` GitHub Action
+  - Removed `analyse` script from composer.json
+
 ### Technical Details
 - **API Compatibility**: Full support for Pipedrive API v1 limitations (100 records) and v2 capabilities (500 records)
-- **Pagination Safety**: Maximum page limits to prevent infinite loops (1000 pages for entities, 100 for fields)
-- **Memory Optimization**: Efficient handling of large datasets with streaming pagination
+- **Pagination Safety**: Maximum page limits to prevent infinite loops (20 pages for safety)
+- **Memory Optimization**: Efficient handling of large datasets with automatic memory monitoring
+- **Memory Management**:
+  - Automatic memory limit checking before full-data operations
+  - Real-time memory monitoring during pagination (warnings at 60%, stop at 80%)
+  - Clear error messages with solutions for memory limit issues

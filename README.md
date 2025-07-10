@@ -1,10 +1,5 @@
 # 🚀 Laravel Pipedrive Integration
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/kingzmedia/laravel-pipedrive.svg?style=flat-square)](https://packagist.org/packages/kingzmedia/laravel-pipedrive)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/kingzmedia/laravel-pipedrive/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/kingzmedia/laravel-pipedrive/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/kingzmedia/laravel-pipedrive/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/kingzmedia/laravel-pipedrive/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/kingzmedia/laravel-pipedrive.svg?style=flat-square)](https://packagist.org/packages/kingzmedia/laravel-pipedrive)
-
 A comprehensive Laravel package for seamless Pipedrive CRM integration. Sync entities, manage custom fields, and leverage Eloquent relationships with a robust JSON-based data structure for maximum flexibility and performance.
 
 ## ✨ **Features**
