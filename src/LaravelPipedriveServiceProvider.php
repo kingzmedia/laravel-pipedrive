@@ -10,11 +10,15 @@ use Keggermont\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
+use Keggermont\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
+use Keggermont\LaravelPipedrive\Services\PipedriveCacheService;
+use Keggermont\LaravelPipedrive\Services\PipedriveQueryOptimizationService;
 use Keggermont\LaravelPipedrive\Services\DatabaseTokenStorage;
 use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
 class LaravelPipedriveServiceProvider extends PackageServiceProvider
 {
@@ -51,6 +55,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 TestPipedriveConnectionCommand::class,
                 ManagePipedriveWebhooksCommand::class,
                 ManagePipedriveEntityLinksCommand::class,
+                ClearPipedriveCacheCommand::class,
             ]);
     }
 
@@ -59,8 +64,13 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
         $this->app->singleton(PipedriveCustomFieldService::class);
         $this->app->singleton(PipedriveAuthService::class);
         $this->app->singleton(PipedriveEntityLinkService::class);
+        $this->app->singleton(PipedriveCacheService::class);
+        $this->app->singleton(PipedriveQueryOptimizationService::class);
 
         // Bind the token storage interface to the default implementation
         $this->app->bind(PipedriveTokenStorageInterface::class, DatabaseTokenStorage::class);
+
+        // Bind the cache interface to the default implementation
+        $this->app->bind(PipedriveCacheInterface::class, PipedriveCacheService::class);
     }
 }

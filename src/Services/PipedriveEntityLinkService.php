@@ -67,43 +67,56 @@ class PipedriveEntityLinkService
     }
 
     /**
-     * Get all links for a Laravel model
+     * Get all links for a Laravel model with optimized loading
      */
-    public function getLinksForModel(Model $model): Collection
+    public function getLinksForModel(Model $model, bool $withRelations = true): Collection
     {
-        return PipedriveEntityLink::forModel($model)->active()->get();
+        $query = PipedriveEntityLink::forModel($model)->active();
+
+        if ($withRelations) {
+            $query->with(['linkable', 'pipedriveModel']);
+        }
+
+        return $query->get();
     }
 
     /**
-     * Get all models linked to a specific Pipedrive entity
+     * Get all models linked to a specific Pipedrive entity with optimized loading
      */
-    public function getModelsLinkedToEntity(string $entityType, int $entityId): Collection
+    public function getModelsLinkedToEntity(string $entityType, int $entityId, bool $withPipedriveModel = true): Collection
     {
         $this->validateEntityType($entityType);
 
-        return PipedriveEntityLink::forEntity($entityType, $entityId)
+        $query = PipedriveEntityLink::forEntity($entityType, $entityId)
             ->active()
-            ->with('linkable')
-            ->get()
+            ->with('linkable');
+
+        if ($withPipedriveModel) {
+            $query->with('pipedriveModel');
+        }
+
+        return $query->get()
             ->pluck('linkable')
             ->filter(); // Remove null values
     }
 
     /**
-     * Sync all links for a specific Pipedrive entity type
+     * Sync all links for a specific Pipedrive entity type with optimized chunking
      */
-    public function syncLinksForEntityType(string $entityType): Collection
+    public function syncLinksForEntityType(string $entityType, int $chunkSize = 100): Collection
     {
         $this->validateEntityType($entityType);
 
         $results = collect();
-        
+
+        // Use optimized chunking with minimal memory footprint
         PipedriveEntityLink::where('pipedrive_entity_type', $entityType)
             ->active()
-            ->chunk(100, function ($links) use ($results) {
+            ->select(['id', 'pipedrive_entity_id', 'pipedrive_entity_type']) // Only select needed fields
+            ->chunk($chunkSize, function ($links) use ($results) {
                 foreach ($links as $link) {
                     $synced = $link->syncLocalPipedriveModel();
-                    
+
                     $results->push([
                         'link_id' => $link->id,
                         'entity_id' => $link->pipedrive_entity_id,

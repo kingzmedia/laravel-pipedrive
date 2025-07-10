@@ -5,9 +5,11 @@ namespace Keggermont\LaravelPipedrive\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use Keggermont\LaravelPipedrive\Traits\OptimizedPipedriveQueries;
 
 abstract class BasePipedriveModel extends Model
 {
+    use OptimizedPipedriveQueries;
     /**
      * Get the attributes that should be cast.
      */

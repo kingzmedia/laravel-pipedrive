@@ -114,4 +114,42 @@ return [
             'level' => env('PIPEDRIVE_WEBHOOK_LOG_LEVEL', 'info'),
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure intelligent caching for Pipedrive data to improve performance.
+    | Supports Redis and file-based caching with configurable TTL values.
+    |
+    */
+    'cache' => [
+        // Enable/disable caching
+        'enabled' => env('PIPEDRIVE_CACHE_ENABLED', true),
+
+        // Cache driver (redis, file, etc.)
+        'driver' => env('PIPEDRIVE_CACHE_DRIVER', 'redis'),
+
+        // Time-to-live (TTL) values in seconds for different data types
+        'ttl' => [
+            // Custom fields cache (1 hour default)
+            'custom_fields' => env('PIPEDRIVE_CACHE_CUSTOM_FIELDS_TTL', 3600),
+
+            // Pipelines cache (2 hours default)
+            'pipelines' => env('PIPEDRIVE_CACHE_PIPELINES_TTL', 7200),
+
+            // Stages cache (2 hours default)
+            'stages' => env('PIPEDRIVE_CACHE_STAGES_TTL', 7200),
+
+            // Users cache (30 minutes default)
+            'users' => env('PIPEDRIVE_CACHE_USERS_TTL', 1800),
+        ],
+
+        // Automatically refresh cache when data is stale
+        'auto_refresh' => env('PIPEDRIVE_CACHE_AUTO_REFRESH', true),
+
+        // Cache key prefix
+        'prefix' => env('PIPEDRIVE_CACHE_PREFIX', 'pipedrive'),
+    ],
 ];

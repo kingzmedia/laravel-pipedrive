@@ -3,35 +3,82 @@
 namespace Keggermont\LaravelPipedrive\Services;
 
 use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
+use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 class PipedriveCustomFieldService
 {
+    protected PipedriveCacheInterface $cacheService;
+
+    public function __construct(PipedriveCacheInterface $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
+
     /**
      * Get all custom fields for a specific entity type
+     * Uses cache when available for improved performance
      */
-    public function getFieldsForEntity(string $entityType, bool $activeOnly = true): Collection
+    public function getFieldsForEntity(string $entityType, bool $activeOnly = true, bool $useCache = true): Collection
     {
+        // Try to get from cache first if enabled
+        if ($useCache && $this->cacheService->isEnabled()) {
+            $cached = $this->cacheService->getCustomFields($entityType);
+            if ($cached !== null) {
+                // Filter cached results based on activeOnly parameter
+                if ($activeOnly) {
+                    return $cached->filter(function ($field) {
+                        return $field['active_flag'] ?? true;
+                    })->values();
+                }
+                return $cached;
+            }
+        }
+
+        // Fallback to database query
         $query = PipedriveCustomField::forEntity($entityType);
-        
+
         if ($activeOnly) {
             $query->active();
         }
-        
-        return $query->orderBy('name')->get();
+
+        $fields = $query->orderBy('name')->get();
+
+        // Cache the results for future use
+        if ($useCache && $this->cacheService->isEnabled()) {
+            $this->cacheService->cacheCustomFields($entityType, $fields);
+        }
+
+        return $fields;
     }
 
     /**
      * Get only custom fields (excluding default Pipedrive fields)
+     * Uses cache when available for improved performance
      */
-    public function getCustomFieldsForEntity(string $entityType, bool $activeOnly = true): Collection
+    public function getCustomFieldsForEntity(string $entityType, bool $activeOnly = true, bool $useCache = true): Collection
     {
+        // Try to get from cache and filter for custom fields only
+        if ($useCache && $this->cacheService->isEnabled()) {
+            $cached = $this->cacheService->getCustomFields($entityType);
+            if ($cached !== null) {
+                $filtered = $cached->filter(function ($field) use ($activeOnly) {
+                    $isCustom = $field['pipedrive_data']['edit_flag'] ?? false;
+                    $isActive = $activeOnly ? ($field['active_flag'] ?? true) : true;
+                    return $isCustom && $isActive;
+                });
+                return $filtered->values();
+            }
+        }
+
+        // Fallback to database query
         $query = PipedriveCustomField::forEntity($entityType)->customOnly();
-        
+
         if ($activeOnly) {
             $query->active();
         }
-        
+
         return $query->orderBy('name')->get();
     }
 
@@ -294,5 +341,70 @@ class PipedriveCustomFieldService
             return implode(', ', $parts);
         }
         return (string) $value;
+    }
+
+    /**
+     * Invalidate cache for a specific entity type
+     * Call this method when custom fields are updated
+     */
+    public function invalidateCache(string $entityType): bool
+    {
+        if ($this->cacheService->isEnabled()) {
+            $success = $this->cacheService->invalidateEntityCache($entityType);
+
+            if ($success) {
+                Log::info("Cache invalidated for entity type: {$entityType}");
+            } else {
+                Log::warning("Failed to invalidate cache for entity type: {$entityType}");
+            }
+
+            return $success;
+        }
+
+        return true; // Cache not enabled, consider as success
+    }
+
+    /**
+     * Refresh cache for a specific entity type
+     * Fetches fresh data from database and updates cache
+     */
+    public function refreshCache(string $entityType): bool
+    {
+        if (!$this->cacheService->isEnabled()) {
+            return false;
+        }
+
+        try {
+            // Get fresh data from database
+            $fields = PipedriveCustomField::forEntity($entityType)
+                ->orderBy('name')
+                ->get();
+
+            // Update cache
+            $success = $this->cacheService->cacheCustomFields($entityType, $fields);
+
+            if ($success) {
+                Log::info("Cache refreshed for entity type: {$entityType}");
+            } else {
+                Log::warning("Failed to refresh cache for entity type: {$entityType}");
+            }
+
+            return $success;
+        } catch (\Exception $e) {
+            Log::error("Error refreshing cache for {$entityType}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get cache statistics for custom fields
+     */
+    public function getCacheStatistics(): array
+    {
+        if (!$this->cacheService->isEnabled()) {
+            return ['enabled' => false];
+        }
+
+        return $this->cacheService->getStatistics();
     }
 }

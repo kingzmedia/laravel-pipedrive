@@ -9,6 +9,16 @@ class PipedriveDeal extends BasePipedriveModel
 {
     protected $table = 'pipedrive_deals';
 
+    /**
+     * Default relationships to eager load for performance optimization
+     */
+    protected array $defaultEagerLoad = ['user', 'stage', 'person', 'organization'];
+
+    /**
+     * Relationships to count instead of loading
+     */
+    protected array $defaultWithCount = ['activities', 'notes', 'files'];
+
         protected $fillable = [
         'pipedrive_id',
         'title',
@@ -216,5 +226,35 @@ class PipedriveDeal extends BasePipedriveModel
     public function files()
     {
         return $this->hasMany(PipedriveFile::class, 'deal_id', 'pipedrive_id');
+    }
+
+    /**
+     * Get relationships for detail views
+     */
+    public function getDetailRelationships(): array
+    {
+        return [
+            'user',
+            'stage.pipeline',
+            'person',
+            'organization',
+            'activities' => function ($query) {
+                $query->latest('pipedrive_add_time')->limit(10);
+            },
+            'notes' => function ($query) {
+                $query->latest('pipedrive_add_time')->limit(5);
+            },
+            'files' => function ($query) {
+                $query->latest('pipedrive_add_time')->limit(10);
+            }
+        ];
+    }
+
+    /**
+     * Get searchable fields for this model
+     */
+    protected function getSearchableFields(): array
+    {
+        return ['title', 'value'];
     }
 }
