@@ -281,6 +281,28 @@ $allData = $activity->pipedrive_data;
 $customField = $activity->pipedrive_data['custom_field_hash'] ?? null;
 ```
 
+## 🔄 **Advanced Synchronization**
+
+### **Smart Sync Commands**
+```bash
+# Standard mode: Latest modifications (optimized)
+php artisan pipedrive:sync-entities --entity=deals --limit=500
+
+# Full data mode: ALL data with pagination (use with caution)
+php artisan pipedrive:sync-entities --entity=deals --full-data
+
+# Custom fields sync
+php artisan pipedrive:sync-custom-fields --entity=deal
+```
+
+**Key Features:**
+- **Smart Sorting**: Latest modifications first (default) or chronological for full sync
+- **API Optimization**: Respects Pipedrive API limits (max 500 per request)
+- **Pagination Support**: Automatic pagination for large datasets
+- **Safety Warnings**: Built-in warnings for resource-intensive operations
+
+⚠️ **Important**: Use `--full-data` with caution due to API rate limits. See [Sync Commands Documentation](docs/commands/sync-commands.md) for details.
+
 ## 🎯 **Custom Fields**
 
 ```php
@@ -311,6 +333,7 @@ foreach ($dealFields as $field) {
 ### **Core Features**
 - [📖 **Models & Relationships**](docs/models-relationships.md) - Complete guide to all models and their relationships
 - [🔄 **Data Synchronization**](docs/synchronization.md) - Entity and custom field sync strategies
+- [⚡ **Sync Commands**](docs/commands/sync-commands.md) - Advanced sync commands with pagination and sorting
 - [🔔 **Real-Time Webhooks**](docs/webhooks.md) - Instant synchronization with webhook handling
 - [🎯 **Custom Fields**](docs/custom-fields.md) - Working with Pipedrive custom fields
 - [🔐 **Authentication**](docs/authentication.md) - API token and OAuth setup
