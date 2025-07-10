@@ -5,6 +5,7 @@ namespace Keggermont\LaravelPipedrive\Services;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
 use Keggermont\LaravelPipedrive\Events\PipedriveWebhookReceived;
+use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 use Keggermont\LaravelPipedrive\Models\{
     PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
     PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
@@ -13,6 +14,7 @@ use Keggermont\LaravelPipedrive\Models\{
 
 class PipedriveWebhookService
 {
+    use EmitsPipedriveEvents;
     /**
      * Model mapping for webhook objects
      */
@@ -136,6 +138,26 @@ class PipedriveWebhookService
 
         $wasCreated = $model->wasRecentlyCreated;
 
+        // Emit specific CRUD events
+        $entityType = $meta['object'] ?? 'unknown';
+        if ($wasCreated) {
+            $this->emitEntityCreated($entityType, $model, $current, 'webhook', [
+                'webhook_action' => $action,
+                'change_source' => $meta['change_source'] ?? null,
+                'user_id' => $meta['user_id'] ?? null,
+                'company_id' => $meta['company_id'] ?? null,
+            ]);
+        } else {
+            // Extract changes for update event
+            $changes = $this->extractWebhookChanges($current, $webhookData['previous'] ?? []);
+            $this->emitEntityUpdated($entityType, $model, $current, $changes, 'webhook', [
+                'webhook_action' => $action,
+                'change_source' => $meta['change_source'] ?? null,
+                'user_id' => $meta['user_id'] ?? null,
+                'company_id' => $meta['company_id'] ?? null,
+            ]);
+        }
+
         Log::info('Pipedrive webhook: Object synchronized', [
             'action' => $action,
             'object' => $meta['object'],
@@ -165,8 +187,22 @@ class PipedriveWebhookService
 
         $pipedriveId = $previous['id'];
 
-        // Find and delete the record
+        // Find the record to get local ID before deletion
+        $existingModel = $modelClass::where('pipedrive_id', $pipedriveId)->first();
+        $localId = $existingModel?->id;
+
+        // Delete the record
         $deleted = $modelClass::where('pipedrive_id', $pipedriveId)->delete();
+
+        // Emit delete event
+        $entityType = $meta['object'] ?? 'unknown';
+        $this->emitEntityDeleted($entityType, $pipedriveId, $localId, $previous, 'webhook', [
+            'webhook_action' => 'deleted',
+            'change_source' => $meta['change_source'] ?? null,
+            'user_id' => $meta['user_id'] ?? null,
+            'company_id' => $meta['company_id'] ?? null,
+            'deleted_count' => $deleted,
+        ]);
 
         Log::info('Pipedrive webhook: Object deleted', [
             'object' => $meta['object'],

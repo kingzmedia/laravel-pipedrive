@@ -1,0 +1,59 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('pipedrive_entity_links', function (Blueprint $table) {
+            $table->id();
+            
+            // Polymorphic relationship to Laravel models
+            $table->morphs('linkable'); // linkable_type, linkable_id
+            
+            // Pipedrive entity information
+            $table->string('pipedrive_entity_type'); // deals, persons, organizations, etc.
+            $table->unsignedInteger('pipedrive_entity_id'); // The Pipedrive ID
+            
+            // Optional: reference to local Pipedrive model
+            $table->string('pipedrive_model_type')->nullable(); // PipedriveDeal, PipedrivePerson, etc.
+            $table->unsignedBigInteger('pipedrive_model_id')->nullable(); // Local model ID
+            
+            // Metadata
+            $table->json('metadata')->nullable(); // Additional data about the relationship
+            $table->boolean('is_primary')->default(false); // Mark as primary relationship
+            $table->boolean('is_active')->default(true);
+            
+            // Sync information
+            $table->timestamp('last_synced_at')->nullable();
+            $table->string('sync_status')->default('pending'); // pending, synced, error
+            $table->text('sync_error')->nullable();
+            
+            // Laravel timestamps
+            $table->timestamps();
+            
+            // Indexes
+            $table->index(['linkable_type', 'linkable_id']);
+            $table->index(['pipedrive_entity_type', 'pipedrive_entity_id']);
+            $table->index(['pipedrive_model_type', 'pipedrive_model_id']);
+            $table->index(['is_primary', 'is_active']);
+            $table->index('sync_status');
+            
+            // Unique constraint to prevent duplicate links
+            $table->unique([
+                'linkable_type', 
+                'linkable_id', 
+                'pipedrive_entity_type', 
+                'pipedrive_entity_id'
+            ], 'unique_entity_link');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('pipedrive_entity_links');
+    }
+};

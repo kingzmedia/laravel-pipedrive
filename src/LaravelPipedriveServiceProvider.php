@@ -6,11 +6,13 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Keggermont\LaravelPipedrive\Commands\LaravelPipedriveCommand;
 use Keggermont\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
+use Keggermont\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
 use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
 use Keggermont\LaravelPipedrive\Services\DatabaseTokenStorage;
 use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 
@@ -40,6 +42,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 'create_pipedrive_users_table',
                 'create_pipedrive_goals_table',
                 'create_pipedrive_custom_fields_table',
+                'create_pipedrive_entity_links_table',
             ])
             ->hasCommands([
                 LaravelPipedriveCommand::class,
@@ -47,6 +50,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 SyncPipedriveEntitiesCommand::class,
                 TestPipedriveConnectionCommand::class,
                 ManagePipedriveWebhooksCommand::class,
+                ManagePipedriveEntityLinksCommand::class,
             ]);
     }
 
@@ -54,6 +58,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(PipedriveCustomFieldService::class);
         $this->app->singleton(PipedriveAuthService::class);
+        $this->app->singleton(PipedriveEntityLinkService::class);
 
         // Bind the token storage interface to the default implementation
         $this->app->bind(PipedriveTokenStorageInterface::class, DatabaseTokenStorage::class);

@@ -110,6 +110,23 @@ use Keggermont\LaravelPipedrive\Models\{
     PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal
 };
 
+// Link your Laravel models to Pipedrive entities
+use Keggermont\LaravelPipedrive\Traits\HasPipedriveEntity;
+use Keggermont\LaravelPipedrive\Enums\PipedriveEntityType;
+
+class Order extends Model
+{
+    use HasPipedriveEntity;
+
+    // Define default Pipedrive entity type
+    protected PipedriveEntityType $pipedriveEntityType = PipedriveEntityType::DEALS;
+
+    public function linkToDeal(int $dealId): void
+    {
+        $this->linkToPipedriveEntity($dealId, true);
+    }
+}
+
 // Navigate relationships
 $deal = PipedriveDeal::with(['user', 'person', 'organization', 'stage'])->first();
 echo $deal->user->name;         // Deal owner
@@ -121,6 +138,98 @@ echo $deal->stage->name;        // Current stage
 $user = PipedriveUser::with(['deals', 'activities'])->first();
 echo $user->deals->count();     // Number of deals
 echo $user->activities->count(); // Number of activities
+```
+
+## 🔗 **Entity Linking**
+
+Link your Laravel models to Pipedrive entities with morphic relationships:
+
+```php
+// In your Laravel model
+class Order extends Model
+{
+    use HasPipedriveEntity;
+
+    // Set default entity type
+    protected PipedriveEntityType $pipedriveEntityType = PipedriveEntityType::DEALS;
+}
+
+// Usage
+$order = Order::create([...]);
+
+// Link to Pipedrive deal (uses default entity type)
+$order->linkToPipedriveEntity(123, true, ['source' => 'manual']);
+
+// Link to additional entities
+$order->linkToPipedrivePerson(456, false, ['role' => 'customer']);
+$order->linkToPipedriveOrganization(789, false, ['type' => 'client']);
+
+// Get linked entities
+$deal = $order->getPrimaryPipedriveEntity();
+$persons = $order->getPipedrivePersons();
+
+// Check if linked
+if ($order->isLinkedToPipedriveEntity(123)) {
+    // Order is linked to deal 123
+}
+
+// Push modifications to Pipedrive (async by default)
+$result = $order->pushToPipedrive([
+    'title' => 'Updated Order',
+    'value' => 1500.00,
+], [
+    'Order Number' => $order->order_number,
+    'Customer Email' => $order->customer_email,
+]);
+
+// Force synchronous execution
+$result = $order->pushToPipedrive($modifications, $customFields, true);
+
+// Use custom queue with retries
+$result = $order->pushToPipedrive($modifications, $customFields, false, 'high-priority', 5);
+
+// Display details with readable custom field names
+$details = $order->displayPipedriveDetails();
+foreach ($details['custom_fields'] as $name => $fieldData) {
+    echo "{$name}: {$fieldData['value']}\n";
+}
+
+// Manage links via Artisan
+php artisan pipedrive:entity-links stats
+php artisan pipedrive:entity-links sync
+php artisan pipedrive:entity-links cleanup
+```
+
+## 📡 **Events**
+
+Listen to Pipedrive entity changes with Laravel events:
+
+```php
+// In EventServiceProvider.php
+protected $listen = [
+    PipedriveEntityCreated::class => [
+        App\Listeners\NewDealNotificationListener::class,
+    ],
+    PipedriveEntityUpdated::class => [
+        App\Listeners\DealStatusChangeListener::class,
+    ],
+    PipedriveEntityDeleted::class => [
+        App\Listeners\CleanupListener::class,
+    ],
+];
+
+// Example listener
+public function handle(PipedriveEntityUpdated $event)
+{
+    if ($event->isDeal() && $event->hasChanged('status')) {
+        $deal = $event->entity;
+        $newStatus = $event->getNewValue('status');
+
+        if ($newStatus === 'won') {
+            CreateInvoiceJob::dispatch($deal);
+        }
+    }
+}
 ```
 
 ## 🔍 **Querying Data**
@@ -199,13 +308,22 @@ foreach ($dealFields as $field) {
 
 ## 📚 **Documentation**
 
+### **Core Features**
 - [📖 **Models & Relationships**](docs/models-relationships.md) - Complete guide to all models and their relationships
 - [🔄 **Data Synchronization**](docs/synchronization.md) - Entity and custom field sync strategies
 - [🔔 **Real-Time Webhooks**](docs/webhooks.md) - Instant synchronization with webhook handling
 - [🎯 **Custom Fields**](docs/custom-fields.md) - Working with Pipedrive custom fields
+- [🔐 **Authentication**](docs/authentication.md) - API token and OAuth setup
+
+### **Advanced Features**
+- [🔗 **Entity Linking**](docs/entity-linking.md) - Link Laravel models to Pipedrive entities
+- [🚀 **Push to Pipedrive**](docs/push-to-pipedrive.md) - Sync modifications back to Pipedrive
+- [📡 **Events System**](docs/events.md) - Laravel events for Pipedrive operations
+- [🔗 **Using Relations**](docs/relations-usage.md) - Navigate between Pipedrive entities
+
+### **Technical Reference**
 - [🏗️ **Database Structure**](docs/database-structure.md) - Understanding the hybrid data approach
 - [⚡ **Performance**](docs/performance.md) - Optimization tips and best practices
-- [🔐 **Authentication**](docs/authentication.md) - API token and OAuth setup
 
 ## 🛠️ **Commands Reference**
 
@@ -214,7 +332,8 @@ foreach ($dealFields as $field) {
 | `pipedrive:test-connection` | Test Pipedrive API connection | - |
 | `pipedrive:sync-entities` | Sync Pipedrive entities | `--entity`, `--limit`, `--force`, `--verbose` |
 | `pipedrive:sync-custom-fields` | Sync custom fields | `--entity`, `--force`, `--verbose` |
-| `pipedrive:webhooks` | Manage webhooks (list/create/delete) | `--url`, `--event`, `--id`, `--verbose` |
+| `pipedrive:webhooks` | Manage webhooks (list/create/delete) | `action`, `--url`, `--event`, `--id`, `--auth-user`, `--auth-pass`, `--verbose` |
+| `pipedrive:entity-links` | Manage entity links (stats/sync/cleanup/list) | `action`, `--entity-type`, `--model-type`, `--status`, `--limit`, `--verbose` |
 
 ## 🏗️ **Database Structure**
 

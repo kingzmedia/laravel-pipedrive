@@ -3,7 +3,10 @@
 namespace Keggermont\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Devio\Pipedrive\Pipedrive;
 use Keggermont\LaravelPipedrive\Models\PipedriveActivity;
 use Keggermont\LaravelPipedrive\Models\PipedriveDeal;
 use Keggermont\LaravelPipedrive\Models\PipedriveFile;
@@ -19,6 +22,7 @@ use Devio\Pipedrive\Pipedrive;
 
 class SyncPipedriveEntitiesCommand extends Command
 {
+    use EmitsPipedriveEvents;
     public $signature = 'pipedrive:sync-entities
                         {--entity= : Sync specific entity (activities, deals, files, goals, notes, organizations, persons, pipelines, products, stages, users)}
                         {--limit=100 : Limit number of records to sync per entity}
@@ -154,9 +158,24 @@ class SyncPipedriveEntitiesCommand extends Command
                     if ($record->wasRecentlyCreated) {
                         $synced++;
                         $this->line("  ✓ Created: {$this->getRecordDisplayName($record, $itemData)}");
+
+                        // Emit created event
+                        $this->emitModelCreated($record, $itemData, 'sync', [
+                            'command' => 'sync-entities',
+                            'entity_type' => $entityType,
+                            'force' => $force,
+                        ]);
                     } else {
                         $updated++;
                         $this->line("  ↻ Updated: {$this->getRecordDisplayName($record, $itemData)}");
+
+                        // Emit updated event
+                        $changes = $this->extractModelChanges($record);
+                        $this->emitModelUpdated($record, $itemData, $changes, 'sync', [
+                            'command' => 'sync-entities',
+                            'entity_type' => $entityType,
+                            'force' => $force,
+                        ]);
                     }
                 } catch (\Exception $e) {
                     $errors++;
