@@ -18,7 +18,6 @@ use Keggermont\LaravelPipedrive\Models\PipedrivePipeline;
 use Keggermont\LaravelPipedrive\Models\PipedriveProduct;
 use Keggermont\LaravelPipedrive\Models\PipedriveStage;
 use Keggermont\LaravelPipedrive\Models\PipedriveUser;
-use Devio\Pipedrive\Pipedrive;
 
 class SyncPipedriveEntitiesCommand extends Command
 {
