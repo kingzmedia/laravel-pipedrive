@@ -19,10 +19,16 @@ class DatabaseTokenStorage implements PipedriveTokenStorageInterface
             'access_token' => $token->getAccessToken(),
             'refresh_token' => $token->getRefreshToken(),
             'expires_at' => $token->expiresAt(),
+            'created_at' => now()->toISOString(),
         ];
 
-        // Store in cache for quick access
-        Cache::put($this->cacheKey, $tokenData, now()->addHours(24));
+        // Store in cache with long TTL for non-expiring tokens
+        // If token doesn't expire, store for 1 year, otherwise use token expiry
+        $ttl = $token->expiresAt() ?
+            now()->diffInSeconds($token->expiresAt()) :
+            now()->addYear();
+
+        Cache::put($this->cacheKey, $tokenData, $ttl);
 
         // You can also store in database if needed
         // This is a simple implementation using cache
@@ -45,5 +51,29 @@ class DatabaseTokenStorage implements PipedriveTokenStorageInterface
             'refreshToken' => $tokenData['refresh_token'],
             'expiresAt' => $tokenData['expires_at'],
         ]);
+    }
+
+    /**
+     * Clear the stored token
+     */
+    public function clearToken(): void
+    {
+        Cache::forget($this->cacheKey);
+    }
+
+    /**
+     * Check if a token is stored
+     */
+    public function hasToken(): bool
+    {
+        return Cache::has($this->cacheKey);
+    }
+
+    /**
+     * Get token metadata without creating PipedriveToken object
+     */
+    public function getTokenData(): ?array
+    {
+        return Cache::get($this->cacheKey);
     }
 }

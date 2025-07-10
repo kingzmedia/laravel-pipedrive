@@ -40,17 +40,111 @@ php artisan vendor:publish --tag="laravel-pipedrive-config"
 
 Add your Pipedrive credentials to your `.env` file:
 
-### **API Token Authentication (Recommended)**
+### **API Token Authentication (Recommended for Simple Integrations)**
+
+The simplest way to authenticate with Pipedrive. Get your API token from Pipedrive:
+
+1. **Log into your Pipedrive account**
+2. **Go to Settings → Personal preferences → API**
+3. **Copy your API token**
+4. **Add to your `.env` file:**
+
 ```env
+PIPEDRIVE_AUTH_METHOD=token
 PIPEDRIVE_TOKEN=your_api_token_here
 ```
 
-### **OAuth Authentication**
+### **OAuth 2.0 Authentication (Recommended for Production Apps)**
+
+OAuth provides more secure authentication and is required for public applications. Follow these steps:
+
+#### **Step 1: Create a Pipedrive App**
+
+1. **Go to [Pipedrive Developer Hub](https://developers.pipedrive.com/)**
+2. **Sign in with your Pipedrive account**
+3. **Click "Create an app"**
+4. **Fill in your app details:**
+   - **App name**: Your application name
+   - **App description**: Brief description of your app
+   - **App URL**: Your application's homepage URL
+   - **Callback URL**: `https://your-domain.com/pipedrive/oauth/callback`
+5. **Select required scopes** (permissions your app needs)
+6. **Submit for review** (for public apps) or **create as private app**
+
+#### **Step 2: Get Your OAuth Credentials**
+
+After app creation/approval, you'll receive:
+- **Client ID**: Public identifier for your app
+- **Client Secret**: Secret key (keep this secure!)
+
+#### **Step 3: Configure Your Laravel App**
+
+Add OAuth credentials to your `.env` file:
+
 ```env
-PIPEDRIVE_CLIENT_ID=your_client_id
-PIPEDRIVE_CLIENT_SECRET=your_client_secret
-PIPEDRIVE_REDIRECT_URL=https://your-app.com/pipedrive/callback
+PIPEDRIVE_AUTH_METHOD=oauth
+PIPEDRIVE_CLIENT_ID=your_client_id_from_pipedrive
+PIPEDRIVE_CLIENT_SECRET=your_client_secret_from_pipedrive
+PIPEDRIVE_REDIRECT_URL=https://your-domain.com/pipedrive/oauth/callback
 ```
+
+#### **Step 4: OAuth Web Interface (Built-in)**
+
+The package includes a complete OAuth web interface with beautiful UI pages. After configuration, you can use these routes:
+
+```bash
+# OAuth management routes (automatically registered)
+/pipedrive/oauth/authorize    # Start OAuth flow
+/pipedrive/oauth/callback     # OAuth callback (set this in Pipedrive app)
+/pipedrive/oauth/status       # Check connection status
+/pipedrive/oauth/disconnect   # Disconnect from Pipedrive
+```
+
+#### **Step 5: Initiate OAuth Flow**
+
+**Option A: Use Built-in Web Interface**
+1. Visit `/pipedrive/oauth/status` to check current status
+2. Click "Connect to Pipedrive" or visit `/pipedrive/oauth/authorize`
+3. You'll see a beautiful authorization page with scope details
+4. Click "Connect to Pipedrive" to redirect to Pipedrive
+5. Authorize your app on Pipedrive
+6. You'll be redirected back with a success page
+
+**Option B: Programmatic OAuth (Custom Implementation)**
+```php
+// In your controller
+public function connectToPipedrive()
+{
+    $authService = app(\Keggermont\LaravelPipedrive\Services\PipedriveAuthService::class);
+    $pipedrive = $authService->getPipedriveInstance();
+
+    $authUrl = $pipedrive->getAuthorizationUrl([
+        'scope' => 'deals:read deals:write persons:read persons:write'
+    ]);
+
+    return redirect($authUrl);
+}
+```
+
+#### **Step 6: Non-Expiring Tokens**
+
+The package automatically handles token storage and refresh. For non-expiring tokens:
+- Tokens are stored securely in cache with long TTL (1 year for non-expiring tokens)
+- No manual refresh needed for non-expiring tokens
+- Automatic refresh for expiring tokens (when supported by Pipedrive)
+- Use `/pipedrive/oauth/status` to monitor token status
+
+#### **OAuth vs API Token Comparison**
+
+| Feature | API Token | OAuth 2.0 |
+|---------|-----------|-----------|
+| **Setup Complexity** | Simple | Moderate |
+| **Security** | Good | Excellent |
+| **Token Expiration** | Never | Yes (with refresh) |
+| **User Consent** | Not required | Required |
+| **Multi-user Support** | No | Yes |
+| **Recommended For** | Personal/Internal apps | Production/Public apps |
+| **Pipedrive App Store** | Not eligible | Required |
 
 ### **Scheduled Synchronization & API Rate Limiting**
 ```env

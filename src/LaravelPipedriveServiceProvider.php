@@ -33,7 +33,8 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-pipedrive')
             ->hasConfigFile()
-            ->hasRoutes(['webhooks'])
+            ->hasRoutes(['webhooks', 'oauth'])
+            ->hasViews()
             ->hasMigrations([
                 'create_pipedrive_activities_table',
                 'create_pipedrive_deals_table',
