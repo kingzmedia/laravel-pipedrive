@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
 use Keggermont\LaravelPipedrive\Data\SyncOptions;
+use Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService;
 
 class ScheduledSyncPipedriveCommand extends Command
 {
@@ -16,6 +17,14 @@ class ScheduledSyncPipedriveCommand extends Command
                         {--verbose : Enable verbose output}';
 
     public $description = 'Run scheduled synchronization of Pipedrive entities and custom fields using robust job system (always uses standard mode with limit=500 for safety)';
+
+    protected PipedriveEntityConfigService $entityConfigService;
+
+    public function __construct(PipedriveEntityConfigService $entityConfigService)
+    {
+        parent::__construct();
+        $this->entityConfigService = $entityConfigService;
+    }
 
     public function handle(): int
     {
@@ -159,10 +168,22 @@ class ScheduledSyncPipedriveCommand extends Command
      */
     protected function syncEntitiesUsingJobs(bool $force, int $limit, bool $verbose): int
     {
-        $entities = [
-            'activities', 'deals', 'files', 'goals', 'notes', 'organizations',
-            'persons', 'pipelines', 'products', 'stages', 'users'
-        ];
+        $entities = $this->entityConfigService->getEnabledEntities();
+
+        if (empty($entities)) {
+            $this->warn('⚠️  No entities are enabled for synchronization.');
+            $this->warn('   Configure PIPEDRIVE_ENABLED_ENTITIES environment variable to enable entities.');
+            return self::SUCCESS;
+        }
+
+        if ($verbose) {
+            $configSummary = $this->entityConfigService->getConfigurationSummary();
+            $this->line('📋 Scheduler Entity Configuration:');
+            $this->line("  → Enabled entities: " . implode(', ', $configSummary['enabled_entities']));
+            if (!empty($configSummary['disabled_entities'])) {
+                $this->line("  → Disabled entities: " . implode(', ', $configSummary['disabled_entities']));
+            }
+        }
 
         $totalErrors = 0;
         $totalSuccess = 0;
@@ -175,7 +196,6 @@ class ScheduledSyncPipedriveCommand extends Command
                 // IMPORTANT: fullData is ALWAYS false for scheduled operations
                 $options = SyncOptions::forScheduler(
                     $entityType,
-                    false, // fullData = false (NEVER true for scheduler)
                     $force
                 );
 

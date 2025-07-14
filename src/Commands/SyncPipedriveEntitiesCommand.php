@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService;
 use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
 use Keggermont\LaravelPipedrive\Data\SyncOptions;
@@ -21,28 +22,23 @@ class SyncPipedriveEntitiesCommand extends Command
                         {--entity= : Sync specific entity (activities, deals, files, goals, notes, organizations, persons, pipelines, products, stages, users)}
                         {--limit=500 : Limit number of records to sync per entity (max 500)}
                         {--full-data : Retrieve ALL data with pagination (sorted by creation date, oldest first). WARNING: Use with caution due to API rate limits}
-                        {--force : Force sync even if records already exist, and skip confirmation prompts for --full-data}';
+                        {--force : Force sync even if records already exist, skip confirmation prompts, and sync disabled entities}';
 
     public $description = 'Synchronize entities from Pipedrive API using the robust centralized job system. By default, fetches latest modifications (sorted by update_time DESC, max 500 records). Use --full-data to retrieve all data with pagination.';
 
     protected PipedriveAuthService $authService;
     protected PipedriveMemoryManager $memoryManager;
-
-    /**
-     * Available entities
-     */
-    protected array $entities = [
-        'activities', 'deals', 'files', 'goals', 'notes', 'organizations',
-        'persons', 'pipelines', 'products', 'stages', 'users'
-    ];
+    protected PipedriveEntityConfigService $entityConfigService;
 
     public function __construct(
         PipedriveAuthService $authService,
-        PipedriveMemoryManager $memoryManager
+        PipedriveMemoryManager $memoryManager,
+        PipedriveEntityConfigService $entityConfigService
     ) {
         parent::__construct();
         $this->authService = $authService;
         $this->memoryManager = $memoryManager;
+        $this->entityConfigService = $entityConfigService;
     }
 
     public function handle(): int
@@ -55,6 +51,22 @@ class SyncPipedriveEntitiesCommand extends Command
         $fullData = $this->option('full-data');
         $force = $this->option('force');
         $verbose = $this->option('verbose');
+
+        // Get enabled entities from configuration
+        $enabledEntities = $this->entityConfigService->getEnabledEntities();
+        $allEntities = $this->entityConfigService->getAllEntities();
+
+        // Display configuration info if verbose
+        if ($verbose) {
+            $configSummary = $this->entityConfigService->getConfigurationSummary();
+            $this->line('📋 Entity Configuration:');
+            $this->line("  → Total entities: {$configSummary['total_entities']}");
+            $this->line("  → Enabled: {$configSummary['enabled_count']} (" . implode(', ', $configSummary['enabled_entities']) . ")");
+            if (!empty($configSummary['disabled_entities'])) {
+                $this->line("  → Disabled: {$configSummary['disabled_count']} (" . implode(', ', $configSummary['disabled_entities']) . ")");
+            }
+            $this->line("  → Configuration source: {$configSummary['configuration_source']}");
+        }
 
         // Warning for full-data mode
         if ($fullData) {
@@ -93,16 +105,32 @@ class SyncPipedriveEntitiesCommand extends Command
 
         // Validate entity type
         if ($entityType) {
-            if (!in_array($entityType, $this->entities)) {
-                $this->error("❌ Invalid entity type. Available types: " . implode(', ', $this->entities));
+            if (!in_array($entityType, $allEntities)) {
+                $this->error("❌ Invalid entity type. Available types: " . implode(', ', $allEntities));
                 return self::FAILURE;
+            }
+
+            if (!$this->entityConfigService->isEntityEnabled($entityType)) {
+                $this->warn("⚠️  Entity '{$entityType}' is disabled in configuration.");
+                $this->warn("   To enable it, add '{$entityType}' to PIPEDRIVE_ENABLED_ENTITIES environment variable.");
+
+                if (!$force && !$this->confirm("Do you want to sync '{$entityType}' anyway?")) {
+                    $this->info('Operation cancelled.');
+                    return self::SUCCESS;
+                }
             }
 
             return $this->syncEntityUsingJob($entityType, $limit, $force, $fullData, $verbose);
         } else {
-            // Sync all entities
+            // Sync enabled entities only
+            if (empty($enabledEntities)) {
+                $this->warn('⚠️  No entities are enabled for synchronization.');
+                $this->warn('   Configure PIPEDRIVE_ENABLED_ENTITIES environment variable to enable entities.');
+                return self::SUCCESS;
+            }
+
             $totalResults = [];
-            foreach ($this->entities as $entity) {
+            foreach ($enabledEntities as $entity) {
                 $result = $this->syncEntityUsingJob($entity, $limit, $force, $fullData, $verbose);
                 if ($result === self::FAILURE) {
                     $this->error("❌ Failed to sync {$entity}, stopping execution.");
@@ -111,7 +139,7 @@ class SyncPipedriveEntitiesCommand extends Command
                 $totalResults[] = $entity;
             }
 
-            $this->info('✅ All entities synchronization completed! Synced: ' . implode(', ', $totalResults));
+            $this->info('✅ All enabled entities synchronization completed! Synced: ' . implode(', ', $totalResults));
             return self::SUCCESS;
         }
     }
@@ -312,23 +340,7 @@ class SyncPipedriveEntitiesCommand extends Command
         return $value;
     }
 
-    /**
-     * Apply API delay to prevent rate limiting
-     */
-    protected function applyApiDelay(): void
-    {
-        $delayEnabled = Config::get('pipedrive.sync.api.delay_enabled', true);
-        $delay = Config::get('pipedrive.sync.api.delay', 0.3);
 
-        if ($delayEnabled && $delay > 0) {
-            if ($this->getOutput()->isVerbose()) {
-                $this->line("  → Applying API delay: {$delay}s");
-            }
-
-            // Convert to microseconds for usleep
-            usleep((int)($delay * 1000000));
-        }
-    }
 
     /**
      * Make API call for specific entity type with rate limiting

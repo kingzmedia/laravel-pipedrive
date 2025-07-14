@@ -52,24 +52,14 @@ return [
         // Automatically sync custom fields on app boot
         'auto_sync' => env('PIPEDRIVE_AUTO_SYNC', false),
 
-        // Entities to sync (leave empty to sync all)
-        'entities' => [
-            'deal',
-            'person',
-            'organization',
-            'product',
-            'activity',
-        ],
-
-        // API rate limiting configuration
-        'api' => [
-            // Delay between API calls in seconds (default: 0.3s)
-            // This helps prevent hitting Pipedrive API rate limits
-            'delay' => env('PIPEDRIVE_API_DELAY', 0.3),
-
-            // Enable/disable API delay (useful for testing)
-            'delay_enabled' => env('PIPEDRIVE_API_DELAY_ENABLED', true),
-        ],
+        // Enabled entities for synchronization
+        // Can be configured via PIPEDRIVE_ENABLED_ENTITIES environment variable
+        // Format: comma-separated list (e.g., "deals,activities,persons")
+        // Leave empty or set to "all" to sync all available entities
+        'enabled_entities' => array_filter(
+            explode(',', env('PIPEDRIVE_ENABLED_ENTITIES', 'activities,deals,files,notes,organizations,persons,pipelines,products,stages,users')),
+            fn($entity) => !empty(trim($entity))
+        ),
 
         // Automatic scheduled synchronization
         'scheduler' => [
@@ -82,10 +72,6 @@ return [
             // Time of day to run sync (24-hour format, e.g., '02:00')
             // Leave null to run based on frequency from app start
             'time' => env('PIPEDRIVE_SCHEDULER_TIME', '02:00'),
-
-            // DEPRECATED: full_data is now ALWAYS false for scheduled operations for safety
-            // The scheduler uses standard mode (limit=500, sorted by last modified) for optimal performance
-            'full_data' => false, // ALWAYS false - scheduler never uses full-data mode
 
             // Force sync (skip confirmations and overwrite existing data)
             'force' => env('PIPEDRIVE_SCHEDULER_FORCE', true),

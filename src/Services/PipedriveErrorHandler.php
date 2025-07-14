@@ -67,10 +67,16 @@ class PipedriveErrorHandler
     {
         $message = $exception->getMessage();
         $code = $exception->getCode();
+        $exceptionClass = get_class($exception);
 
         // HTTP status code based classification
         if ($code >= 400 && $code < 600) {
             return $this->classifyHttpException($exception, $context);
+        }
+
+        // Specific Pipedrive API exceptions
+        if ($this->isItemNotFoundException($exception)) {
+            return $this->handleItemNotFoundException($exception, $context);
         }
 
         // Connection/network errors
@@ -99,9 +105,11 @@ class PipedriveErrorHandler
             );
         }
 
-        // Generic Pipedrive exception
+        // Generic Pipedrive exception with better error message
+        $enhancedMessage = $this->enhanceErrorMessage($message, $exceptionClass, $context);
+
         return new PipedriveException(
-            message: $message,
+            message: $enhancedMessage,
             code: $code,
             previous: $exception,
             context: $context,
@@ -190,7 +198,7 @@ class PipedriveErrorHandler
         ];
 
         $lowerMessage = strtolower($message);
-        
+
         foreach ($memoryKeywords as $keyword) {
             if (str_contains($lowerMessage, $keyword)) {
                 return true;
@@ -198,6 +206,57 @@ class PipedriveErrorHandler
         }
 
         return false;
+    }
+
+    /**
+     * Check if exception is ItemNotFoundException from Pipedrive
+     */
+    protected function isItemNotFoundException(Throwable $exception): bool
+    {
+        return $exception instanceof \Devio\Pipedrive\Exceptions\ItemNotFoundException;
+    }
+
+    /**
+     * Handle ItemNotFoundException with context-aware messaging
+     */
+    protected function handleItemNotFoundException(Throwable $exception, array $context): PipedriveException
+    {
+        $entityType = $context['entity_type'] ?? 'unknown';
+        $operation = $context['operation'] ?? 'unknown';
+
+        $message = match ($operation) {
+            'fetch_entity_data' => "Entity '{$entityType}' not found or not accessible. This entity may not exist in your Pipedrive account or you may not have permission to access it.",
+            'process_item' => "Item not found for entity '{$entityType}'. The item may have been deleted or is not accessible.",
+            default => "Item not found for entity '{$entityType}' during operation '{$operation}'. Please check if the entity exists and is accessible."
+        };
+
+        return new PipedriveException(
+            message: $message,
+            code: 404,
+            previous: $exception,
+            context: array_merge($context, [
+                'error_type' => 'item_not_found',
+                'entity_type' => $entityType,
+                'operation' => $operation,
+                'suggestion' => "Consider removing '{$entityType}' from PIPEDRIVE_ENABLED_ENTITIES if this entity is not available in your Pipedrive account."
+            ]),
+            retryable: false
+        );
+    }
+
+    /**
+     * Enhance error message with context information
+     */
+    protected function enhanceErrorMessage(string $originalMessage, string $exceptionClass, array $context): string
+    {
+        if (empty($originalMessage) || $originalMessage === 'Error unknown.') {
+            $entityType = $context['entity_type'] ?? 'unknown';
+            $operation = $context['operation'] ?? 'unknown';
+
+            return "Pipedrive API error during '{$operation}' for entity '{$entityType}'. Exception: " . class_basename($exceptionClass);
+        }
+
+        return $originalMessage;
     }
 
     /**

@@ -12,6 +12,7 @@ use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
 use Keggermont\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
 use Keggermont\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
+use Keggermont\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
@@ -66,6 +67,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 ManagePipedriveWebhooksCommand::class,
                 ManagePipedriveEntityLinksCommand::class,
                 ClearPipedriveCacheCommand::class,
+                ShowPipedriveConfigCommand::class,
             ]);
     }
 
@@ -77,6 +79,9 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
         $this->app->singleton(PipedriveEntityLinkService::class);
         $this->app->singleton(PipedriveCacheService::class);
         $this->app->singleton(PipedriveQueryOptimizationService::class);
+
+        // Register entity configuration service
+        $this->app->singleton(\Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService::class);
 
         // Register robustness services
         $this->registerRobustnessServices();

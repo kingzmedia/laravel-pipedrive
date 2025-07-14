@@ -283,23 +283,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
         return $allFields;
     }
 
-    /**
-     * Apply API delay to prevent rate limiting
-     */
-    protected function applyApiDelay(): void
-    {
-        $delayEnabled = Config::get('pipedrive.sync.api.delay_enabled', true);
-        $delay = Config::get('pipedrive.sync.api.delay', 0.3);
 
-        if ($delayEnabled && $delay > 0) {
-            if ($this->getOutput()->isVerbose()) {
-                $this->line("  → Applying API delay: {$delay}s");
-            }
-
-            // Convert to microseconds for usleep
-            usleep((int)($delay * 1000000));
-        }
-    }
 
     /**
      * Make API call for specific field entity type with rate limiting

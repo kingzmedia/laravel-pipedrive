@@ -188,6 +188,9 @@ PIPEDRIVE_SCHEDULER_FREQUENCY=24
 PIPEDRIVE_SCHEDULER_TIME=02:00
 PIPEDRIVE_SCHEDULER_LIMIT=500
 
+# Entity configuration
+PIPEDRIVE_ENABLED_ENTITIES=deals,activities,persons,organizations,products
+
 # Robustness features
 PIPEDRIVE_RATE_LIMITING_ENABLED=true
 PIPEDRIVE_DAILY_TOKEN_BUDGET=10000
@@ -203,15 +206,27 @@ PIPEDRIVE_CIRCUIT_BREAKER_THRESHOLD=5
 php artisan pipedrive:test-connection
 ```
 
+### **View Configuration**
+```bash
+# Show current entity configuration
+php artisan pipedrive:config --entities
+
+# Show full configuration
+php artisan pipedrive:config
+
+# JSON output
+php artisan pipedrive:config --json
+```
+
 ### **Sync Entities from Pipedrive**
 ```bash
-# Sync all entities
+# Sync all enabled entities
 php artisan pipedrive:sync-entities
 
-# Sync specific entity
+# Sync specific entity (even if disabled)
 php artisan pipedrive:sync-entities --entity=deals --limit=50
 
-# Verbose output
+# Verbose output with configuration details
 php artisan pipedrive:sync-entities --entity=users --verbose
 ```
 
@@ -462,6 +477,108 @@ php artisan pipedrive:sync-custom-fields --entity=deal
 
 ⚠️ **Important**: Use `--full-data` with caution due to API rate limits. See [Sync Commands Documentation](docs/commands/sync-commands.md) for details.
 
+## ⚙️ **Entity Configuration**
+
+Control which Pipedrive entities are synchronized using the `PIPEDRIVE_ENABLED_ENTITIES` environment variable:
+
+```bash
+# Enable specific entities (comma-separated)
+PIPEDRIVE_ENABLED_ENTITIES=deals,activities,persons,organizations
+
+# Enable all entities
+PIPEDRIVE_ENABLED_ENTITIES=all
+
+# Disable all entities (empty value)
+PIPEDRIVE_ENABLED_ENTITIES=
+```
+
+### **Available Entities**
+- `activities` - Activities/Tasks
+- `deals` - Deals/Opportunities
+- `files` - Files/Attachments
+- `goals` - Goals/Targets
+- `notes` - Notes/Comments
+- `organizations` - Companies/Organizations
+- `persons` - People/Contacts
+- `pipelines` - Sales Pipelines
+- `products` - Products/Services
+- `stages` - Pipeline Stages
+- `users` - Users/Team Members
+
+### **Configuration Commands**
+```bash
+# View current configuration
+php artisan pipedrive:config
+
+# View only entity configuration
+php artisan pipedrive:config --entities
+
+# Export configuration as JSON
+php artisan pipedrive:config --json
+```
+
+### **Behavior**
+- **Commands**: Only enabled entities are synchronized by default
+- **Schedulers**: Only enabled entities are included in automated sync
+- **Force Override**: Use `--force` flag to sync disabled entities manually
+- **Validation**: Invalid entity names in configuration are ignored with warnings
+
+## 🔗 **Webhook Management**
+
+The package provides intelligent webhook management with smart configuration defaults:
+
+### **Smart Webhook Creation**
+```bash
+# Quick setup with auto-configuration (recommended)
+php artisan pipedrive:webhooks create --auto-config
+
+# Interactive setup with intelligent suggestions
+php artisan pipedrive:webhooks create --verbose
+
+# Test webhook connectivity
+php artisan pipedrive:webhooks test
+```
+
+### **Configuration-Aware Features**
+- **Auto URL Detection**: Uses `APP_URL` + webhook path from config
+- **Smart Event Suggestions**: Based on your `PIPEDRIVE_ENABLED_ENTITIES`
+- **Auto Authentication**: Uses configured HTTP Basic Auth credentials
+- **Connectivity Testing**: Validates webhook endpoints before creation
+
+### **Example Workflow**
+```bash
+# 1. Configure your environment
+APP_URL=https://your-app.com
+PIPEDRIVE_ENABLED_ENTITIES=deals,activities,persons
+PIPEDRIVE_WEBHOOK_BASIC_AUTH_ENABLED=true
+PIPEDRIVE_WEBHOOK_BASIC_AUTH_USERNAME=admin
+PIPEDRIVE_WEBHOOK_BASIC_AUTH_PASSWORD=secure_password
+
+# 2. Test webhook connectivity
+php artisan pipedrive:webhooks test
+
+# 3. Create webhook with smart defaults
+php artisan pipedrive:webhooks create --auto-config --test-url
+
+# 4. List existing webhooks
+php artisan pipedrive:webhooks list
+```
+
+### **Manual Configuration**
+```bash
+# Create webhook manually
+php artisan pipedrive:webhooks create \
+  --url="https://your-app.com/pipedrive/webhook" \
+  --event="*.*" \
+  --auth-user="webhook_user" \
+  --auth-pass="secure_password"
+
+# Delete webhook
+php artisan pipedrive:webhooks delete --id=123
+```
+
+See [Webhook Management Documentation](docs/webhooks/webhook-management.md) for detailed usage.
+
 ## 🎯 **Custom Fields**
 
 ```php
@@ -515,7 +632,7 @@ foreach ($dealFields as $field) {
 | `pipedrive:sync-entities` | Sync Pipedrive entities | `--entity`, `--limit`, `--force`, `--verbose` |
 | `pipedrive:sync-custom-fields` | Sync custom fields | `--entity`, `--force`, `--verbose` |
 | `pipedrive:scheduled-sync` | Automated scheduled sync | `--dry-run`, `--verbose` |
-| `pipedrive:webhooks` | Manage webhooks (list/create/delete) | `action`, `--url`, `--event`, `--id`, `--auth-user`, `--auth-pass`, `--verbose` |
+| `pipedrive:webhooks` | Manage webhooks (list/create/delete/test) with smart configuration | `action`, `--url`, `--event`, `--id`, `--auth-user`, `--auth-pass`, `--auto-config`, `--test-url`, `--verbose` |
 | `pipedrive:entity-links` | Manage entity links (stats/sync/cleanup/list) | `action`, `--entity-type`, `--model-type`, `--status`, `--limit`, `--verbose` |
 
 ## 🏗️ **Database Structure**

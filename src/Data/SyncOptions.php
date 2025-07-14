@@ -91,17 +91,17 @@ class SyncOptions extends Data
 
     /**
      * Create options for scheduled execution
+     * Note: fullData is ALWAYS false for scheduled operations for safety and performance
      */
     public static function forScheduler(
         string $entityType,
-        bool $fullData = true,
         bool $force = true,
         ?string $queue = 'pipedrive-sync'
     ): self {
         return new self(
             entityType: $entityType,
             limit: 500,
-            fullData: $fullData,
+            fullData: false, // ALWAYS false for scheduled operations
             force: $force,
             verbose: false,
             async: true,
