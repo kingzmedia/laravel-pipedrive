@@ -22,11 +22,18 @@ class PipedriveWebhookController extends Controller
     public function handle(Request $request, PipedriveWebhookService $webhookService)
     {
         try {
+            $meta = $request->input('meta', []);
+            $version = $meta['version'] ?? '1.0';
+
             // Log webhook reception for debugging
             Log::info('Pipedrive webhook received', [
-                'event' => $request->input('event'),
-                'meta' => $request->input('meta'),
+                'version' => $version,
+                'event' => $request->input('event'), // v1.0 only
+                'meta' => $meta,
+                'has_data' => $request->has('data'), // v2.0
+                'has_previous' => $request->has('previous'), // v2.0
                 'retry' => $request->input('retry', 0),
+                'attempt' => $meta['attempt'] ?? 1, // v2.0
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
@@ -34,10 +41,16 @@ class PipedriveWebhookController extends Controller
             // Process the webhook
             $result = $webhookService->processWebhook($request->all());
 
+            // Get object ID based on version
+            $objectId = $version === '2.0'
+                ? $meta['entity_id'] ?? null
+                : $meta['id'] ?? null;
+
             // Log successful processing
             Log::info('Pipedrive webhook processed successfully', [
+                'version' => $version,
                 'event' => $request->input('event'),
-                'object_id' => $request->input('meta.id'),
+                'object_id' => $objectId,
                 'result' => $result,
             ]);
 
@@ -50,13 +63,21 @@ class PipedriveWebhookController extends Controller
             ], Response::HTTP_OK);
 
         } catch (\Exception $e) {
+            $meta = $request->input('meta', []);
+            $version = $meta['version'] ?? '1.0';
+            $objectId = $version === '2.0'
+                ? $meta['entity_id'] ?? null
+                : $meta['id'] ?? null;
+
             // Log error for debugging
             Log::error('Pipedrive webhook processing failed', [
+                'version' => $version,
                 'event' => $request->input('event'),
-                'object_id' => $request->input('meta.id'),
+                'object_id' => $objectId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'retry' => $request->input('retry', 0),
+                'attempt' => $meta['attempt'] ?? 1,
             ]);
 
             // Return 500 to trigger Pipedrive retry

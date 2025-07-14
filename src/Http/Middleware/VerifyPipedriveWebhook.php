@@ -197,15 +197,30 @@ class VerifyPipedriveWebhook
             return false;
         }
 
-        // Must have required webhook fields
-        if (!$request->has(['event', 'meta'])) {
+        // Must have meta field (required for both v1 and v2)
+        if (!$request->has('meta')) {
             return false;
         }
 
-        // Meta must have required fields
         $meta = $request->input('meta', []);
-        if (!isset($meta['action'], $meta['object'], $meta['id'])) {
-            return false;
+
+        // Check webhook version and validate accordingly
+        $version = $meta['version'] ?? '1.0';
+
+        if ($version === '2.0') {
+            // Webhooks v2.0 format validation
+            if (!isset($meta['action'], $meta['entity'], $meta['entity_id'])) {
+                return false;
+            }
+        } else {
+            // Webhooks v1.0 format validation (legacy)
+            if (!$request->has('event')) {
+                return false;
+            }
+
+            if (!isset($meta['action'], $meta['object'], $meta['id'])) {
+                return false;
+            }
         }
 
         return true;

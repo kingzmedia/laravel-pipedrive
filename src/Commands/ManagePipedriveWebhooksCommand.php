@@ -65,33 +65,44 @@ class ManagePipedriveWebhooksCommand extends Command
     {
         $this->info('Fetching webhooks...');
 
-        $client = $this->authService->getClient();
+        $client = $this->authService->getPipedriveInstance();
         $response = $client->webhooks->all();
 
-        if (empty($response['data'])) {
+        if (!$response->isSuccess()) {
+            $this->error('Failed to fetch webhooks: ' . $response->getStatusCode());
+            return self::FAILURE;
+        }
+
+        $data = $response->getData();
+        if (empty($data)) {
             $this->info('No webhooks found.');
             return self::SUCCESS;
         }
 
-        $this->info('Found ' . count($response['data']) . ' webhook(s):');
+        $this->info('Found ' . count($data) . ' webhook(s):');
         $this->newLine();
 
-        foreach ($response['data'] as $webhook) {
-            $this->line("ID: {$webhook['id']}");
-            $this->line("URL: {$webhook['subscription_url']}");
-            $this->line("Event: {$webhook['event_action']}.{$webhook['event_object']}");
-            $this->line("User ID: {$webhook['user_id']}");
-            $this->line("Version: {$webhook['version']}");
-            $this->line("Active: " . ($webhook['active_flag'] ? 'Yes' : 'No'));
-            
+        foreach ($data as $webhook) {
+            $this->line("ID: {$webhook->id}");
+            $this->line("URL: {$webhook->subscription_url}");
+            $this->line("Event: {$webhook->event_action}.{$webhook->event_object}");
+            $this->line("User ID: {$webhook->user_id}");
+            $this->line("Version: {$webhook->version}");
+            $this->line("Active: " . ($webhook->is_active ? 'Yes' : 'No'));
+
             if ($this->getOutput()->isVerbose()) {
-                $this->line("Created: {$webhook['add_time']}");
-                $this->line("Updated: {$webhook['update_time']}");
-                if (!empty($webhook['http_auth_user'])) {
-                    $this->line("HTTP Auth User: {$webhook['http_auth_user']}");
+                $this->line("Created: {$webhook->add_time}");
+                if (!empty($webhook->http_auth_user)) {
+                    $this->line("HTTP Auth User: {$webhook->http_auth_user}");
+                }
+                if (!empty($webhook->last_delivery_time)) {
+                    $this->line("Last Delivery: {$webhook->last_delivery_time}");
+                }
+                if (!empty($webhook->last_http_status)) {
+                    $this->line("Last HTTP Status: {$webhook->last_http_status}");
                 }
             }
-            
+
             $this->newLine();
         }
 
@@ -110,7 +121,7 @@ class ManagePipedriveWebhooksCommand extends Command
         if (!$event) {
             $event = $this->choice(
                 'Select event pattern',
-                ['*.*', 'added.*', 'updated.*', 'deleted.*', 'added.deal', 'updated.deal', 'added.person', 'updated.person'],
+                ['*.*', 'create.*', 'change.*', 'delete.*', 'create.deal', 'change.deal', 'create.person', 'change.person', 'create.organization', 'change.organization'],
                 '*.*'
             );
         }
@@ -138,17 +149,29 @@ class ManagePipedriveWebhooksCommand extends Command
             $this->line("Event: {$event}");
         }
 
-        $client = $this->authService->getClient();
-        $response = $client->webhooks->add($data);
+        $client = $this->authService->getPipedriveInstance();
 
-        if ($response['success']) {
-            $webhook = $response['data'];
-            $this->info("✓ Webhook created successfully!");
-            $this->line("ID: {$webhook['id']}");
-            $this->line("URL: {$webhook['subscription_url']}");
-            $this->line("Event: {$webhook['event_action']}.{$webhook['event_object']}");
-        } else {
-            $this->error("Failed to create webhook");
+        try {
+            $response = $client->webhooks->add($data);
+
+            if ($response->isSuccess()) {
+                $webhook = $response->getData();
+                $this->info("✓ Webhook created successfully!");
+                $this->line("ID: {$webhook->id}");
+                $this->line("URL: {$webhook->subscription_url}");
+                $this->line("Event: {$webhook->event_action}.{$webhook->event_object}");
+            } else {
+                $this->error("Failed to create webhook: " . $response->getStatusCode());
+                if ($this->getOutput()->isVerbose()) {
+                    $this->error("Response: " . $response->getContent());
+                }
+                return self::FAILURE;
+            }
+        } catch (\Exception $e) {
+            $this->error("Error creating webhook: " . $e->getMessage());
+            if ($this->getOutput()->isVerbose()) {
+                $this->error("Data sent: " . json_encode($data, JSON_PRETTY_PRINT));
+            }
             return self::FAILURE;
         }
 
@@ -177,13 +200,16 @@ class ManagePipedriveWebhooksCommand extends Command
 
         $this->info("Deleting webhook {$webhookId}...");
 
-        $client = $this->authService->getClient();
+        $client = $this->authService->getPipedriveInstance();
         $response = $client->webhooks->delete($webhookId);
 
-        if ($response['success']) {
+        if ($response->isSuccess()) {
             $this->info("✓ Webhook {$webhookId} deleted successfully!");
         } else {
-            $this->error("Failed to delete webhook {$webhookId}");
+            $this->error("Failed to delete webhook {$webhookId}: " . $response->getStatusCode());
+            if ($this->getOutput()->isVerbose()) {
+                $this->error("Response: " . $response->getContent());
+            }
             return self::FAILURE;
         }
 

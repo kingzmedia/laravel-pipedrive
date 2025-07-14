@@ -12,10 +12,11 @@ class PipedriveWebhookReceived
     public array $webhookData;
     public string $action;
     public string $object;
-    public int $objectId;
+    public string $objectId; // Changed to string to support both v1.0 (int) and v2.0 (string)
     public array $meta;
     public ?array $current;
     public ?array $previous;
+    public string $version;
 
     /**
      * Create a new event instance.
@@ -24,11 +25,24 @@ class PipedriveWebhookReceived
     {
         $this->webhookData = $webhookData;
         $this->meta = $webhookData['meta'] ?? [];
-        $this->action = $this->meta['action'] ?? '';
-        $this->object = $this->meta['object'] ?? '';
-        $this->objectId = $this->meta['id'] ?? 0;
-        $this->current = $webhookData['current'] ?? null;
-        $this->previous = $webhookData['previous'] ?? null;
+        $this->version = $this->meta['version'] ?? '1.0';
+
+        // Extract data based on webhook version
+        if ($this->version === '2.0') {
+            // Webhooks v2.0 format
+            $this->action = $this->meta['action'] ?? '';
+            $this->object = $this->meta['entity'] ?? '';
+            $this->objectId = (string) ($this->meta['entity_id'] ?? '');
+            $this->current = $webhookData['data'] ?? null;
+            $this->previous = $webhookData['previous'] ?? null;
+        } else {
+            // Webhooks v1.0 format (legacy)
+            $this->action = $this->meta['action'] ?? '';
+            $this->object = $this->meta['object'] ?? '';
+            $this->objectId = (string) ($this->meta['id'] ?? '');
+            $this->current = $webhookData['current'] ?? null;
+            $this->previous = $webhookData['previous'] ?? null;
+        }
     }
 
     /**
@@ -36,7 +50,7 @@ class PipedriveWebhookReceived
      */
     public function isCreate(): bool
     {
-        return $this->action === 'added';
+        return $this->action === 'added' || $this->action === 'create';
     }
 
     /**
@@ -44,7 +58,7 @@ class PipedriveWebhookReceived
      */
     public function isUpdate(): bool
     {
-        return $this->action === 'updated';
+        return $this->action === 'updated' || $this->action === 'change';
     }
 
     /**
@@ -52,7 +66,7 @@ class PipedriveWebhookReceived
      */
     public function isDelete(): bool
     {
-        return $this->action === 'deleted';
+        return $this->action === 'deleted' || $this->action === 'delete';
     }
 
     /**
@@ -133,5 +147,29 @@ class PipedriveWebhookReceived
     public function isRetry(): bool
     {
         return $this->getRetryCount() > 0;
+    }
+
+    /**
+     * Get the object ID as integer (for backward compatibility)
+     */
+    public function getObjectIdAsInt(): int
+    {
+        return (int) $this->objectId;
+    }
+
+    /**
+     * Get the webhook version
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
+
+    /**
+     * Check if this is a v2.0 webhook
+     */
+    public function isV2(): bool
+    {
+        return $this->version === '2.0';
     }
 }

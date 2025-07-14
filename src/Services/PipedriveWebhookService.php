@@ -38,9 +38,20 @@ class PipedriveWebhookService
     public function processWebhook(array $webhookData): array
     {
         $meta = $webhookData['meta'] ?? [];
-        $action = $meta['action'] ?? null;
-        $object = $meta['object'] ?? null;
-        $objectId = $meta['id'] ?? null;
+        $version = $meta['version'] ?? '1.0';
+
+        // Extract data based on webhook version
+        if ($version === '2.0') {
+            // Webhooks v2.0 format
+            $action = $meta['action'] ?? null;
+            $object = $meta['entity'] ?? null;
+            $objectId = $meta['entity_id'] ?? null;
+        } else {
+            // Webhooks v1.0 format (legacy)
+            $action = $meta['action'] ?? null;
+            $object = $meta['object'] ?? null;
+            $objectId = $meta['id'] ?? null;
+        }
 
         // Fire webhook received event
         Event::dispatch(new PipedriveWebhookReceived($webhookData));
@@ -74,10 +85,13 @@ class PipedriveWebhookService
         try {
             switch ($action) {
                 case 'added':
+                case 'create':
                 case 'updated':
+                case 'change':
                     return $this->handleCreateOrUpdate($modelClass, $webhookData);
 
                 case 'deleted':
+                case 'delete':
                     return $this->handleDelete($modelClass, $webhookData);
 
                 case 'merged':
@@ -114,9 +128,18 @@ class PipedriveWebhookService
      */
     protected function handleCreateOrUpdate(string $modelClass, array $webhookData): array
     {
-        $current = $webhookData['current'] ?? null;
         $meta = $webhookData['meta'] ?? [];
+        $version = $meta['version'] ?? '1.0';
         $action = $meta['action'];
+
+        // Extract current data based on webhook version
+        if ($version === '2.0') {
+            // Webhooks v2.0 format
+            $current = $webhookData['data'] ?? null;
+        } else {
+            // Webhooks v1.0 format (legacy)
+            $current = $webhookData['current'] ?? null;
+        }
 
         if (empty($current) || !isset($current['id'])) {
             throw new \InvalidArgumentException('Invalid webhook data: missing current object data');
@@ -139,7 +162,7 @@ class PipedriveWebhookService
         $wasCreated = $model->wasRecentlyCreated;
 
         // Emit specific CRUD events
-        $entityType = $meta['object'] ?? 'unknown';
+        $entityType = ($version === '2.0') ? ($meta['entity'] ?? 'unknown') : ($meta['object'] ?? 'unknown');
         if ($wasCreated) {
             $this->emitEntityCreated($entityType, $model, $current, 'webhook', [
                 'webhook_action' => $action,
@@ -149,7 +172,8 @@ class PipedriveWebhookService
             ]);
         } else {
             // Extract changes for update event
-            $changes = $this->extractWebhookChanges($current, $webhookData['previous'] ?? []);
+            $previous = $webhookData['previous'] ?? [];
+            $changes = $this->extractWebhookChanges($current, $previous);
             $this->emitEntityUpdated($entityType, $model, $current, $changes, 'webhook', [
                 'webhook_action' => $action,
                 'change_source' => $meta['change_source'] ?? null,
@@ -160,7 +184,7 @@ class PipedriveWebhookService
 
         Log::info('Pipedrive webhook: Object synchronized', [
             'action' => $action,
-            'object' => $meta['object'],
+            'object' => $entityType,
             'id' => $current['id'],
             'local_action' => $wasCreated ? 'created' : 'updated',
         ]);
@@ -178,8 +202,17 @@ class PipedriveWebhookService
      */
     protected function handleDelete(string $modelClass, array $webhookData): array
     {
-        $previous = $webhookData['previous'] ?? null;
         $meta = $webhookData['meta'] ?? [];
+        $version = $meta['version'] ?? '1.0';
+
+        // Extract previous data based on webhook version
+        if ($version === '2.0') {
+            // Webhooks v2.0 format - for delete, previous data is in 'previous' field
+            $previous = $webhookData['previous'] ?? null;
+        } else {
+            // Webhooks v1.0 format (legacy)
+            $previous = $webhookData['previous'] ?? null;
+        }
 
         if (empty($previous) || !isset($previous['id'])) {
             throw new \InvalidArgumentException('Invalid webhook data: missing previous object data');
@@ -195,7 +228,7 @@ class PipedriveWebhookService
         $deleted = $modelClass::where('pipedrive_id', $pipedriveId)->delete();
 
         // Emit delete event
-        $entityType = $meta['object'] ?? 'unknown';
+        $entityType = ($version === '2.0') ? ($meta['entity'] ?? 'unknown') : ($meta['object'] ?? 'unknown');
         $this->emitEntityDeleted($entityType, $pipedriveId, $localId, $previous, 'webhook', [
             'webhook_action' => 'deleted',
             'change_source' => $meta['change_source'] ?? null,
@@ -205,7 +238,7 @@ class PipedriveWebhookService
         ]);
 
         Log::info('Pipedrive webhook: Object deleted', [
-            'object' => $meta['object'],
+            'object' => $entityType,
             'id' => $pipedriveId,
             'deleted_count' => $deleted,
         ]);
