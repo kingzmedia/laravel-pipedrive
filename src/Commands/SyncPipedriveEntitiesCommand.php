@@ -279,11 +279,7 @@ class SyncPipedriveEntitiesCommand extends Command
             $this->error('   3. Sync specific entities with smaller datasets');
             $this->error('   4. Update php.ini: memory_limit = 2048M');
             $this->error('');
-
-            if (!$this->confirm('Continue anyway? (may cause out-of-memory errors)', false)) {
-                $this->info('Operation cancelled. Use one of the solutions above.');
-                exit(self::FAILURE);
-            }
+ 
         } else {
             $this->info("✅ Memory limit appears sufficient for full-data mode.");
         }

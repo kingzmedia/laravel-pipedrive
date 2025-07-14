@@ -83,8 +83,9 @@ return [
             // Leave null to run based on frequency from app start
             'time' => env('PIPEDRIVE_SCHEDULER_TIME', '02:00'),
 
-            // Include full data sync (WARNING: This can be resource intensive)
-            'full_data' => env('PIPEDRIVE_SCHEDULER_FULL_DATA', true),
+            // DEPRECATED: full_data is now ALWAYS false for scheduled operations for safety
+            // The scheduler uses standard mode (limit=500, sorted by last modified) for optimal performance
+            'full_data' => false, // ALWAYS false - scheduler never uses full-data mode
 
             // Force sync (skip confirmations and overwrite existing data)
             'force' => env('PIPEDRIVE_SCHEDULER_FORCE', true),
@@ -92,8 +93,8 @@ return [
             // Sync custom fields along with entities
             'sync_custom_fields' => env('PIPEDRIVE_SCHEDULER_SYNC_CUSTOM_FIELDS', true),
 
-            // Memory limit for scheduled sync (in MB, 0 = no limit)
-            'memory_limit' => env('PIPEDRIVE_SCHEDULER_MEMORY_LIMIT', 2048),
+            // Record limit for scheduled sync (max 500, sorted by last modified)
+            'limit' => env('PIPEDRIVE_SCHEDULER_LIMIT', 500),
         ],
     ],
 

@@ -15,6 +15,40 @@ A comprehensive Laravel package for seamless Pipedrive CRM integration. Sync ent
 - ⚡ **Performance Optimized** - Efficient queries with proper indexing
 - 📊 **Rich Querying** - Advanced filtering and relationship queries
 
+## 🛡️ **Production-Ready Robustness**
+
+This package includes enterprise-grade robustness features designed for production environments:
+
+### **Smart Rate Limiting**
+- 🚦 **Token-based system** supporting Pipedrive's December 2024 rate limiting changes
+- 📊 **Daily budget tracking** with automatic token consumption monitoring
+- ⏱️ **Exponential backoff** with intelligent retry strategies
+- 🎯 **Per-endpoint cost calculation** for optimal API usage
+
+### **Intelligent Error Handling**
+- 🔄 **Circuit breaker pattern** prevents cascading failures
+- 🎯 **Error classification** with specific retry strategies for different error types
+- 🔍 **Automatic exception classification** (rate limits, auth, server errors, etc.)
+- 📈 **Failure tracking** with automatic recovery detection
+
+### **Adaptive Memory Management**
+- 🧠 **Real-time memory monitoring** with automatic alerts
+- 📏 **Dynamic batch size adjustment** based on memory usage
+- 🗑️ **Automatic garbage collection** during large operations
+- ⚠️ **Memory threshold warnings** with suggested optimizations
+
+### **API Health Monitoring**
+- 💚 **Continuous health checks** with cached status
+- 📊 **Performance degradation detection** with response time monitoring
+- 🔄 **Automatic recovery** when API health improves
+- 📈 **Health statistics** and trend analysis
+
+### **Centralized Job Architecture**
+- 🏗️ **Unified processing** eliminates code duplication
+- ⚡ **Dual execution modes** (synchronous for commands, asynchronous for schedulers)
+- 📊 **Progress tracking** with detailed statistics
+- 🔄 **Automatic retry logic** with intelligent backoff strategies
+
 ## 📦 **Installation**
 
 Install the package via Composer:
@@ -146,17 +180,20 @@ The package automatically handles token storage and refresh. For non-expiring to
 | **Recommended For** | Personal/Internal apps | Production/Public apps |
 | **Pipedrive App Store** | Not eligible | Required |
 
-### **Scheduled Synchronization & API Rate Limiting**
+### **Scheduled Synchronization & Robustness Configuration**
 ```env
-# Enable scheduled sync
+# Enable scheduled sync (SAFE MODE - always uses standard sync, never full-data)
 PIPEDRIVE_SCHEDULER_ENABLED=true
 PIPEDRIVE_SCHEDULER_FREQUENCY=24
 PIPEDRIVE_SCHEDULER_TIME=02:00
-PIPEDRIVE_SCHEDULER_MEMORY_LIMIT=2048
+PIPEDRIVE_SCHEDULER_LIMIT=500
 
-# API rate limiting (prevents hitting Pipedrive limits)
-PIPEDRIVE_API_DELAY=0.3
-PIPEDRIVE_API_DELAY_ENABLED=true
+# Robustness features
+PIPEDRIVE_RATE_LIMITING_ENABLED=true
+PIPEDRIVE_DAILY_TOKEN_BUDGET=10000
+PIPEDRIVE_MEMORY_THRESHOLD=80
+PIPEDRIVE_HEALTH_MONITORING_ENABLED=true
+PIPEDRIVE_CIRCUIT_BREAKER_THRESHOLD=5
 ```
 
 ## 🚀 **Quick Start**
@@ -189,7 +226,7 @@ php artisan pipedrive:sync-custom-fields --entity=deal --verbose
 
 ### **Scheduled Synchronization**
 ```bash
-# Run scheduled sync manually
+# Run scheduled sync manually (SAFE MODE - always uses standard sync)
 php artisan pipedrive:scheduled-sync
 
 # Test configuration (dry run)
@@ -199,7 +236,11 @@ php artisan pipedrive:scheduled-sync --dry-run
 php artisan pipedrive:scheduled-sync --verbose
 ```
 
-**Note**: All sync commands now include automatic API rate limiting (0.3s delay between calls) to prevent hitting Pipedrive's API limits.
+**🛡️ Safety Features**:
+- Scheduled sync **ALWAYS** uses standard mode (limit=500, sorted by last modified)
+- **NEVER** uses full-data mode for safety and performance
+- Includes comprehensive robustness features (rate limiting, error handling, memory management)
+- Automatic retry logic with circuit breaker protection
 
 ### **Real-Time Webhooks**
 ```bash
@@ -512,6 +553,10 @@ Comprehensive documentation is available in the `docs/` directory:
 ### Commands
 - [Sync Commands](docs/commands/sync-commands.md) - Complete sync command reference
 - [Scheduled Sync](docs/commands/scheduled-sync.md) - Automated synchronization setup
+
+### Robustness & Production Features
+- [Robustness Overview](docs/robustness/overview.md) - Production-ready features and architecture
+- [Troubleshooting Guide](docs/robustness/troubleshooting.md) - Common issues and solutions
 
 ### Advanced Topics
 - [Models & Relationships](docs/models-relationships.md) - Eloquent relationships and querying

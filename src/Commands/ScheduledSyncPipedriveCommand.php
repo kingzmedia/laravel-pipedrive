@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
+use Keggermont\LaravelPipedrive\Data\SyncOptions;
 
 class ScheduledSyncPipedriveCommand extends Command
 {
@@ -13,7 +15,7 @@ class ScheduledSyncPipedriveCommand extends Command
                         {--dry-run : Show what would be synced without actually running the sync}
                         {--verbose : Enable verbose output}';
 
-    public $description = 'Run scheduled full synchronization of Pipedrive entities and custom fields based on configuration';
+    public $description = 'Run scheduled synchronization of Pipedrive entities and custom fields using robust job system (always uses standard mode with limit=500 for safety)';
 
     public function handle(): int
     {
@@ -34,10 +36,11 @@ class ScheduledSyncPipedriveCommand extends Command
 
         // Get configuration
         $config = Config::get('pipedrive.sync.scheduler', []);
-        $fullData = $config['full_data'] ?? true;
+        // IMPORTANT: Scheduler NEVER uses full-data mode for safety and performance
+        $fullData = false; // Always false for scheduled operations
         $force = $config['force'] ?? true;
         $syncCustomFields = $config['sync_custom_fields'] ?? true;
-        $memoryLimit = $config['memory_limit'] ?? 2048;
+        $limit = $config['limit'] ?? 500; // Standard limit for scheduled sync
 
         // Set memory limit if specified
         if ($memoryLimit > 0) {
@@ -73,9 +76,9 @@ class ScheduledSyncPipedriveCommand extends Command
                 }
             }
 
-            // Sync entities
-            $this->info('🔄 Synchronizing entities...');
-            $exitCode = $this->syncEntities($force, $fullData, $isVerbose);
+            // Sync entities using robust job system
+            $this->info('🔄 Synchronizing entities using robust job system...');
+            $exitCode = $this->syncEntitiesUsingJobs($force, $limit, $isVerbose);
             if ($exitCode !== 0) {
                 $totalErrors++;
                 $this->error('❌ Entities sync failed');
@@ -119,13 +122,14 @@ class ScheduledSyncPipedriveCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function displaySyncConfiguration(bool $fullData, bool $force, bool $syncCustomFields, int $memoryLimit): void
+    protected function displaySyncConfiguration(bool $fullData, bool $force, bool $syncCustomFields, int $limit): void
     {
         $this->line('📋 Sync Configuration:');
-        $this->line('  • Full data mode: ' . ($fullData ? '✅ Enabled' : '❌ Disabled'));
+        $this->line('  • Full data mode: ' . ($fullData ? '✅ Enabled' : '❌ Disabled (SAFE - scheduler always uses standard mode)'));
         $this->line('  • Force mode: ' . ($force ? '✅ Enabled' : '❌ Disabled'));
         $this->line('  • Sync custom fields: ' . ($syncCustomFields ? '✅ Enabled' : '❌ Disabled'));
-        $this->line('  • Memory limit: ' . ($memoryLimit > 0 ? $memoryLimit . 'MB' : 'No limit'));
+        $this->line('  • Record limit: ' . $limit . ' (sorted by last modified)');
+        $this->line('  • Robustness: ✅ Enabled (rate limiting, error handling, memory management)');
         $this->line('');
     }
 
@@ -147,6 +151,66 @@ class ScheduledSyncPipedriveCommand extends Command
         }
 
         return Artisan::call($command, $arguments);
+    }
+
+    /**
+     * Sync entities using the robust job system
+     * IMPORTANT: Always uses standard mode (not full-data) for safety
+     */
+    protected function syncEntitiesUsingJobs(bool $force, int $limit, bool $verbose): int
+    {
+        $entities = [
+            'activities', 'deals', 'files', 'goals', 'notes', 'organizations',
+            'persons', 'pipelines', 'products', 'stages', 'users'
+        ];
+
+        $totalErrors = 0;
+        $totalSuccess = 0;
+
+        foreach ($entities as $entityType) {
+            try {
+                $this->line("  🔄 Syncing {$entityType}...");
+
+                // Create sync options for scheduler execution
+                // IMPORTANT: fullData is ALWAYS false for scheduled operations
+                $options = SyncOptions::forScheduler(
+                    $entityType,
+                    false, // fullData = false (NEVER true for scheduler)
+                    $force
+                );
+
+                // Override limit if specified
+                $options = $options->withChanges(['limit' => $limit]);
+
+                // Execute job synchronously for scheduler
+                $result = SyncPipedriveEntityJob::executeSync($options);
+
+                if ($result->isSuccess()) {
+                    $totalSuccess++;
+                    $this->line("    ✅ {$entityType}: {$result->synced} created, {$result->updated} updated, {$result->skipped} skipped");
+
+                    if ($verbose && $result->errors > 0) {
+                        $this->line("    ⚠️  {$result->errors} errors occurred");
+                    }
+                } else {
+                    $totalErrors++;
+                    $this->error("    ❌ {$entityType} sync failed: " . ($result->errorMessage ?? 'Unknown error'));
+                }
+
+            } catch (\Exception $e) {
+                $totalErrors++;
+                $this->error("    ❌ {$entityType} sync failed with exception: " . $e->getMessage());
+
+                if ($verbose) {
+                    $this->line("    → Exception details: " . $e->getTraceAsString());
+                }
+            }
+        }
+
+        $this->line('');
+        $this->info("📊 Entities sync summary: {$totalSuccess} successful, {$totalErrors} failed");
+
+        return $totalErrors > 0 ? self::FAILURE : self::SUCCESS;
     }
 
     protected function syncEntities(bool $force, bool $fullData, bool $verbose): int
