@@ -35,12 +35,11 @@ return new class extends Migration
             // Laravel timestamps
             $table->timestamps();
             
-            // Indexes
-            $table->index(['linkable_type', 'linkable_id']);
-            $table->index(['pipedrive_entity_type', 'pipedrive_entity_id']);
-            $table->index(['pipedrive_model_type', 'pipedrive_model_id']);
-            $table->index(['is_primary', 'is_active']);
-            $table->index('sync_status');
+            // Indexes (note: morphs() already creates index for linkable_type, linkable_id)
+            $table->index(['pipedrive_entity_type', 'pipedrive_entity_id'], 'idx_pd_entity_type_id');
+            $table->index(['pipedrive_model_type', 'pipedrive_model_id'], 'idx_pd_model_type_id');
+            $table->index(['is_primary', 'is_active'], 'idx_primary_active');
+            $table->index('sync_status', 'idx_sync_status');
             
             // Unique constraint to prevent duplicate links
             $table->unique([

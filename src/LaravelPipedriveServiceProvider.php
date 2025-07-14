@@ -21,6 +21,13 @@ use Keggermont\LaravelPipedrive\Services\DatabaseTokenStorage;
 use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
+// Robustness Services
+use Keggermont\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Keggermont\LaravelPipedrive\Services\PipedriveHealthChecker;
+use Keggermont\LaravelPipedrive\Services\PipedriveParsingService;
+
 class LaravelPipedriveServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
@@ -64,11 +71,15 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        // Register existing services
         $this->app->singleton(PipedriveCustomFieldService::class);
         $this->app->singleton(PipedriveAuthService::class);
         $this->app->singleton(PipedriveEntityLinkService::class);
         $this->app->singleton(PipedriveCacheService::class);
         $this->app->singleton(PipedriveQueryOptimizationService::class);
+
+        // Register robustness services
+        $this->registerRobustnessServices();
 
         // Bind the token storage interface to the default implementation
         $this->app->bind(PipedriveTokenStorageInterface::class, DatabaseTokenStorage::class);
@@ -81,6 +92,52 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
     {
         // Register scheduled sync if enabled
         $this->registerScheduledSync();
+    }
+
+    /**
+     * Register robustness services with proper configuration
+     */
+    protected function registerRobustnessServices(): void
+    {
+        // Rate Limit Manager
+        $this->app->singleton(PipedriveRateLimitManager::class, function ($app) {
+            return new PipedriveRateLimitManager(
+                config('pipedrive.robustness.rate_limiting', [])
+            );
+        });
+
+        // Error Handler
+        $this->app->singleton(PipedriveErrorHandler::class, function ($app) {
+            return new PipedriveErrorHandler(
+                config('pipedrive.robustness.error_handling', [])
+            );
+        });
+
+        // Memory Manager
+        $this->app->singleton(PipedriveMemoryManager::class, function ($app) {
+            return new PipedriveMemoryManager(
+                config('pipedrive.robustness.memory_management', [])
+            );
+        });
+
+        // Health Checker
+        $this->app->singleton(PipedriveHealthChecker::class, function ($app) {
+            return new PipedriveHealthChecker(
+                $app->make(PipedriveAuthService::class),
+                config('pipedrive.robustness.health_monitoring', [])
+            );
+        });
+
+        // Parsing Service (depends on other robustness services)
+        $this->app->singleton(PipedriveParsingService::class, function ($app) {
+            return new PipedriveParsingService(
+                $app->make(PipedriveAuthService::class),
+                $app->make(PipedriveRateLimitManager::class),
+                $app->make(PipedriveErrorHandler::class),
+                $app->make(PipedriveMemoryManager::class),
+                $app->make(PipedriveHealthChecker::class)
+            );
+        });
     }
 
     protected function registerScheduledSync(): void

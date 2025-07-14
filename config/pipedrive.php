@@ -187,4 +187,129 @@ return [
         // Cache key prefix
         'prefix' => env('PIPEDRIVE_CACHE_PREFIX', 'pipedrive'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Robustness Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Advanced robustness features including rate limiting, error handling,
+    | memory management, health monitoring, and alerting
+    |
+    */
+    'robustness' => [
+
+        // Rate limiting configuration
+        'rate_limiting' => [
+            'enabled' => env('PIPEDRIVE_RATE_LIMITING_ENABLED', true),
+            'daily_budget' => env('PIPEDRIVE_DAILY_TOKEN_BUDGET', 10000),
+            'max_delay' => env('PIPEDRIVE_RATE_LIMIT_MAX_DELAY', 16),
+            'jitter_enabled' => env('PIPEDRIVE_RATE_LIMIT_JITTER', true),
+            'token_costs' => [
+                'activities' => 1,
+                'deals' => 1,
+                'files' => 2,
+                'goals' => 1,
+                'notes' => 1,
+                'organizations' => 1,
+                'persons' => 1,
+                'pipelines' => 1,
+                'products' => 1,
+                'stages' => 1,
+                'users' => 1,
+                'custom_fields' => 1,
+                'webhooks' => 1,
+            ],
+        ],
+
+        // Error handling configuration
+        'error_handling' => [
+            'max_retry_attempts' => env('PIPEDRIVE_MAX_RETRY_ATTEMPTS', 3),
+            'circuit_breaker_threshold' => env('PIPEDRIVE_CIRCUIT_BREAKER_THRESHOLD', 5),
+            'circuit_breaker_timeout' => env('PIPEDRIVE_CIRCUIT_BREAKER_TIMEOUT', 300),
+            'request_timeout' => env('PIPEDRIVE_REQUEST_TIMEOUT', 30),
+        ],
+
+        // Memory management configuration
+        'memory_management' => [
+            'adaptive_pagination' => env('PIPEDRIVE_ADAPTIVE_PAGINATION', true),
+            'memory_threshold_percent' => env('PIPEDRIVE_MEMORY_THRESHOLD', 80),
+            'min_batch_size' => env('PIPEDRIVE_MIN_BATCH_SIZE', 10),
+            'max_batch_size' => env('PIPEDRIVE_MAX_BATCH_SIZE', 500),
+            'force_gc' => env('PIPEDRIVE_FORCE_GC', true),
+            'alert_threshold_percent' => env('PIPEDRIVE_MEMORY_ALERT_THRESHOLD', 85),
+            'critical_threshold_percent' => env('PIPEDRIVE_MEMORY_CRITICAL_THRESHOLD', 95),
+        ],
+
+        // Health monitoring configuration
+        'health_monitoring' => [
+            'enabled' => env('PIPEDRIVE_HEALTH_MONITORING_ENABLED', true),
+            'check_interval' => env('PIPEDRIVE_HEALTH_CHECK_INTERVAL', 300),
+            'health_endpoint' => env('PIPEDRIVE_HEALTH_ENDPOINT', 'currencies'),
+            'timeout' => env('PIPEDRIVE_HEALTH_CHECK_TIMEOUT', 10),
+            'failure_threshold' => env('PIPEDRIVE_HEALTH_FAILURE_THRESHOLD', 3),
+            'degradation_threshold' => env('PIPEDRIVE_HEALTH_DEGRADATION_THRESHOLD', 1000),
+            'cache_ttl' => env('PIPEDRIVE_HEALTH_CACHE_TTL', 60),
+        ],
+
+        // Performance monitoring
+        'monitoring' => [
+            'enabled' => env('PIPEDRIVE_MONITORING_ENABLED', true),
+            'performance_logging' => env('PIPEDRIVE_PERFORMANCE_LOGGING', true),
+            'failure_rate_threshold' => env('PIPEDRIVE_FAILURE_RATE_THRESHOLD', 10),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jobs Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for background job processing
+    |
+    */
+    'jobs' => [
+        'sync_queue' => env('PIPEDRIVE_SYNC_QUEUE', 'pipedrive-sync'),
+        'webhook_queue' => env('PIPEDRIVE_WEBHOOK_QUEUE', 'pipedrive-webhooks'),
+        'retry_queue' => env('PIPEDRIVE_RETRY_QUEUE', 'pipedrive-retry'),
+        'timeout' => env('PIPEDRIVE_JOB_TIMEOUT', 3600),
+        'max_tries' => env('PIPEDRIVE_JOB_MAX_TRIES', 3),
+        'prefer_async' => env('PIPEDRIVE_PREFER_ASYNC', false),
+        'batch_processing' => env('PIPEDRIVE_BATCH_PROCESSING', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Alerting Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for monitoring alerts and notifications
+    |
+    */
+    'alerting' => [
+        'enabled' => env('PIPEDRIVE_ALERTING_ENABLED', false),
+        'channels' => [
+            'mail' => [
+                'enabled' => env('PIPEDRIVE_ALERT_MAIL_ENABLED', false),
+                'to' => env('PIPEDRIVE_ALERT_MAIL_TO'),
+                'from' => env('PIPEDRIVE_ALERT_MAIL_FROM'),
+            ],
+            'slack' => [
+                'enabled' => env('PIPEDRIVE_ALERT_SLACK_ENABLED', false),
+                'webhook_url' => env('PIPEDRIVE_ALERT_SLACK_WEBHOOK'),
+                'channel' => env('PIPEDRIVE_ALERT_SLACK_CHANNEL', '#alerts'),
+            ],
+            'log' => [
+                'enabled' => env('PIPEDRIVE_ALERT_LOG_ENABLED', true),
+                'level' => env('PIPEDRIVE_ALERT_LOG_LEVEL', 'error'),
+            ],
+        ],
+        'conditions' => [
+            'circuit_breaker_open' => true,
+            'high_failure_rate' => true,
+            'memory_threshold' => true,
+            'rate_limit_exhaustion' => true,
+            'health_check_failure' => true,
+        ],
+    ],
 ];

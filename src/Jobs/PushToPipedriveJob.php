@@ -13,6 +13,11 @@ use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Keggermont\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Keggermont\LaravelPipedrive\Exceptions\PipedriveException;
+use Carbon\Carbon;
 
 class PushToPipedriveJob implements ShouldQueue
 {
@@ -54,10 +59,16 @@ class PushToPipedriveJob implements ShouldQueue
     }
 
     /**
-     * Execute the job.
+     * Execute the job with enhanced robustness features.
      */
-    public function handle(): array
-    {
+    public function handle(
+        PipedriveRateLimitManager $rateLimitManager,
+        PipedriveErrorHandler $errorHandler,
+        PipedriveMemoryManager $memoryManager
+    ): array {
+        $startTime = Carbon::now();
+        $startedAt = $startTime->toISOString();
+
         try {
             Log::info('Starting Pipedrive push job', [
                 'model' => get_class($this->model),
@@ -67,7 +78,16 @@ class PushToPipedriveJob implements ShouldQueue
                 'modifications' => array_keys($this->modifications),
                 'custom_fields' => array_keys($this->customFields),
                 'attempt' => $this->attempts(),
+                'job_id' => $this->job?->getJobId(),
             ]);
+
+            // Monitor memory usage
+            $memoryManager->monitorMemoryUsage("push_{$this->entityType}");
+
+            // Check rate limits before making API call
+            if (!$rateLimitManager->canMakeRequest($this->entityType)) {
+                throw $rateLimitManager->handleRateLimitResponse([], $this->entityType);
+            }
 
             // Get Pipedrive client
             $authService = app(PipedriveAuthService::class);
@@ -76,12 +96,20 @@ class PushToPipedriveJob implements ShouldQueue
             // Prepare data for Pipedrive API
             $updateData = $this->prepareDataForPipedrive();
 
-            // Call Pipedrive API to update the entity
-            $response = $this->callPipedriveUpdate($pipedrive, $updateData);
+            // Call Pipedrive API to update the entity with retry logic
+            $response = $this->callPipedriveUpdateWithRetry(
+                $pipedrive,
+                $updateData,
+                $rateLimitManager,
+                $errorHandler
+            );
 
             if (!$response || !isset($response['success']) || !$response['success']) {
                 throw new \Exception('Pipedrive API update failed: ' . ($response['error'] ?? 'Unknown error'));
             }
+
+            // Consume rate limit tokens on success
+            $rateLimitManager->consumeTokens($this->entityType);
 
             // Update local database with the modifications
             $this->updateLocalEntity();
@@ -96,8 +124,12 @@ class PushToPipedriveJob implements ShouldQueue
                     'job_class' => self::class,
                     'attempt' => $this->attempts(),
                     'queue' => $this->queue,
+                    'job_id' => $this->job?->getJobId(),
                 ]
             );
+
+            $endTime = Carbon::now();
+            $executionTime = $endTime->diffInSeconds($startTime, true);
 
             $result = [
                 'success' => true,
@@ -107,32 +139,147 @@ class PushToPipedriveJob implements ShouldQueue
                 'response' => $response,
                 'processed_via' => 'job',
                 'attempt' => $this->attempts(),
+                'execution_time' => $executionTime,
+                'memory_stats' => $memoryManager->getMemoryStats(),
+                'rate_limit_stats' => $rateLimitManager->getStatus(),
+                'started_at' => $startedAt,
+                'completed_at' => $endTime->toISOString(),
             ];
 
             Log::info('Successfully pushed modifications to Pipedrive via job', $result);
 
+            // Record success for circuit breaker
+            $errorHandler->recordSuccess('push');
+
             return $result;
 
-        } catch (\Exception $e) {
-            Log::error('Failed to push modifications to Pipedrive via job', [
-                'model' => get_class($this->model),
-                'model_id' => $this->model->getKey(),
+        } catch (PipedriveException $e) {
+            return $this->handlePipedriveException($e, $errorHandler, $startedAt);
+        } catch (\Throwable $e) {
+            return $this->handleGenericException($e, $errorHandler, $startedAt);
+        }
+    }
+
+    /**
+     * Handle Pipedrive-specific exceptions
+     */
+    protected function handlePipedriveException(
+        PipedriveException $e,
+        PipedriveErrorHandler $errorHandler,
+        string $startedAt
+    ): array {
+        $errorHandler->recordFailure($e);
+
+        $result = [
+            'success' => false,
+            'pipedrive_id' => $this->pipedriveId,
+            'entity_type' => $this->entityType,
+            'error' => $e->getMessage(),
+            'error_type' => $e->getErrorType(),
+            'retryable' => $e->isRetryable(),
+            'attempt' => $this->attempts(),
+            'max_attempts' => $this->tries,
+            'job_id' => $this->job?->getJobId(),
+            'started_at' => $startedAt,
+            'failed_at' => Carbon::now()->toISOString(),
+        ];
+
+        Log::error('Pipedrive push job failed with Pipedrive exception', array_merge($result, [
+            'exception_info' => $e->getErrorInfo(),
+            'model' => get_class($this->model),
+            'model_id' => $this->model->getKey(),
+            'modifications' => $this->modifications,
+            'custom_fields' => $this->customFields,
+        ]));
+
+        // Determine if job should be retried
+        if ($e->isRetryable() && $errorHandler->shouldRetry($e, $this->attempts())) {
+            $delay = $errorHandler->getRetryDelay($e, $this->attempts());
+
+            Log::info('Retrying Pipedrive push job', [
                 'entity_type' => $this->entityType,
                 'pipedrive_id' => $this->pipedriveId,
-                'error' => $e->getMessage(),
                 'attempt' => $this->attempts(),
-                'max_tries' => $this->tries,
-                'modifications' => $this->modifications,
-                'custom_fields' => $this->customFields,
+                'max_attempts' => $this->tries,
+                'retry_delay' => $delay,
+                'error_type' => $e->getErrorType(),
             ]);
 
-            // If this is the last attempt, mark as failed
-            if ($this->attempts() >= $this->tries) {
-                $this->markAsFailed($e);
-            }
-
-            throw $e;
+            $this->release($delay);
+            return $result;
         }
+
+        // Job failed permanently
+        $this->fail($e);
+        return $result;
+    }
+
+    /**
+     * Handle generic exceptions
+     */
+    protected function handleGenericException(
+        \Throwable $e,
+        PipedriveErrorHandler $errorHandler,
+        string $startedAt
+    ): array {
+        // Classify the exception
+        $classified = $errorHandler->classifyException($e, [
+            'operation' => 'push_job',
+            'entity_type' => $this->entityType,
+            'pipedrive_id' => $this->pipedriveId,
+            'model' => get_class($this->model),
+            'model_id' => $this->model->getKey(),
+        ]);
+
+        return $this->handlePipedriveException($classified, $errorHandler, $startedAt);
+    }
+
+    /**
+     * Call Pipedrive API with retry logic
+     */
+    protected function callPipedriveUpdateWithRetry(
+        $pipedrive,
+        array $updateData,
+        PipedriveRateLimitManager $rateLimitManager,
+        PipedriveErrorHandler $errorHandler,
+        int $maxRetries = 3
+    ) {
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            $attempt++;
+
+            try {
+                // Apply rate limiting delay if needed
+                if ($attempt > 1) {
+                    $rateLimitManager->waitForRateLimit($attempt);
+                }
+
+                // Make the API call
+                $response = $this->callPipedriveUpdate($pipedrive, $updateData);
+
+                return $response;
+
+            } catch (PipedriveException $e) {
+                if (!$e->isRetryable() || $attempt >= $maxRetries) {
+                    throw $e;
+                }
+
+                $delay = $errorHandler->getRetryDelay($e, $attempt);
+                Log::warning('API call failed in push job, retrying', [
+                    'entity_type' => $this->entityType,
+                    'pipedrive_id' => $this->pipedriveId,
+                    'attempt' => $attempt,
+                    'max_retries' => $maxRetries,
+                    'error' => $e->getMessage(),
+                    'retry_delay' => $delay,
+                ]);
+
+                sleep($delay);
+            }
+        }
+
+        throw new \Exception("Max retry attempts ({$maxRetries}) exceeded for push operation");
     }
 
     /**
@@ -149,10 +296,38 @@ class PushToPipedriveJob implements ShouldQueue
             'attempts' => $this->attempts(),
             'modifications' => $this->modifications,
             'custom_fields' => $this->customFields,
+            'job_id' => $this->job?->getJobId(),
         ]);
 
-        // You could emit a failed event here or send notifications
-        // Event::dispatch(new PipedrivePushFailed($this->model, $exception));
+        // Record failure for circuit breaker
+        if ($exception instanceof PipedriveException) {
+            $errorHandler = app(PipedriveErrorHandler::class);
+            $errorHandler->recordFailure($exception);
+        }
+
+        // Emit failed event
+        $this->emitPushFailed($exception);
+    }
+
+    /**
+     * Emit push failed event
+     */
+    protected function emitPushFailed(\Throwable $exception): void
+    {
+        // This would emit a push failed event
+        // Implementation depends on your event system
+        Log::error('Push to Pipedrive failed permanently', [
+            'model' => get_class($this->model),
+            'model_id' => $this->model->getKey(),
+            'entity_type' => $this->entityType,
+            'pipedrive_id' => $this->pipedriveId,
+            'exception' => [
+                'class' => get_class($exception),
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ],
+        ]);
     }
 
     /**
@@ -326,11 +501,49 @@ class PushToPipedriveJob implements ShouldQueue
     {
         // You could update a status field on the model here
         // Or create a failed job record for tracking
-        
+
         Log::error('Pipedrive push job marked as permanently failed', [
             'model' => get_class($this->model),
             'model_id' => $this->model->getKey(),
             'exception' => $exception->getMessage(),
         ]);
+    }
+
+    /**
+     * Get job tags for monitoring
+     */
+    public function tags(): array
+    {
+        return [
+            'pipedrive',
+            'push',
+            $this->entityType,
+            get_class($this->model),
+        ];
+    }
+
+    /**
+     * Get job display name
+     */
+    public function displayName(): string
+    {
+        return "Push to Pipedrive: {$this->entityType} #{$this->pipedriveId}";
+    }
+
+    /**
+     * Get job timeout
+     */
+    public function retryUntil(): \DateTime
+    {
+        $timeout = config('pipedrive.jobs.timeout', 3600);
+        return now()->addSeconds($timeout);
+    }
+
+    /**
+     * Get unique job ID for deduplication
+     */
+    public function uniqueId(): string
+    {
+        return "push_pipedrive_{$this->entityType}_{$this->pipedriveId}_{$this->model->getKey()}";
     }
 }
