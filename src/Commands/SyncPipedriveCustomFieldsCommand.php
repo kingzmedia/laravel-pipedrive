@@ -281,17 +281,13 @@ class SyncPipedriveCustomFieldsCommand extends Command
         }
 
         return $allFields;
-    }
-
-
+    } 
 
     /**
      * Make API call for specific field entity type with rate limiting
      */
     protected function makeFieldApiCall(string $entityType, array $options)
-    {
-        // Apply delay before API call to prevent rate limiting
-        $this->applyApiDelay();
+    { 
 
         if ($this->getOutput()->isVerbose()) {
             $this->line("  → Making API call for {$entityType} fields with options: " . json_encode($options));

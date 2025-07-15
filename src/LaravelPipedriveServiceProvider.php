@@ -13,6 +13,7 @@ use Keggermont\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
 use Keggermont\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
 use Keggermont\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
+use Keggermont\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
 use Keggermont\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
@@ -20,6 +21,7 @@ use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
 use Keggermont\LaravelPipedrive\Services\PipedriveCacheService;
 use Keggermont\LaravelPipedrive\Services\PipedriveQueryOptimizationService;
 use Keggermont\LaravelPipedrive\Services\DatabaseTokenStorage;
+use Keggermont\LaravelPipedrive\Services\PersistentTokenStorage;
 use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
@@ -58,6 +60,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 'create_pipedrive_goals_table',
                 'create_pipedrive_custom_fields_table',
                 'create_pipedrive_entity_links_table',
+                'create_pipedrive_oauth_tokens_table',
             ])
             ->hasCommands([
                 LaravelPipedriveCommand::class,
@@ -69,6 +72,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 ManagePipedriveEntityLinksCommand::class,
                 ClearPipedriveCacheCommand::class,
                 ClearPipedriveOAuthTokenCommand::class,
+                MigratePipedriveTokenCommand::class,
                 ShowPipedriveConfigCommand::class,
             ]);
     }
@@ -88,8 +92,8 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
         // Register robustness services
         $this->registerRobustnessServices();
 
-        // Bind the token storage interface to the default implementation
-        $this->app->bind(PipedriveTokenStorageInterface::class, DatabaseTokenStorage::class);
+        // Bind the token storage interface to the persistent implementation
+        $this->app->bind(PipedriveTokenStorageInterface::class, PersistentTokenStorage::class);
 
         // Bind the cache interface to the default implementation
         $this->app->bind(PipedriveCacheInterface::class, PipedriveCacheService::class);

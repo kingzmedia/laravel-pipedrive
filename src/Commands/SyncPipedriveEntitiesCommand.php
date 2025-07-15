@@ -343,6 +343,20 @@ class SyncPipedriveEntitiesCommand extends Command
 
 
     /**
+     * Apply API delay to prevent rate limiting
+     * Based on user preference for 0.3s delay between API calls
+     */
+    protected function applyApiDelay(): void
+    {
+        // Apply 0.3 second delay to prevent rate limiting
+        usleep(300000); // 300,000 microseconds = 0.3 seconds
+
+        if ($this->getOutput()->isVerbose()) {
+            $this->line("  → Applied 0.3s API delay to prevent rate limiting");
+        }
+    }
+
+    /**
      * Make API call for specific entity type with rate limiting
      */
     protected function makeApiCall(string $entityType, array $options)
