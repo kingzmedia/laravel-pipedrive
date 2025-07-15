@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Event;
 use Keggermont\LaravelPipedrive\Events\{
     PipedriveEntityCreated,
     PipedriveEntityUpdated,
-    PipedriveEntityDeleted
+    PipedriveEntityDeleted,
+    PipedriveEntityMerged
 };
 
 trait EmitsPipedriveEvents
@@ -70,6 +71,31 @@ trait EmitsPipedriveEvents
             $entityData,
             $source,
             $metadata
+        ));
+    }
+
+    /**
+     * Emit a Pipedrive entity merged event
+     */
+    protected function emitEntityMerged(
+        string $entityType,
+        int $mergedId,
+        int $survivingId,
+        ?Model $survivingEntity = null,
+        array $originalData = [],
+        string $source = 'unknown',
+        ?array $metadata = null,
+        int $migratedRelationsCount = 0
+    ): void {
+        Event::dispatch(new PipedriveEntityMerged(
+            $entityType,
+            $mergedId,
+            $survivingId,
+            $survivingEntity,
+            $originalData,
+            $source,
+            $metadata,
+            $migratedRelationsCount
         ));
     }
 

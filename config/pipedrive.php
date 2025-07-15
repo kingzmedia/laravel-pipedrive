@@ -139,6 +139,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Entity Merge Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure how entity merges are handled when entities are merged in Pipedrive
+    |
+    */
+    'merge' => [
+        // Enable heuristic detection of merges based on webhook patterns
+        'enable_heuristic_detection' => env('PIPEDRIVE_MERGE_HEURISTIC_DETECTION', true),
+
+        // Time window in seconds to analyze webhook events for merge patterns
+        'detection_window_seconds' => env('PIPEDRIVE_MERGE_DETECTION_WINDOW', 30),
+
+        // AUTOMATIC MIGRATION: Enable automatic migration of pipedrive_entity_links table
+        // When enabled, relationships are automatically migrated from merged entity to surviving entity
+        // This ensures continuity of relationships without requiring custom code
+        'auto_migrate_relations' => env('PIPEDRIVE_MERGE_AUTO_MIGRATE', true),
+
+        // Strategy for handling relation conflicts when migrating entity links
+        // Options: 'keep_both', 'keep_surviving', 'keep_merged'
+        // - keep_both: Keep both relations (recommended)
+        // - keep_surviving: Keep only the relation to the surviving entity
+        // - keep_merged: Keep the migrated relation, remove the existing one
+        'strategy' => env('PIPEDRIVE_MERGE_STRATEGY', 'keep_both'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Configuration
     |--------------------------------------------------------------------------
     |

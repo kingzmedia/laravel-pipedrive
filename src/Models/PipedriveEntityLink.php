@@ -242,4 +242,133 @@ class PipedriveEntityLink extends Model
 
         return $this->last_synced_at->diffInDays(now());
     }
+
+    /**
+     * Migrate entity relations from one Pipedrive entity to another
+     * Used when entities are merged in Pipedrive
+     *
+     * @param string $entityType The entity type (deals, persons, organizations, etc.)
+     * @param int $mergedId The ID of the entity being merged (source)
+     * @param int $survivingId The ID of the entity that survives (target)
+     * @param string $strategy Strategy for handling conflicts: 'keep_both', 'keep_surviving', 'keep_merged'
+     * @return array Migration results with counts
+     */
+    public static function migrateEntityRelations(
+        string $entityType,
+        int $mergedId,
+        int $survivingId,
+        string $strategy = 'keep_both'
+    ): array {
+        // Find all relations pointing to the merged entity
+        $relations = self::where('pipedrive_entity_type', $entityType)
+            ->where('pipedrive_entity_id', $mergedId)
+            ->get();
+
+        if ($relations->isEmpty()) {
+            return [
+                'migrated' => 0,
+                'skipped' => 0,
+                'conflicts' => 0,
+                'errors' => 0,
+            ];
+        }
+
+        $results = [
+            'migrated' => 0,
+            'skipped' => 0,
+            'conflicts' => 0,
+            'errors' => 0,
+            'details' => [],
+        ];
+
+        foreach ($relations as $relation) {
+            try {
+                // Check if there's already a relation to the surviving entity
+                $existingRelation = self::where('pipedrive_entity_type', $entityType)
+                    ->where('pipedrive_entity_id', $survivingId)
+                    ->where('linkable_type', $relation->linkable_type)
+                    ->where('linkable_id', $relation->linkable_id)
+                    ->first();
+
+                if ($existingRelation) {
+                    // Handle conflict based on strategy
+                    $results['conflicts']++;
+
+                    switch ($strategy) {
+                        case 'keep_both':
+                            // Keep both relations (do nothing with existing, update merged)
+                            $relation->update([
+                                'pipedrive_entity_id' => $survivingId,
+                                'is_primary' => false, // Never make the migrated one primary if conflict
+                                'metadata' => array_merge($relation->metadata ?? [], [
+                                    'migrated_from_id' => $mergedId,
+                                    'migrated_at' => now()->toIso8601String(),
+                                ]),
+                            ]);
+                            $results['migrated']++;
+                            break;
+
+                        case 'keep_surviving':
+                            // Keep only the relation to the surviving entity
+                            $relation->delete();
+                            $results['skipped']++;
+                            break;
+
+                        case 'keep_merged':
+                            // Keep the merged relation, update its entity ID
+                            $relation->update([
+                                'pipedrive_entity_id' => $survivingId,
+                                'metadata' => array_merge($relation->metadata ?? [], [
+                                    'migrated_from_id' => $mergedId,
+                                    'migrated_at' => now()->toIso8601String(),
+                                ]),
+                            ]);
+                            // Delete the existing relation to the surviving entity
+                            $existingRelation->delete();
+                            $results['migrated']++;
+                            break;
+
+                        default:
+                            // Unknown strategy, skip
+                            $results['skipped']++;
+                    }
+
+                    $results['details'][] = [
+                        'action' => 'conflict_' . $strategy,
+                        'linkable_type' => $relation->linkable_type,
+                        'linkable_id' => $relation->linkable_id,
+                    ];
+                } else {
+                    // No conflict, simply update the relation
+                    $relation->update([
+                        'pipedrive_entity_id' => $survivingId,
+                        'metadata' => array_merge($relation->metadata ?? [], [
+                            'migrated_from_id' => $mergedId,
+                            'migrated_at' => now()->toIso8601String(),
+                        ]),
+                    ]);
+
+                    // Try to sync the local Pipedrive model reference
+                    $relation->syncLocalPipedriveModel();
+
+                    $results['migrated']++;
+                    $results['details'][] = [
+                        'action' => 'migrated',
+                        'linkable_type' => $relation->linkable_type,
+                        'linkable_id' => $relation->linkable_id,
+                    ];
+                }
+            } catch (\Exception $e) {
+                $results['errors']++;
+                $results['details'][] = [
+                    'action' => 'error',
+                    'linkable_type' => $relation->linkable_type,
+                    'linkable_id' => $relation->linkable_id,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $results;
+    }
 }

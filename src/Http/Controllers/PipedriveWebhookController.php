@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Keggermont\LaravelPipedrive\Services\PipedriveWebhookService;
+use Keggermont\LaravelPipedrive\Services\PipedriveMergeDetectionService;
 use Keggermont\LaravelPipedrive\Http\Middleware\VerifyPipedriveWebhook;
 
 class PipedriveWebhookController extends Controller
@@ -19,8 +20,11 @@ class PipedriveWebhookController extends Controller
     /**
      * Handle incoming Pipedrive webhook
      */
-    public function handle(Request $request, PipedriveWebhookService $webhookService)
-    {
+    public function handle(
+        Request $request,
+        PipedriveWebhookService $webhookService,
+        PipedriveMergeDetectionService $mergeDetectionService
+    ) {
         try {
             $meta = $request->input('meta', []);
             $version = $meta['version'] ?? '1.0';
@@ -37,6 +41,11 @@ class PipedriveWebhookController extends Controller
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
+
+            // Track webhook for merge detection
+            if (config('pipedrive.merge.enable_heuristic_detection', true)) {
+                $mergeDetectionService->trackWebhookEvent($request->all());
+            }
 
             // Process the webhook
             $result = $webhookService->processWebhook($request->all());

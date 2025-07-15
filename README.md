@@ -14,6 +14,7 @@ A comprehensive Laravel package for seamless Pipedrive CRM integration. Sync ent
 - 🔐 **Dual Authentication** - Support for both API tokens and OAuth
 - ⚡ **Performance Optimized** - Efficient queries with proper indexing
 - 📊 **Rich Querying** - Advanced filtering and relationship queries
+- 🔄 **Automatic Entity Merging** - Seamless handling of entity merges with relationship continuity
 
 ## 🛡️ **Production-Ready Robustness**
 
@@ -618,6 +619,7 @@ foreach ($dealFields as $field) {
 - [🔗 **Entity Linking**](docs/entity-linking.md) - Link Laravel models to Pipedrive entities
 - [🚀 **Push to Pipedrive**](docs/push-to-pipedrive.md) - Sync modifications back to Pipedrive
 - [📡 **Events System**](docs/events.md) - Laravel events for Pipedrive operations
+- [🔄 **Entity Merging**](docs/entity-merging.md) - Automatic handling of entity merges
 - [🔗 **Using Relations**](docs/relations-usage.md) - Navigate between Pipedrive entities
 
 ### **Technical Reference**
@@ -664,6 +666,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Authentication](docs/authentication.md) - API token and OAuth setup
 - [Synchronization](docs/synchronization.md) - Data sync strategies and best practices
 - [Custom Fields](docs/custom-fields.md) - Managing Pipedrive custom fields
+- [Entity Merging](docs/entity-merging.md) - Automatic handling of entity merges
 - [Webhooks](docs/webhooks.md) - Real-time data synchronization
 - [Entity Linking](docs/entity-linking.md) - Connect Laravel models to Pipedrive entities
 

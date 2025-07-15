@@ -431,20 +431,81 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     protected function handleMergedEntity(int $mergedId, int $survivingId): void
     {
         $modelClass = $this->getModelClass();
-        
+
         if ($modelClass) {
+            // Get the surviving entity
+            $survivingRecord = $modelClass::where('pipedrive_id', $survivingId)->first();
+
+            // Get the merged entity (to be deleted)
             $mergedRecord = $modelClass::where('pipedrive_id', $mergedId)->first();
-            
-            if ($mergedRecord) {
-                // Update the record to point to the surviving entity or delete it
-                $mergedRecord->delete();
-                
-                Log::info('Handled merged entity', [
+
+            // Initialize migration results
+            $migrationResults = [
+                'migrated' => 0,
+                'skipped' => 0,
+                'conflicts' => 0,
+                'errors' => 0,
+                'auto_migration_enabled' => false,
+            ];
+
+            // Check if automatic migration is enabled
+            if (config('pipedrive.merge.auto_migrate_relations', true)) {
+                // Migrate entity relations in the pivot table automatically
+                $migrationStrategy = config('pipedrive.merge.strategy', 'keep_both');
+                $migrationResults = \Keggermont\LaravelPipedrive\Models\PipedriveEntityLink::migrateEntityRelations(
+                    $this->entityType,
+                    $mergedId,
+                    $survivingId,
+                    $migrationStrategy
+                );
+                $migrationResults['auto_migration_enabled'] = true;
+
+                Log::info('Automatic relation migration completed', [
                     'entity_type' => $this->entityType,
                     'merged_id' => $mergedId,
                     'surviving_id' => $survivingId,
+                    'migration_results' => $migrationResults,
+                ]);
+            } else {
+                Log::info('Automatic relation migration disabled', [
+                    'entity_type' => $this->entityType,
+                    'merged_id' => $mergedId,
+                    'surviving_id' => $survivingId,
+                    'note' => 'Set PIPEDRIVE_MERGE_AUTO_MIGRATE=true to enable automatic migration',
                 ]);
             }
+
+            // If the merged record exists, delete it
+            if ($mergedRecord) {
+                // Delete the merged record
+                $mergedRecord->delete();
+            }
+
+            // Emit the merged event (always emitted, regardless of auto-migration setting)
+            $this->emitEntityMerged(
+                $this->entityType,
+                $mergedId,
+                $survivingId,
+                $survivingRecord,
+                $this->webhookData['previous'] ?? [],
+                'webhook',
+                [
+                    'webhook_action' => 'merged',
+                    'change_source' => $this->metadata['change_source'] ?? null,
+                    'user_id' => $this->metadata['user_id'] ?? null,
+                    'company_id' => $this->metadata['company_id'] ?? null,
+                    'migration_results' => $migrationResults,
+                    'auto_migration_enabled' => $migrationResults['auto_migration_enabled'],
+                ],
+                $migrationResults['migrated'] ?? 0
+            );
+
+            Log::info('Handled merged entity', [
+                'entity_type' => $this->entityType,
+                'merged_id' => $mergedId,
+                'surviving_id' => $survivingId,
+                'migration_results' => $migrationResults,
+            ]);
         }
     }
 
