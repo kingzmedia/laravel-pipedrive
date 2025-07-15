@@ -24,8 +24,9 @@ class DatabaseTokenStorage implements PipedriveTokenStorageInterface
 
         // Store in cache with long TTL for non-expiring tokens
         // If token doesn't expire, store for 1 year, otherwise use token expiry
-        $ttl = $token->expiresAt() ?
-            now()->diffInSeconds($token->expiresAt()) :
+        $expiresAt = $token->expiresAt();
+        $ttl = $expiresAt ?
+            now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($expiresAt)) :
             now()->addYear();
 
         Cache::put($this->cacheKey, $tokenData, $ttl);

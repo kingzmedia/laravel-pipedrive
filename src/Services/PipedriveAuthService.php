@@ -131,4 +131,67 @@ class PipedriveAuthService
     {
         return $this->getAuthMethod() === 'oauth';
     }
+
+    /**
+     * Get OAuth authorization URL without redirecting
+     */
+    public function getAuthorizationUrl(array $options = []): string
+    {
+        if (!$this->isUsingOAuth()) {
+            throw new InvalidArgumentException('OAuth is not configured. Please set auth_method to "oauth" in your configuration.');
+        }
+
+        $clientId = config('pipedrive.oauth.client_id');
+        $redirectUrl = config('pipedrive.oauth.redirect_url');
+
+        if (empty($clientId) || empty($redirectUrl)) {
+            throw new InvalidArgumentException(
+                'OAuth configuration incomplete. Please set PIPEDRIVE_CLIENT_ID and PIPEDRIVE_REDIRECT_URL in your .env file'
+            );
+        }
+
+        $params = [
+            'client_id' => $clientId,
+            'redirect_uri' => $redirectUrl,
+            'response_type' => 'code',
+        ];
+
+        // Add optional parameters
+        if (isset($options['scope'])) {
+            $params['scope'] = $options['scope'];
+        }
+
+        // Only add state if explicitly provided and not empty
+        if (isset($options['state']) && !empty($options['state'])) {
+            $params['state'] = $options['state'];
+        }
+
+        $query = http_build_query($params);
+        return 'https://oauth.pipedrive.com/oauth/authorize?' . $query;
+    }
+
+    /**
+     * Exchange authorization code for access token
+     */
+    public function exchangeCodeForToken(string $code): bool
+    {
+        if (!$this->isUsingOAuth()) {
+            throw new InvalidArgumentException('OAuth is not configured. Please set auth_method to "oauth" in your configuration.');
+        }
+
+        try {
+            $pipedrive = $this->getPipedriveInstance();
+
+            // Use the authorize method from devio/pipedrive package
+            // This method will exchange the code for a token and store it
+            $pipedrive->authorize($code);
+
+            return true;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Pipedrive OAuth error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new InvalidArgumentException('Failed to exchange authorization code for token: ' . $e->getMessage());
+        }
+    }
 }

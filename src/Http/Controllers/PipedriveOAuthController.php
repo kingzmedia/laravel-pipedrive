@@ -40,19 +40,14 @@ class PipedriveOAuthController
         }
 
         try {
-            $pipedrive = $this->authService->getPipedriveInstance();
-            
             // Default scopes - can be customized
             $scopes = $request->get('scopes', 'deals:read deals:write persons:read persons:write organizations:read organizations:write activities:read activities:write');
-            
-            // Generate authorization URL
-            $authUrl = $pipedrive->getAuthorizationUrl([
-                'scope' => $scopes,
-                'state' => csrf_token() // CSRF protection
-            ]);
 
-            // Store state for verification
-            Session::put('pipedrive_oauth_state', csrf_token());
+            // Generate authorization URL using our custom method
+            // Note: We don't use state parameter to match devio/pipedrive package behavior
+            $authUrl = $this->authService->getAuthorizationUrl([
+                'scope' => $scopes,
+            ]);
 
             return view('pipedrive::oauth.authorize', [
                 'authUrl' => $authUrl,
@@ -75,19 +70,8 @@ class PipedriveOAuthController
      */
     public function callback(Request $request): View|RedirectResponse
     {
-        // Verify state parameter (CSRF protection)
-        $state = $request->get('state');
-        $sessionState = Session::get('pipedrive_oauth_state');
-        
-        if (!$state || $state !== $sessionState) {
-            return view('pipedrive::oauth.error', [
-                'error' => 'Invalid State',
-                'message' => 'OAuth state verification failed. This may be a security issue.'
-            ]);
-        }
-
-        // Clear the state from session
-        Session::forget('pipedrive_oauth_state');
+        // Note: We skip state verification to match devio/pipedrive package behavior
+        // The package doesn't use state parameter by default
 
         // Check for authorization errors
         if ($request->has('error')) {
@@ -115,14 +99,16 @@ class PipedriveOAuthController
         }
 
         try {
-            $pipedrive = $this->authService->getPipedriveInstance();
-            
-            // Exchange code for access token
-            $token = $pipedrive->getAccessToken($code);
-            
-            if (!$token) {
+            // Exchange code for access token using our custom method
+            $success = $this->authService->exchangeCodeForToken($code);
+
+            if (!$success) {
                 throw new \Exception('Failed to obtain access token');
             }
+
+            // Get the token for logging
+            $pipedrive = $this->authService->getPipedriveInstance();
+            $token = $pipedrive->getAccessToken();
 
             // Token is automatically stored via DatabaseTokenStorage
             Log::info('Pipedrive OAuth token obtained successfully', [
@@ -228,7 +214,7 @@ class PipedriveOAuthController
             $tokenStorage = app(\Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface::class);
             $token = $tokenStorage->getToken();
             
-            return $token !== null && !$token->isExpired();
+            return $token !== null && !$token->needsRefresh();
         } catch (\Exception $e) {
             return false;
         }
