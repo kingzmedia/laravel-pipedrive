@@ -35,6 +35,15 @@ class TestPipedriveConnectionCommand extends Command
         } else {
             $clientId = config('pipedrive.oauth.client_id');
             $this->info("OAuth Client ID: <fg=yellow>" . ($clientId ?: 'NOT SET') . "</>");
+
+            // Show token status for OAuth
+            $tokenStatus = $this->authService->getTokenStatus();
+            $this->info("Token Status: <fg=yellow>{$tokenStatus['status']}</>");
+
+            if (isset($tokenStatus['expires_at_human'])) {
+                $this->info("Token Expires: <fg=yellow>{$tokenStatus['expires_at_human']}</>");
+                $this->info("Needs Refresh: <fg=yellow>" . ($tokenStatus['needs_refresh'] ? 'Yes' : 'No') . "</>");
+            }
         }
 
         $this->newLine();

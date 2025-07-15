@@ -81,6 +81,17 @@ class PipedriveAuthService
         try {
             $pipedrive = $this->getPipedriveInstance();
 
+            // For OAuth, ensure token is valid and refreshed if needed
+            if ($this->isUsingOAuth()) {
+                if (!$this->ensureValidToken($pipedrive)) {
+                    return [
+                        'success' => false,
+                        'message' => 'No valid OAuth token found. Please re-authenticate.',
+                        'error' => 'Token missing or refresh failed',
+                    ];
+                }
+            }
+
             // Try the simplest possible endpoint - currencies (always available and simple)
             $response = $pipedrive->currencies->all();
 
@@ -192,6 +203,96 @@ class PipedriveAuthService
                 'trace' => $e->getTraceAsString()
             ]);
             throw new InvalidArgumentException('Failed to exchange authorization code for token: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Ensure the OAuth token is valid and refresh if needed
+     * Returns true if token is valid, false if no token or refresh failed
+     */
+    protected function ensureValidToken(Pipedrive $pipedrive): bool
+    {
+        if (!$this->isUsingOAuth()) {
+            return true;
+        }
+
+        $tokenStorage = app(PipedriveTokenStorageInterface::class);
+        $token = $tokenStorage->getToken();
+
+        if (!$token) {
+            return false;
+        }
+
+        // Use the built-in refresh mechanism from devio/pipedrive
+        if ($token->needsRefresh()) {
+            try {
+                \Illuminate\Support\Facades\Log::info('Pipedrive token needs refresh, refreshing...');
+                $token->refreshIfNeeded($pipedrive);
+                \Illuminate\Support\Facades\Log::info('Pipedrive token refreshed successfully');
+                return true;
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to refresh Pipedrive token: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Get token status information
+     */
+    public function getTokenStatus(): array
+    {
+        if (!$this->isUsingOAuth()) {
+            return [
+                'auth_method' => 'token',
+                'status' => 'N/A for token auth'
+            ];
+        }
+
+        try {
+            $tokenStorage = app(PipedriveTokenStorageInterface::class);
+            $token = $tokenStorage->getToken();
+
+            if (!$token) {
+                return [
+                    'auth_method' => 'oauth',
+                    'status' => 'no_token',
+                    'message' => 'No token found'
+                ];
+            }
+
+            return [
+                'auth_method' => 'oauth',
+                'status' => $token->needsRefresh() ? 'expired' : 'valid',
+                'expires_at' => $token->expiresAt(),
+                'expires_at_human' => date('Y-m-d H:i:s', $token->expiresAt()),
+                'needs_refresh' => $token->needsRefresh(),
+                'valid' => $token->valid(),
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'auth_method' => 'oauth',
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Clear the stored OAuth token
+     */
+    public function clearToken(): void
+    {
+        if (!$this->isUsingOAuth()) {
+            return;
+        }
+
+        $tokenStorage = app(PipedriveTokenStorageInterface::class);
+        if (method_exists($tokenStorage, 'clearToken')) {
+            $tokenStorage->clearToken();
         }
     }
 }

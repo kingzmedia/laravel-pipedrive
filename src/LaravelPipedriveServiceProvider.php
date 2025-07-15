@@ -12,6 +12,7 @@ use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
 use Keggermont\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
 use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
 use Keggermont\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
+use Keggermont\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
 use Keggermont\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
@@ -67,6 +68,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 ManagePipedriveWebhooksCommand::class,
                 ManagePipedriveEntityLinksCommand::class,
                 ClearPipedriveCacheCommand::class,
+                ClearPipedriveOAuthTokenCommand::class,
                 ShowPipedriveConfigCommand::class,
             ]);
     }
