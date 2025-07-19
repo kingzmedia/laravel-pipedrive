@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Keggermont\LaravelPipedrive\Services\PipedriveParsingService;
 use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
 use Keggermont\LaravelPipedrive\Data\SyncOptions;
 use Keggermont\LaravelPipedrive\Data\SyncResult;
 use Keggermont\LaravelPipedrive\Exceptions\PipedriveException;
@@ -62,7 +63,8 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
      */
     public function handle(
         PipedriveParsingService $parsingService,
-        PipedriveErrorHandler $errorHandler
+        PipedriveErrorHandler $errorHandler,
+        PipedriveCustomFieldDetectionService $customFieldDetectionService
     ): void {
         $startTime = Carbon::now();
         $startedAt = $startTime->toISOString();
@@ -89,6 +91,9 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
                 'merged' => $this->processMergedEvent($parsingService),
                 default => $this->processGenericEvent($parsingService)
             };
+
+            // Detect custom field changes if enabled
+            $this->detectCustomFieldChanges($customFieldDetectionService);
 
             // Emit webhook processed event
             $this->emitWebhookProcessed($result);
@@ -576,6 +581,64 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
             $this->entityType,
             $this->eventType,
         ];
+    }
+
+    /**
+     * Detect custom field changes and trigger sync if needed
+     */
+    protected function detectCustomFieldChanges(PipedriveCustomFieldDetectionService $detectionService): void
+    {
+        // Skip if custom field detection is disabled
+        if (!$detectionService->isEnabled()) {
+            return;
+        }
+
+        // Skip for unsupported entity types
+        $entityType = $detectionService->getEntityTypeFromWebhookObject($this->entityType);
+        if (!$entityType) {
+            return;
+        }
+
+        // Skip for delete events (no current data to analyze)
+        if ($this->eventType === 'deleted') {
+            return;
+        }
+
+        try {
+            $currentData = $this->webhookData['current'] ?? [];
+            $previousData = $this->webhookData['previous'] ?? null;
+
+            if (empty($currentData)) {
+                return;
+            }
+
+            $detectionResult = $detectionService->detectAndSyncCustomFields(
+                $entityType,
+                $currentData,
+                $previousData,
+                $this->eventType
+            );
+
+            if ($detectionResult['detected_changes']) {
+                Log::info('Custom field changes detected in webhook', [
+                    'entity_type' => $entityType,
+                    'webhook_entity_type' => $this->entityType,
+                    'event_type' => $this->eventType,
+                    'entity_id' => $this->entityId,
+                    'detection_result' => $detectionResult,
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            // Log error but don't fail the webhook processing
+            Log::error('Error during custom field detection in webhook', [
+                'entity_type' => $entityType,
+                'webhook_entity_type' => $this->entityType,
+                'event_type' => $this->eventType,
+                'entity_id' => $this->entityId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

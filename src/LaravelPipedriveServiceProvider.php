@@ -16,6 +16,7 @@ use Keggermont\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
 use Keggermont\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
 use Keggermont\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
 use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
 use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
 use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
 use Keggermont\LaravelPipedrive\Services\PipedriveCacheService;
@@ -81,6 +82,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
     {
         // Register existing services
         $this->app->singleton(PipedriveCustomFieldService::class);
+        $this->app->singleton(PipedriveCustomFieldDetectionService::class);
         $this->app->singleton(PipedriveAuthService::class);
         $this->app->singleton(PipedriveEntityLinkService::class);
         $this->app->singleton(PipedriveCacheService::class);
@@ -193,6 +195,41 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                     })
                     ->onSuccess(function () {
                         \Log::info('Pipedrive scheduled sync completed successfully');
+                    });
+            }
+
+            // Check if custom fields scheduler is enabled
+            if (config('pipedrive.sync.scheduler.custom_fields.enabled', true)) {
+                $customFieldsFrequency = config('pipedrive.sync.scheduler.custom_fields.frequency_hours', 1);
+                $customFieldsForce = config('pipedrive.sync.scheduler.custom_fields.force', true);
+
+                $customFieldsCommand = $schedule->command('pipedrive:sync-custom-fields', [
+                    '--force' => $customFieldsForce,
+                ]);
+
+                // Set frequency based on configuration
+                if ($customFieldsFrequency >= 24) {
+                    $customFieldsCommand->daily();
+                } elseif ($customFieldsFrequency >= 12) {
+                    $customFieldsCommand->twiceDaily();
+                } elseif ($customFieldsFrequency >= 6) {
+                    $customFieldsCommand->everySixHours();
+                } elseif ($customFieldsFrequency >= 3) {
+                    $customFieldsCommand->everyThreeHours();
+                } elseif ($customFieldsFrequency >= 2) {
+                    $customFieldsCommand->everyTwoHours();
+                } else {
+                    $customFieldsCommand->hourly();
+                }
+
+                $customFieldsCommand
+                    ->withoutOverlapping()
+                    ->runInBackground()
+                    ->onFailure(function () {
+                        \Log::error('Pipedrive custom fields scheduled sync failed');
+                    })
+                    ->onSuccess(function () {
+                        \Log::info('Pipedrive custom fields scheduled sync completed successfully');
                     });
             }
         });

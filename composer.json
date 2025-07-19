@@ -1,12 +1,16 @@
 {
-    "name": "kingzmedia/laravel-pipedrive",
+    "name": "skeylup/laravel-pipedrive",
     "description": "Wrapper for Pipedrive <> Laravel",
     "keywords": [
         "keggermont",
         "laravel",
+        "kevin eggermont",
+        "skeylup",
+        "pipedrive",
+        "pipedrive integration",
         "laravel-pipedrive"
     ],
-    "homepage": "https://github.com/kingzmedia/laravel-pipedrive",
+    "homepage": "https://github.com/skeylup/laravel-pipedrive",
     "license": "MIT",
     "authors": [
         {

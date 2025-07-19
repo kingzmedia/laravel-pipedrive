@@ -9,12 +9,13 @@ A comprehensive Laravel package for seamless Pipedrive CRM integration. Sync ent
 - � **Scheduled Synchronization** - Automated background sync with configurable frequency
 - 🛡️ **API Rate Limiting** - Built-in delays to prevent API rate limit issues
 - �🔗 **Eloquent Relationships** - Navigate between entities with Laravel's relationship system
-- 🎯 **Custom Fields Management** - Full support for Pipedrive custom fields with validation
+- 🎯 **Custom Fields Management** - Full support for Pipedrive custom fields with automated synchronization
 - 🏗️ **Hybrid Data Structure** - Essential columns + JSON storage for maximum flexibility
 - 🔐 **Dual Authentication** - Support for both API tokens and OAuth
 - ⚡ **Performance Optimized** - Efficient queries with proper indexing
 - 📊 **Rich Querying** - Advanced filtering and relationship queries
 - 🔄 **Automatic Entity Merging** - Seamless handling of entity merges with relationship continuity
+- 🤖 **Smart Custom Field Detection** - Real-time detection and sync of new custom fields via webhooks
 
 ## 🛡️ **Production-Ready Robustness**
 
@@ -189,6 +190,14 @@ PIPEDRIVE_SCHEDULER_FREQUENCY=24
 PIPEDRIVE_SCHEDULER_TIME=02:00
 PIPEDRIVE_SCHEDULER_LIMIT=500
 
+# Custom fields automatic synchronization
+PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_ENABLED=true
+PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FREQUENCY=1
+PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FORCE=true
+
+# Webhook custom field detection
+PIPEDRIVE_WEBHOOKS_DETECT_CUSTOM_FIELDS=true
+
 # Entity configuration
 PIPEDRIVE_ENABLED_ENTITIES=deals,activities,persons,organizations,products
 
@@ -238,7 +247,18 @@ php artisan pipedrive:sync-custom-fields
 
 # Sync specific entity fields
 php artisan pipedrive:sync-custom-fields --entity=deal --verbose
+
+# Force sync (skip confirmations)
+php artisan pipedrive:sync-custom-fields --force
+
+# Full data mode with pagination (use with caution)
+php artisan pipedrive:sync-custom-fields --full-data --force
 ```
+
+**🤖 Automatic Custom Field Synchronization:**
+- **Hourly Scheduler**: Automatically syncs custom fields every hour (configurable)
+- **Webhook Detection**: Real-time detection of new custom fields in entity updates
+- **Smart Triggering**: Only syncs when new fields are detected to minimize API usage
 
 ### **Scheduled Synchronization**
 ```bash
@@ -582,6 +602,7 @@ See [Webhook Management Documentation](docs/webhooks/webhook-management.md) for 
 
 ## 🎯 **Custom Fields**
 
+### **Manual Management**
 ```php
 use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
 
@@ -598,12 +619,41 @@ $mandatoryFields = PipedriveCustomField::forEntity('deal')->mandatory()->get();
 foreach ($dealFields as $field) {
     echo "Field: {$field->name} ({$field->field_type})\n";
     echo "Mandatory: " . ($field->isMandatory() ? 'Yes' : 'No') . "\n";
-    
+
     if ($field->hasOptions()) {
         echo "Options: " . implode(', ', $field->getOptions()) . "\n";
     }
 }
 ```
+
+### **🤖 Automatic Synchronization**
+
+**Hourly Scheduler:**
+```env
+# Enable automatic hourly sync (default: true)
+PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_ENABLED=true
+
+# Sync frequency in hours (default: 1 hour)
+PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FREQUENCY=1
+
+# Force sync without confirmations (default: true)
+PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FORCE=true
+```
+
+**Real-Time Webhook Detection:**
+```env
+# Enable detection of new custom fields in webhooks (default: true)
+PIPEDRIVE_WEBHOOKS_DETECT_CUSTOM_FIELDS=true
+```
+
+**How It Works:**
+- **Webhook Processing**: Automatically detects new custom fields (40-character hash keys) in entity updates
+- **Smart Detection**: Compares with known fields and triggers sync only when new fields are found
+- **Supported Entities**: Deals, Persons, Organizations, Products, Activities
+- **Asynchronous Processing**: Uses queue jobs to avoid blocking webhook processing
+- **Error Handling**: Graceful error handling that doesn't interrupt main webhook processing
+
+See [Custom Field Automation Documentation](docs/features/custom-field-automation.md) for detailed configuration and monitoring.
 
 ## 📚 **Documentation**
 
@@ -621,6 +671,7 @@ foreach ($dealFields as $field) {
 - [📡 **Events System**](docs/events.md) - Laravel events for Pipedrive operations
 - [🔄 **Entity Merging**](docs/entity-merging.md) - Automatic handling of entity merges
 - [🔗 **Using Relations**](docs/relations-usage.md) - Navigate between Pipedrive entities
+- [🤖 **Custom Field Automation**](docs/features/custom-field-automation.md) - Automated custom field synchronization
 
 ### **Technical Reference**
 - [🏗️ **Database Structure**](docs/database-structure.md) - Understanding the hybrid data approach
@@ -632,7 +683,7 @@ foreach ($dealFields as $field) {
 |---------|-------------|---------|
 | `pipedrive:test-connection` | Test Pipedrive API connection | - |
 | `pipedrive:sync-entities` | Sync Pipedrive entities | `--entity`, `--limit`, `--force`, `--verbose` |
-| `pipedrive:sync-custom-fields` | Sync custom fields | `--entity`, `--force`, `--verbose` |
+| `pipedrive:sync-custom-fields` | Sync custom fields (with automatic scheduling) | `--entity`, `--force`, `--full-data`, `--verbose` |
 | `pipedrive:scheduled-sync` | Automated scheduled sync | `--dry-run`, `--verbose` |
 | `pipedrive:webhooks` | Manage webhooks (list/create/delete/test) with smart configuration | `action`, `--url`, `--event`, `--id`, `--auth-user`, `--auth-pass`, `--auto-config`, `--test-url`, `--verbose` |
 | `pipedrive:entity-links` | Manage entity links (stats/sync/cleanup/list) | `action`, `--entity-type`, `--model-type`, `--status`, `--limit`, `--verbose` |
@@ -666,6 +717,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Authentication](docs/authentication.md) - API token and OAuth setup
 - [Synchronization](docs/synchronization.md) - Data sync strategies and best practices
 - [Custom Fields](docs/custom-fields.md) - Managing Pipedrive custom fields
+- [Custom Field Automation](docs/features/custom-field-automation.md) - Automated synchronization and detection
 - [Entity Merging](docs/entity-merging.md) - Automatic handling of entity merges
 - [Webhooks](docs/webhooks.md) - Real-time data synchronization
 - [Entity Linking](docs/entity-linking.md) - Connect Laravel models to Pipedrive entities

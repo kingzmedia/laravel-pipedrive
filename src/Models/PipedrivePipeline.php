@@ -56,7 +56,7 @@ class PipedrivePipeline extends BasePipedriveModel
     }
 
     // Helper methods
-    public function hasDealProbability(): bool
+    public function hasDealProbability(): ?bool
     {
         return $this->deal_probability;
     }

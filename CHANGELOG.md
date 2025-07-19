@@ -5,6 +5,15 @@ All notable changes to `laravel-pipedrive` will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **🤖 Custom Field Automation**: Revolutionary automated custom field synchronization system
+  - **Hourly Scheduler**: Automatic custom field sync every hour (configurable frequency)
+  - **Real-Time Webhook Detection**: Intelligent detection of new custom fields in webhook events
+  - **Smart Triggering**: Only syncs when new fields are detected to minimize API usage
+  - **Asynchronous Processing**: Queue-based jobs for non-blocking webhook processing
+  - **Comprehensive Configuration**: Full control via environment variables
+  - **Error Handling**: Graceful error handling that doesn't interrupt main operations
+  - **Monitoring & Logging**: Detailed logging for detection events and sync operations
+
 - **Enhanced Sync Commands**: Major improvements to `pipedrive:sync-entities` and `pipedrive:sync-custom-fields` commands
   - **Smart Sorting**: Default mode now fetches latest modifications first (`update_time DESC`) for optimal performance
   - **Full Data Mode**: New `--full-data` flag for complete data retrieval with automatic pagination
@@ -21,11 +30,19 @@ All notable changes to `laravel-pipedrive` will be documented in this file.
 - **Command Options**: Removed custom `--verbose` flag in favor of Laravel's standard `-v, --verbose` flag
 
 ### Enhanced
+- **Configuration**: New environment variables for custom field automation:
+  - `PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_ENABLED` - Enable/disable automatic custom field sync
+  - `PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FREQUENCY` - Sync frequency in hours (default: 1)
+  - `PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FORCE` - Force sync without confirmations
+  - `PIPEDRIVE_WEBHOOKS_DETECT_CUSTOM_FIELDS` - Enable webhook-based custom field detection
+
 - **Documentation**:
-  - New comprehensive [Sync Commands Documentation](docs/commands/sync-commands.md)
+  - New comprehensive [Custom Field Automation Documentation](docs/features/custom-field-automation.md)
+  - Updated [Sync Commands Documentation](docs/commands/sync-commands.md)
   - Detailed usage examples and best practices
   - API limitations and safety guidelines
   - Monitoring and alerting examples
+
 - **Error Handling**: Improved error reporting with stack traces in verbose mode
 - **Performance**: Optimized API calls with intelligent pagination and safety limits
 

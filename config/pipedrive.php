@@ -81,6 +81,18 @@ return [
 
             // Record limit for scheduled sync (max 500, sorted by last modified)
             'limit' => env('PIPEDRIVE_SCHEDULER_LIMIT', 500),
+
+            // Custom fields specific scheduler
+            'custom_fields' => [
+                // Enable/disable automatic custom fields sync (independent from main scheduler)
+                'enabled' => env('PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_ENABLED', true),
+
+                // Sync frequency in hours for custom fields (default: 1 hour)
+                'frequency_hours' => env('PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FREQUENCY', 1),
+
+                // Force sync for custom fields
+                'force' => env('PIPEDRIVE_CUSTOM_FIELDS_SCHEDULER_FORCE', true),
+            ],
         ],
     ],
 
@@ -95,6 +107,9 @@ return [
     'webhooks' => [
         // Enable automatic data synchronization from webhooks
         'auto_sync' => env('PIPEDRIVE_WEBHOOKS_AUTO_SYNC', true),
+
+        // Enable custom fields detection in webhooks
+        'detect_custom_fields' => env('PIPEDRIVE_WEBHOOKS_DETECT_CUSTOM_FIELDS', true),
 
         // Webhook route configuration
         'route' => [
