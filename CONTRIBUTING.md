@@ -189,7 +189,7 @@ docs/
 - **Never commit** API keys or credentials
 - **Validate all inputs** from external sources
 - **Use Laravel's built-in** security features
-- **Report security issues** privately to security@kingzmedia.com
+- **Report security issues** privately to security@skeylup.com
 
 ## 📦 **Release Process**
 

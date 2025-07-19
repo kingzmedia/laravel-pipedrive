@@ -56,7 +56,7 @@ This package includes enterprise-grade robustness features designed for producti
 Install the package via Composer:
 
 ```bash
-composer require kingzmedia/laravel-pipedrive
+composer require skeylup/laravel-pipedrive
 ```
 
 Publish and run the migrations:
