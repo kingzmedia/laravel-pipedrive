@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Console\Scheduling\Schedule;
-use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
 
 class CustomFieldSchedulerTest extends TestCase
 {
@@ -25,7 +25,7 @@ class CustomFieldSchedulerTest extends TestCase
         $schedule = $this->app->make(Schedule::class);
         
         // Trigger the service provider's boot method
-        $this->app->make(\Keggermont\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
+        $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();
@@ -49,7 +49,7 @@ class CustomFieldSchedulerTest extends TestCase
         $schedule = $this->app->make(Schedule::class);
         
         // Trigger the service provider's boot method
-        $this->app->make(\Keggermont\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
+        $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();
@@ -73,7 +73,7 @@ class CustomFieldSchedulerTest extends TestCase
         $schedule = $this->app->make(Schedule::class);
         
         // Trigger the service provider's boot method
-        $this->app->make(\Keggermont\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
+        $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();
@@ -106,7 +106,7 @@ class CustomFieldSchedulerTest extends TestCase
         $eventsProperty->setValue($schedule, []);
 
         // Trigger the service provider's boot method
-        $this->app->make(\Keggermont\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
+        $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();

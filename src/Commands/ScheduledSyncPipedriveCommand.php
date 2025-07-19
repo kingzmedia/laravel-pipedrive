@@ -1,14 +1,14 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
-use Keggermont\LaravelPipedrive\Data\SyncOptions;
-use Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
+use Skeylup\LaravelPipedrive\Data\SyncOptions;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService;
 
 class ScheduledSyncPipedriveCommand extends Command
 {

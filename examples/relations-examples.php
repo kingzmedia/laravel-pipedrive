@@ -4,11 +4,11 @@
  * Exemples pratiques d'utilisation des relations Pipedrive
  */
 
-use Keggermont\LaravelPipedrive\Models\PipedriveActivity;
-use Keggermont\LaravelPipedrive\Models\PipedriveDeal;
-use Keggermont\LaravelPipedrive\Models\PipedriveOrganization;
-use Keggermont\LaravelPipedrive\Models\PipedrivePerson;
-use Keggermont\LaravelPipedrive\Models\PipedriveUser;
+use Skeylup\LaravelPipedrive\Models\PipedriveActivity;
+use Skeylup\LaravelPipedrive\Models\PipedriveDeal;
+use Skeylup\LaravelPipedrive\Models\PipedriveOrganization;
+use Skeylup\LaravelPipedrive\Models\PipedrivePerson;
+use Skeylup\LaravelPipedrive\Models\PipedriveUser;
 
 // Exemple 1: Récupérer tous les deals d'un utilisateur avec leurs informations complètes
 function getUserDealsWithDetails($userId) {

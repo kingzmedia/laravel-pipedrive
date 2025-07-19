@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Devio\Pipedrive\Pipedrive;
 use Devio\Pipedrive\PipedriveTokenStorage;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 use InvalidArgumentException;
 
 class PipedriveAuthService

@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Events;
+namespace Skeylup\LaravelPipedrive\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

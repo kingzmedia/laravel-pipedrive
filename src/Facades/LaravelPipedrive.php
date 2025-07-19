@@ -1,16 +1,16 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Facades;
+namespace Skeylup\LaravelPipedrive\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Keggermont\LaravelPipedrive\LaravelPipedrive
+ * @see \Skeylup\LaravelPipedrive\LaravelPipedrive
  */
 class LaravelPipedrive extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \Keggermont\LaravelPipedrive\LaravelPipedrive::class;
+        return \Skeylup\LaravelPipedrive\LaravelPipedrive::class;
     }
 }

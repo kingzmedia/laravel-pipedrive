@@ -1,13 +1,13 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Tests\Feature;
+namespace Skeylup\LaravelPipedrive\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Eloquent\Model;
-use Keggermont\LaravelPipedrive\Tests\TestCase;
-use Keggermont\LaravelPipedrive\Traits\HasPipedriveEntity;
-use Keggermont\LaravelPipedrive\Enums\PipedriveEntityType;
-use Keggermont\LaravelPipedrive\Models\PipedriveEntityLink;
+use Skeylup\LaravelPipedrive\Tests\TestCase;
+use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
+use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
 
 class EntityLinkingTest extends TestCase
 {

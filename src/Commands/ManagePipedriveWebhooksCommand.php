@@ -1,13 +1,13 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
-use Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService;
 use Devio\Pipedrive\Pipedrive;
 
 class ManagePipedriveWebhooksCommand extends Command

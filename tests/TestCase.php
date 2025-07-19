@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Tests;
+namespace Skeylup\LaravelPipedrive\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Keggermont\LaravelPipedrive\LaravelPipedriveServiceProvider;
+use Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -13,7 +13,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Keggermont\\LaravelPipedrive\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Skeylup\\LaravelPipedrive\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 

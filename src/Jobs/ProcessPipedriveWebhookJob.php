@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Jobs;
+namespace Skeylup\LaravelPipedrive\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -8,13 +8,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Services\PipedriveParsingService;
-use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Keggermont\LaravelPipedrive\Data\SyncOptions;
-use Keggermont\LaravelPipedrive\Data\SyncResult;
-use Keggermont\LaravelPipedrive\Exceptions\PipedriveException;
-use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Data\SyncOptions;
+use Skeylup\LaravelPipedrive\Data\SyncResult;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 use Carbon\Carbon;
 
 /**
@@ -389,17 +389,17 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     protected function getModelClass(): ?string
     {
         $entityModelMap = [
-            'activities' => \Keggermont\LaravelPipedrive\Models\PipedriveActivity::class,
-            'deals' => \Keggermont\LaravelPipedrive\Models\PipedriveDeal::class,
-            'files' => \Keggermont\LaravelPipedrive\Models\PipedriveFile::class,
-            'goals' => \Keggermont\LaravelPipedrive\Models\PipedriveGoal::class,
-            'notes' => \Keggermont\LaravelPipedrive\Models\PipedriveNote::class,
-            'organizations' => \Keggermont\LaravelPipedrive\Models\PipedriveOrganization::class,
-            'persons' => \Keggermont\LaravelPipedrive\Models\PipedrivePerson::class,
-            'pipelines' => \Keggermont\LaravelPipedrive\Models\PipedrivePipeline::class,
-            'products' => \Keggermont\LaravelPipedrive\Models\PipedriveProduct::class,
-            'stages' => \Keggermont\LaravelPipedrive\Models\PipedriveStage::class,
-            'users' => \Keggermont\LaravelPipedrive\Models\PipedriveUser::class,
+            'activities' => \Skeylup\LaravelPipedrive\Models\PipedriveActivity::class,
+            'deals' => \Skeylup\LaravelPipedrive\Models\PipedriveDeal::class,
+            'files' => \Skeylup\LaravelPipedrive\Models\PipedriveFile::class,
+            'goals' => \Skeylup\LaravelPipedrive\Models\PipedriveGoal::class,
+            'notes' => \Skeylup\LaravelPipedrive\Models\PipedriveNote::class,
+            'organizations' => \Skeylup\LaravelPipedrive\Models\PipedriveOrganization::class,
+            'persons' => \Skeylup\LaravelPipedrive\Models\PipedrivePerson::class,
+            'pipelines' => \Skeylup\LaravelPipedrive\Models\PipedrivePipeline::class,
+            'products' => \Skeylup\LaravelPipedrive\Models\PipedriveProduct::class,
+            'stages' => \Skeylup\LaravelPipedrive\Models\PipedriveStage::class,
+            'users' => \Skeylup\LaravelPipedrive\Models\PipedriveUser::class,
         ];
 
         return $entityModelMap[$this->entityType] ?? null;
@@ -457,7 +457,7 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
             if (config('pipedrive.merge.auto_migrate_relations', true)) {
                 // Migrate entity relations in the pivot table automatically
                 $migrationStrategy = config('pipedrive.merge.strategy', 'keep_both');
-                $migrationResults = \Keggermont\LaravelPipedrive\Models\PipedriveEntityLink::migrateEntityRelations(
+                $migrationResults = \Skeylup\LaravelPipedrive\Models\PipedriveEntityLink::migrateEntityRelations(
                     $this->entityType,
                     $mergedId,
                     $survivingId,

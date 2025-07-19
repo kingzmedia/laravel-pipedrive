@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Keggermont\LaravelPipedrive\Traits\HasPipedriveEntity;
-use Keggermont\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
+use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
 
 /**
  * Example Order model showing how to use push and display methods

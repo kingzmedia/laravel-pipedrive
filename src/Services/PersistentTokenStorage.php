@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Devio\Pipedrive\PipedriveToken;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
-use Keggermont\LaravelPipedrive\Models\PipedriveOAuthToken;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Skeylup\LaravelPipedrive\Models\PipedriveOAuthToken;
 use Carbon\Carbon;
 
 class PersistentTokenStorage implements PipedriveTokenStorageInterface

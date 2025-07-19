@@ -5,7 +5,7 @@ namespace App\Listeners;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
-use Keggermont\LaravelPipedrive\Events\{
+use Skeylup\LaravelPipedrive\Events\{
     PipedriveEntityCreated,
     PipedriveEntityUpdated,
     PipedriveEntityDeleted

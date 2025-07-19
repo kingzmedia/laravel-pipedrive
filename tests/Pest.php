@@ -1,5 +1,5 @@
 <?php
 
-use Keggermont\LaravelPipedrive\Tests\TestCase;
+use Skeylup\LaravelPipedrive\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

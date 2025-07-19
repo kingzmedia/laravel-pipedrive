@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Devio\Pipedrive\PipedriveToken;
 use Illuminate\Support\Facades\Cache;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 
 class DatabaseTokenStorage implements PipedriveTokenStorageInterface
 {

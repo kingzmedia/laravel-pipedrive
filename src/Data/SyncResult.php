@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Data;
+namespace Skeylup\LaravelPipedrive\Data;
 
 use Spatie\LaravelData\Data;
 use Carbon\Carbon;

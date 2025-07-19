@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Keggermont\LaravelPipedrive\Http\Controllers\PipedriveWebhookController;
+use Skeylup\LaravelPipedrive\Http\Controllers\PipedriveWebhookController;
 
 /*
 |--------------------------------------------------------------------------

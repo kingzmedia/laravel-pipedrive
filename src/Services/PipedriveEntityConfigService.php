@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Config;
-use Keggermont\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
 
 /**
  * Service to manage Pipedrive entity configuration

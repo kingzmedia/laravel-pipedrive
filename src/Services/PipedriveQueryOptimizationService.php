@@ -1,13 +1,13 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
 /**
  * Pipedrive Query Optimization Service

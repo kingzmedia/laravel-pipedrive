@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Traits;
+namespace Skeylup\LaravelPipedrive\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
-use Keggermont\LaravelPipedrive\Events\{
+use Skeylup\LaravelPipedrive\Events\{
     PipedriveEntityCreated,
     PipedriveEntityUpdated,
     PipedriveEntityDeleted,
@@ -108,17 +108,17 @@ trait EmitsPipedriveEvents
         
         // Map model classes to entity types
         $modelMap = [
-            \Keggermont\LaravelPipedrive\Models\PipedriveActivity::class => 'activities',
-            \Keggermont\LaravelPipedrive\Models\PipedriveDeal::class => 'deals',
-            \Keggermont\LaravelPipedrive\Models\PipedriveFile::class => 'files',
-            \Keggermont\LaravelPipedrive\Models\PipedriveGoal::class => 'goals',
-            \Keggermont\LaravelPipedrive\Models\PipedriveNote::class => 'notes',
-            \Keggermont\LaravelPipedrive\Models\PipedriveOrganization::class => 'organizations',
-            \Keggermont\LaravelPipedrive\Models\PipedrivePerson::class => 'persons',
-            \Keggermont\LaravelPipedrive\Models\PipedrivePipeline::class => 'pipelines',
-            \Keggermont\LaravelPipedrive\Models\PipedriveProduct::class => 'products',
-            \Keggermont\LaravelPipedrive\Models\PipedriveStage::class => 'stages',
-            \Keggermont\LaravelPipedrive\Models\PipedriveUser::class => 'users',
+            \Skeylup\LaravelPipedrive\Models\PipedriveActivity::class => 'activities',
+            \Skeylup\LaravelPipedrive\Models\PipedriveDeal::class => 'deals',
+            \Skeylup\LaravelPipedrive\Models\PipedriveFile::class => 'files',
+            \Skeylup\LaravelPipedrive\Models\PipedriveGoal::class => 'goals',
+            \Skeylup\LaravelPipedrive\Models\PipedriveNote::class => 'notes',
+            \Skeylup\LaravelPipedrive\Models\PipedriveOrganization::class => 'organizations',
+            \Skeylup\LaravelPipedrive\Models\PipedrivePerson::class => 'persons',
+            \Skeylup\LaravelPipedrive\Models\PipedrivePipeline::class => 'pipelines',
+            \Skeylup\LaravelPipedrive\Models\PipedriveProduct::class => 'products',
+            \Skeylup\LaravelPipedrive\Models\PipedriveStage::class => 'stages',
+            \Skeylup\LaravelPipedrive\Models\PipedriveUser::class => 'users',
         ];
 
         return $modelMap[$modelClass] ?? 'unknown';

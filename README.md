@@ -151,7 +151,7 @@ The package includes a complete OAuth web interface with beautiful UI pages. Aft
 // In your controller
 public function connectToPipedrive()
 {
-    $authService = app(\Keggermont\LaravelPipedrive\Services\PipedriveAuthService::class);
+    $authService = app(\Skeylup\LaravelPipedrive\Services\PipedriveAuthService::class);
     $pipedrive = $authService->getPipedriveInstance();
 
     $authUrl = $pipedrive->getAuthorizationUrl([
@@ -299,15 +299,15 @@ curl https://your-app.com/pipedrive/webhook/health
 All Pipedrive entities are available as Eloquent models with full relationship support:
 
 ```php
-use Keggermont\LaravelPipedrive\Models\{
+use Skeylup\LaravelPipedrive\Models\{
     PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
     PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
     PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal
 };
 
 // Link your Laravel models to Pipedrive entities
-use Keggermont\LaravelPipedrive\Traits\HasPipedriveEntity;
-use Keggermont\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
+use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
 
 class Order extends Model
 {
@@ -604,7 +604,7 @@ See [Webhook Management Documentation](docs/webhooks/webhook-management.md) for 
 
 ### **Manual Management**
 ```php
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 
 // Get all deal fields
 $dealFields = PipedriveCustomField::forEntity('deal')->active()->get();

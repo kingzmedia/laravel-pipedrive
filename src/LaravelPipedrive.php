@@ -1,5 +1,5 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive;
+namespace Skeylup\LaravelPipedrive;
 
 class LaravelPipedrive {}

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Keggermont\LaravelPipedrive\Traits\HasPipedriveEntity;
+use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
 
 /**
  * Example Order model showing how to use the HasPipedriveEntity trait

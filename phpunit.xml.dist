@@ -16,7 +16,7 @@
     backupStaticProperties="false"
 >
     <testsuites>
-        <testsuite name="Keggermont Test Suite">
+        <testsuite name="Skeylup Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

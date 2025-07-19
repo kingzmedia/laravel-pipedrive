@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Exceptions;
+namespace Skeylup\LaravelPipedrive\Exceptions;
 
 use Exception;
 use Throwable;

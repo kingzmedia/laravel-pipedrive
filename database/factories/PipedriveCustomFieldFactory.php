@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 
 class PipedriveCustomFieldFactory extends Factory
 {

@@ -7,10 +7,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 
 class CustomFieldDetectionTest extends TestCase
 {

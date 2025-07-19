@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Models;
+namespace Skeylup\LaravelPipedrive\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Keggermont\LaravelPipedrive\Data\PipedriveGoalData;
+use Skeylup\LaravelPipedrive\Data\PipedriveGoalData;
 
 class PipedriveGoal extends BasePipedriveModel
 {

@@ -1,14 +1,14 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Http\Controllers;
+namespace Skeylup\LaravelPipedrive\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Services\PipedriveWebhookService;
-use Keggermont\LaravelPipedrive\Services\PipedriveMergeDetectionService;
-use Keggermont\LaravelPipedrive\Http\Middleware\VerifyPipedriveWebhook;
+use Skeylup\LaravelPipedrive\Services\PipedriveWebhookService;
+use Skeylup\LaravelPipedrive\Services\PipedriveMergeDetectionService;
+use Skeylup\LaravelPipedrive\Http\Middleware\VerifyPipedriveWebhook;
 
 class PipedriveWebhookController extends Controller
 {

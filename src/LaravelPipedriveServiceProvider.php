@@ -1,37 +1,37 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive;
+namespace Skeylup\LaravelPipedrive;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Keggermont\LaravelPipedrive\Commands\LaravelPipedriveCommand;
-use Keggermont\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
-use Keggermont\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
-use Keggermont\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
-use Keggermont\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
-use Keggermont\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
-use Keggermont\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
-use Keggermont\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
-use Keggermont\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
-use Keggermont\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
-use Keggermont\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
-use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
-use Keggermont\LaravelPipedrive\Services\PipedriveCacheService;
-use Keggermont\LaravelPipedrive\Services\PipedriveQueryOptimizationService;
-use Keggermont\LaravelPipedrive\Services\DatabaseTokenStorage;
-use Keggermont\LaravelPipedrive\Services\PersistentTokenStorage;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
+use Skeylup\LaravelPipedrive\Commands\LaravelPipedriveCommand;
+use Skeylup\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
+use Skeylup\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
+use Skeylup\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
+use Skeylup\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
+use Skeylup\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
+use Skeylup\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
+use Skeylup\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
+use Skeylup\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
+use Skeylup\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
+use Skeylup\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityLinkService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCacheService;
+use Skeylup\LaravelPipedrive\Services\PipedriveQueryOptimizationService;
+use Skeylup\LaravelPipedrive\Services\DatabaseTokenStorage;
+use Skeylup\LaravelPipedrive\Services\PersistentTokenStorage;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
 // Robustness Services
-use Keggermont\LaravelPipedrive\Services\PipedriveRateLimitManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveHealthChecker;
-use Keggermont\LaravelPipedrive\Services\PipedriveParsingService;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
 
 class LaravelPipedriveServiceProvider extends PackageServiceProvider
 {
@@ -89,7 +89,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
         $this->app->singleton(PipedriveQueryOptimizationService::class);
 
         // Register entity configuration service
-        $this->app->singleton(\Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService::class);
+        $this->app->singleton(\Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService::class);
 
         // Register robustness services
         $this->registerRobustnessServices();

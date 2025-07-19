@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Jobs;
+namespace Skeylup\LaravelPipedrive\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -8,14 +8,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Services\PipedriveParsingService;
-use Keggermont\LaravelPipedrive\Services\PipedriveRateLimitManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveHealthChecker;
-use Keggermont\LaravelPipedrive\Data\SyncOptions;
-use Keggermont\LaravelPipedrive\Data\SyncResult;
-use Keggermont\LaravelPipedrive\Exceptions\PipedriveException;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
+use Skeylup\LaravelPipedrive\Data\SyncOptions;
+use Skeylup\LaravelPipedrive\Data\SyncResult;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
 use Carbon\Carbon;
 
 /**

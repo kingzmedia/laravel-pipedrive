@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 use Carbon\Carbon;
 
 /**

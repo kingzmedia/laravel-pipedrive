@@ -1,17 +1,17 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
-use Keggermont\LaravelPipedrive\Services\PipedriveEntityConfigService;
-use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
-use Keggermont\LaravelPipedrive\Data\SyncOptions;
-use Keggermont\LaravelPipedrive\Data\SyncResult;
-use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
+use Skeylup\LaravelPipedrive\Data\SyncOptions;
+use Skeylup\LaravelPipedrive\Data\SyncResult;
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
 use Devio\Pipedrive\Pipedrive;
 
 class SyncPipedriveEntitiesCommand extends Command

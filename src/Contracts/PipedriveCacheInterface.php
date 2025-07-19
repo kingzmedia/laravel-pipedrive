@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Contracts;
+namespace Skeylup\LaravelPipedrive\Contracts;
 
 use Illuminate\Support\Collection;
 

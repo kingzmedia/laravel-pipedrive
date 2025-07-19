@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
 /**
  * Clear Pipedrive Cache Command

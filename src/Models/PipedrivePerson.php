@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Models;
+namespace Skeylup\LaravelPipedrive\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Keggermont\LaravelPipedrive\Data\PipedrivePersonData;
+use Skeylup\LaravelPipedrive\Data\PipedrivePersonData;
 
 class PipedrivePerson extends BasePipedriveModel
 {

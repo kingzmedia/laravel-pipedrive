@@ -4,7 +4,7 @@
  * Exemples pratiques d'utilisation des webhooks Pipedrive
  */
 
-use Keggermont\LaravelPipedrive\Events\PipedriveWebhookReceived;
+use Skeylup\LaravelPipedrive\Events\PipedriveWebhookReceived;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 

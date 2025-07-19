@@ -6,12 +6,12 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Jobs\ProcessPipedriveWebhookJob;
-use Keggermont\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Keggermont\LaravelPipedrive\Services\PipedriveParsingService;
-use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Jobs\ProcessPipedriveWebhookJob;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 
 class WebhookCustomFieldIntegrationTest extends TestCase
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Tests\Feature\Commands;
+namespace Skeylup\LaravelPipedrive\Tests\Feature\Commands;
 
-use Keggermont\LaravelPipedrive\Tests\TestCase;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Tests\TestCase;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 use Mockery;
 
 class SyncCommandsTest extends TestCase

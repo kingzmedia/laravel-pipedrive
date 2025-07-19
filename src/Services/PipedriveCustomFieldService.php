@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
-use Keggermont\LaravelPipedrive\Contracts\PipedriveCacheInterface;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 

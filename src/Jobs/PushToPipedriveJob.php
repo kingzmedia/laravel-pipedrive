@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Jobs;
+namespace Skeylup\LaravelPipedrive\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -9,14 +9,14 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Keggermont\LaravelPipedrive\Services\PipedriveRateLimitManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Keggermont\LaravelPipedrive\Exceptions\PipedriveException;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
 use Carbon\Carbon;
 
 class PushToPipedriveJob implements ShouldQueue

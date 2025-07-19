@@ -1,12 +1,12 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
-use Keggermont\LaravelPipedrive\Events\PipedriveWebhookReceived;
-use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Keggermont\LaravelPipedrive\Models\{
+use Skeylup\LaravelPipedrive\Events\PipedriveWebhookReceived;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Skeylup\LaravelPipedrive\Models\{
     PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
     PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
     PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal

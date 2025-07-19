@@ -1,11 +1,11 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Models\PipedriveEntityLink;
-use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 
 class PipedriveMergeDetectionService
 {
@@ -227,17 +227,17 @@ class PipedriveMergeDetectionService
     protected function getModelClassForEntityType(string $entityType): ?string
     {
         $modelMap = [
-            'deals' => \Keggermont\LaravelPipedrive\Models\PipedriveDeal::class,
-            'persons' => \Keggermont\LaravelPipedrive\Models\PipedrivePerson::class,
-            'organizations' => \Keggermont\LaravelPipedrive\Models\PipedriveOrganization::class,
-            'activities' => \Keggermont\LaravelPipedrive\Models\PipedriveActivity::class,
-            'products' => \Keggermont\LaravelPipedrive\Models\PipedriveProduct::class,
-            'files' => \Keggermont\LaravelPipedrive\Models\PipedriveFile::class,
-            'notes' => \Keggermont\LaravelPipedrive\Models\PipedriveNote::class,
-            'users' => \Keggermont\LaravelPipedrive\Models\PipedriveUser::class,
-            'pipelines' => \Keggermont\LaravelPipedrive\Models\PipedrivePipeline::class,
-            'stages' => \Keggermont\LaravelPipedrive\Models\PipedriveStage::class,
-            'goals' => \Keggermont\LaravelPipedrive\Models\PipedriveGoal::class,
+            'deals' => \Skeylup\LaravelPipedrive\Models\PipedriveDeal::class,
+            'persons' => \Skeylup\LaravelPipedrive\Models\PipedrivePerson::class,
+            'organizations' => \Skeylup\LaravelPipedrive\Models\PipedriveOrganization::class,
+            'activities' => \Skeylup\LaravelPipedrive\Models\PipedriveActivity::class,
+            'products' => \Skeylup\LaravelPipedrive\Models\PipedriveProduct::class,
+            'files' => \Skeylup\LaravelPipedrive\Models\PipedriveFile::class,
+            'notes' => \Skeylup\LaravelPipedrive\Models\PipedriveNote::class,
+            'users' => \Skeylup\LaravelPipedrive\Models\PipedriveUser::class,
+            'pipelines' => \Skeylup\LaravelPipedrive\Models\PipedrivePipeline::class,
+            'stages' => \Skeylup\LaravelPipedrive\Models\PipedriveStage::class,
+            'goals' => \Skeylup\LaravelPipedrive\Models\PipedriveGoal::class,
         ];
 
         return $modelMap[$entityType] ?? null;

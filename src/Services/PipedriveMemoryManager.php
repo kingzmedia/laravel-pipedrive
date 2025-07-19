@@ -1,9 +1,9 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Exceptions\PipedriveMemoryException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveMemoryException;
 
 /**
  * Adaptive memory management service

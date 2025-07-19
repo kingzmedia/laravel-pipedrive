@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Tests\Feature;
+namespace Skeylup\LaravelPipedrive\Tests\Feature;
 
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Keggermont\LaravelPipedrive\Tests\TestCase;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Skeylup\LaravelPipedrive\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PipedriveCustomFieldTest extends TestCase

@@ -1,15 +1,15 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Services;
+namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
-use Keggermont\LaravelPipedrive\Services\PipedriveRateLimitManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Keggermont\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Keggermont\LaravelPipedrive\Services\PipedriveHealthChecker;
-use Keggermont\LaravelPipedrive\Exceptions\PipedriveException;
-use Keggermont\LaravelPipedrive\Traits\EmitsPipedriveEvents;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 
 /**
  * Centralized parsing service for Pipedrive data
@@ -29,17 +29,17 @@ class PipedriveParsingService
     protected $pipedrive;
 
     protected array $entityModelMap = [
-        'activities' => \Keggermont\LaravelPipedrive\Models\PipedriveActivity::class,
-        'deals' => \Keggermont\LaravelPipedrive\Models\PipedriveDeal::class,
-        'files' => \Keggermont\LaravelPipedrive\Models\PipedriveFile::class,
-        'goals' => \Keggermont\LaravelPipedrive\Models\PipedriveGoal::class,
-        'notes' => \Keggermont\LaravelPipedrive\Models\PipedriveNote::class,
-        'organizations' => \Keggermont\LaravelPipedrive\Models\PipedriveOrganization::class,
-        'persons' => \Keggermont\LaravelPipedrive\Models\PipedrivePerson::class,
-        'pipelines' => \Keggermont\LaravelPipedrive\Models\PipedrivePipeline::class,
-        'products' => \Keggermont\LaravelPipedrive\Models\PipedriveProduct::class,
-        'stages' => \Keggermont\LaravelPipedrive\Models\PipedriveStage::class,
-        'users' => \Keggermont\LaravelPipedrive\Models\PipedriveUser::class,
+        'activities' => \Skeylup\LaravelPipedrive\Models\PipedriveActivity::class,
+        'deals' => \Skeylup\LaravelPipedrive\Models\PipedriveDeal::class,
+        'files' => \Skeylup\LaravelPipedrive\Models\PipedriveFile::class,
+        'goals' => \Skeylup\LaravelPipedrive\Models\PipedriveGoal::class,
+        'notes' => \Skeylup\LaravelPipedrive\Models\PipedriveNote::class,
+        'organizations' => \Skeylup\LaravelPipedrive\Models\PipedriveOrganization::class,
+        'persons' => \Skeylup\LaravelPipedrive\Models\PipedrivePerson::class,
+        'pipelines' => \Skeylup\LaravelPipedrive\Models\PipedrivePipeline::class,
+        'products' => \Skeylup\LaravelPipedrive\Models\PipedriveProduct::class,
+        'stages' => \Skeylup\LaravelPipedrive\Models\PipedriveStage::class,
+        'users' => \Skeylup\LaravelPipedrive\Models\PipedriveUser::class,
     ];
 
     public function __construct(

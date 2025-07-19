@@ -1,17 +1,17 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Tests\Feature;
+namespace Skeylup\LaravelPipedrive\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Keggermont\LaravelPipedrive\Tests\TestCase;
-use Keggermont\LaravelPipedrive\Events\{
+use Skeylup\LaravelPipedrive\Tests\TestCase;
+use Skeylup\LaravelPipedrive\Events\{
     PipedriveEntityCreated,
     PipedriveEntityUpdated,
     PipedriveEntityDeleted
 };
-use Keggermont\LaravelPipedrive\Services\PipedriveWebhookService;
-use Keggermont\LaravelPipedrive\Models\PipedriveDeal;
+use Skeylup\LaravelPipedrive\Services\PipedriveWebhookService;
+use Skeylup\LaravelPipedrive\Models\PipedriveDeal;
 
 class PipedriveEventsTest extends TestCase
 {

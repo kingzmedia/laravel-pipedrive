@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Database\Factories;
+namespace Skeylup\LaravelPipedrive\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 

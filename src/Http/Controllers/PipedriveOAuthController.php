@@ -1,13 +1,13 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Http\Controllers;
+namespace Skeylup\LaravelPipedrive\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 
 class PipedriveOAuthController
 {
@@ -148,7 +148,7 @@ class PipedriveOAuthController
     {
         try {
             // Clear the stored token
-            $tokenStorage = app(\Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface::class);
+            $tokenStorage = app(\Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface::class);
 
             if (method_exists($tokenStorage, 'clearToken')) {
                 $tokenStorage->clearToken();
@@ -211,7 +211,7 @@ class PipedriveOAuthController
     protected function isAlreadyAuthenticated(): bool
     {
         try {
-            $tokenStorage = app(\Keggermont\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface::class);
+            $tokenStorage = app(\Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface::class);
             $token = $tokenStorage->getToken();
             
             return $token !== null && !$token->needsRefresh();

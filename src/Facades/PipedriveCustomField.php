@@ -1,16 +1,16 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Facades;
+namespace Skeylup\LaravelPipedrive\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService
+ * @see \Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService
  */
 class PipedriveCustomField extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService::class;
+        return \Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService::class;
     }
 }

@@ -1,19 +1,19 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Traits;
+namespace Skeylup\LaravelPipedrive\Traits;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Keggermont\LaravelPipedrive\Models\PipedriveEntityLink;
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
-use Keggermont\LaravelPipedrive\Enums\PipedriveEntityType;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
-use Keggermont\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Keggermont\LaravelPipedrive\Jobs\PushToPipedriveJob;
-use Keggermont\LaravelPipedrive\Models\{
+use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Skeylup\LaravelPipedrive\Jobs\PushToPipedriveJob;
+use Skeylup\LaravelPipedrive\Models\{
     PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
     PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
     PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal

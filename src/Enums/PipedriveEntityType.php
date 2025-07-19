@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Enums;
+namespace Skeylup\LaravelPipedrive\Enums;
 
 enum PipedriveEntityType: string
 {
@@ -42,17 +42,17 @@ enum PipedriveEntityType: string
     public function getModelClass(): string
     {
         return match ($this) {
-            self::DEALS => \Keggermont\LaravelPipedrive\Models\PipedriveDeal::class,
-            self::PERSONS => \Keggermont\LaravelPipedrive\Models\PipedrivePerson::class,
-            self::ORGANIZATIONS => \Keggermont\LaravelPipedrive\Models\PipedriveOrganization::class,
-            self::ACTIVITIES => \Keggermont\LaravelPipedrive\Models\PipedriveActivity::class,
-            self::PRODUCTS => \Keggermont\LaravelPipedrive\Models\PipedriveProduct::class,
-            self::FILES => \Keggermont\LaravelPipedrive\Models\PipedriveFile::class,
-            self::NOTES => \Keggermont\LaravelPipedrive\Models\PipedriveNote::class,
-            self::USERS => \Keggermont\LaravelPipedrive\Models\PipedriveUser::class,
-            self::PIPELINES => \Keggermont\LaravelPipedrive\Models\PipedrivePipeline::class,
-            self::STAGES => \Keggermont\LaravelPipedrive\Models\PipedriveStage::class,
-            self::GOALS => \Keggermont\LaravelPipedrive\Models\PipedriveGoal::class,
+            self::DEALS => \Skeylup\LaravelPipedrive\Models\PipedriveDeal::class,
+            self::PERSONS => \Skeylup\LaravelPipedrive\Models\PipedrivePerson::class,
+            self::ORGANIZATIONS => \Skeylup\LaravelPipedrive\Models\PipedriveOrganization::class,
+            self::ACTIVITIES => \Skeylup\LaravelPipedrive\Models\PipedriveActivity::class,
+            self::PRODUCTS => \Skeylup\LaravelPipedrive\Models\PipedriveProduct::class,
+            self::FILES => \Skeylup\LaravelPipedrive\Models\PipedriveFile::class,
+            self::NOTES => \Skeylup\LaravelPipedrive\Models\PipedriveNote::class,
+            self::USERS => \Skeylup\LaravelPipedrive\Models\PipedriveUser::class,
+            self::PIPELINES => \Skeylup\LaravelPipedrive\Models\PipedrivePipeline::class,
+            self::STAGES => \Skeylup\LaravelPipedrive\Models\PipedriveStage::class,
+            self::GOALS => \Skeylup\LaravelPipedrive\Models\PipedriveGoal::class,
         };
     }
 

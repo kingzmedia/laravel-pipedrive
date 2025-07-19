@@ -1,11 +1,11 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Keggermont\LaravelPipedrive\Models\PipedriveOAuthToken;
+use Skeylup\LaravelPipedrive\Models\PipedriveOAuthToken;
 use Carbon\Carbon;
 
 class MigratePipedriveTokenCommand extends Command

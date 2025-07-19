@@ -1,11 +1,11 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
-use Keggermont\LaravelPipedrive\Models\PipedriveCustomField;
-use Keggermont\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 use Devio\Pipedrive\Pipedrive;
 
 class SyncPipedriveCustomFieldsCommand extends Command

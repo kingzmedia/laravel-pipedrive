@@ -1,6 +1,6 @@
 <?php
 
-// config for Keggermont/LaravelPipedrive
+// config for Skeylup/LaravelPipedrive
 return [
     /*
     |--------------------------------------------------------------------------

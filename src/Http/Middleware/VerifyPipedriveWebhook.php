@@ -1,6 +1,6 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Http\Middleware;
+namespace Skeylup\LaravelPipedrive\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

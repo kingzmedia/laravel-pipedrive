@@ -1,10 +1,10 @@
 <?php
 
-namespace Keggermont\LaravelPipedrive\Commands;
+namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
-use Keggermont\LaravelPipedrive\Services\PipedriveEntityLinkService;
-use Keggermont\LaravelPipedrive\Models\PipedriveEntityLink;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityLinkService;
+use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
 
 class ManagePipedriveEntityLinksCommand extends Command
 {
