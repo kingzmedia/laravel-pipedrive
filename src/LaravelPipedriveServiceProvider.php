@@ -15,6 +15,7 @@ use Skeylup\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
 use Skeylup\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
 use Skeylup\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
 use Skeylup\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
+use Skeylup\LaravelPipedrive\Commands\InstallPipedriveCommand;
 use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
 use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
@@ -32,6 +33,7 @@ use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
 use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
 use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
 use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
+use Illuminate\Support\Facades\Gate;
 
 class LaravelPipedriveServiceProvider extends PackageServiceProvider
 {
@@ -75,6 +77,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 ClearPipedriveOAuthTokenCommand::class,
                 MigratePipedriveTokenCommand::class,
                 ShowPipedriveConfigCommand::class,
+                InstallPipedriveCommand::class,
             ]);
     }
 
@@ -105,6 +108,9 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
     {
         // Register scheduled sync if enabled
         $this->registerScheduledSync();
+
+        // Register Pipedrive authorization gate
+        $this->registerPipedriveGate();
     }
 
     /**
@@ -150,6 +156,49 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
                 $app->make(PipedriveMemoryManager::class),
                 $app->make(PipedriveHealthChecker::class)
             );
+        });
+    }
+
+    /**
+     * Register the Pipedrive authorization gate.
+     *
+     * This gate determines who can access Pipedrive management interface in non-local environments.
+     */
+    protected function registerPipedriveGate(): void
+    {
+        Gate::define('viewPipedrive', function ($user = null) {
+            // Allow access in local environment
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            // If no user is authenticated, deny access
+            if (!$user) {
+                return false;
+            }
+
+            // Check if custom gate logic is defined in config
+            $authorizedEmails = config('pipedrive.dashboard.authorized_emails', []);
+            $authorizedUserIds = config('pipedrive.dashboard.authorized_user_ids', []);
+
+            // Allow access if user email is in authorized list
+            if (!empty($authorizedEmails) && in_array($user->email, $authorizedEmails)) {
+                return true;
+            }
+
+            // Allow access if user ID is in authorized list
+            if (!empty($authorizedUserIds) && in_array($user->id, $authorizedUserIds)) {
+                return true;
+            }
+
+            // Check if custom callback is defined
+            $customCallback = config('pipedrive.dashboard.authorization_callback');
+            if ($customCallback && is_callable($customCallback)) {
+                return call_user_func($customCallback, $user);
+            }
+
+            // Default: deny access in non-local environments
+            return false;
         });
     }
 

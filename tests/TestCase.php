@@ -27,11 +27,16 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
+        config()->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
 
-        /*
-         foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/database/migrations') as $migration) {
-            (include $migration->getRealPath())->up();
-         }
-         */
+        // Set up authentication configuration
+        config()->set('auth.providers.users.model', \Skeylup\LaravelPipedrive\Tests\Models\User::class);
+
+        // Run test migrations
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
     }
 }

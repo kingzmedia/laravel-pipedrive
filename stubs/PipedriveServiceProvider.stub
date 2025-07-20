@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+
+class PipedriveServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any authentication / authorization services.
+     */
+    public function boot(): void
+    {
+        $this->registerPipedriveGate();
+    }
+
+    /**
+     * Register the Pipedrive gate.
+     *
+     * This gate determines who can access Pipedrive management interface in non-local environments.
+     */
+    protected function registerPipedriveGate(): void
+    {
+        Gate::define('viewPipedrive', function ($user) {
+            return in_array($user->email, [
+                // Add authorized email addresses here
+                // 'admin@example.com',
+            ]);
+        });
+    }
+}

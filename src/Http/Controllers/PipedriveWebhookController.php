@@ -14,7 +14,8 @@ class PipedriveWebhookController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(VerifyPipedriveWebhook::class);
+        // Apply webhook verification middleware to all methods except health
+        $this->middleware(VerifyPipedriveWebhook::class)->except(['health']);
     }
 
     /**

@@ -98,6 +98,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard Authorization
+    |--------------------------------------------------------------------------
+    |
+    | Configure access control for Pipedrive management interface.
+    | Similar to Laravel Telescope authorization system.
+    |
+    */
+    'dashboard' => [
+        // List of authorized email addresses
+        'authorized_emails' => [
+            // 'admin@example.com',
+            // 'developer@example.com',
+        ],
+
+        // List of authorized user IDs
+        'authorized_user_ids' => [
+            // 1,
+            // 2,
+        ],
+
+        // Custom authorization callback
+        // You can define a custom callback in your AppServiceProvider
+        // Example: 'authorization_callback' => fn($user) => $user->hasRole('admin'),
+        'authorization_callback' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Webhooks Configuration
     |--------------------------------------------------------------------------
     |

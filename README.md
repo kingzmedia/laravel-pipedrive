@@ -130,11 +130,14 @@ The package includes a complete OAuth web interface with beautiful UI pages. Aft
 
 ```bash
 # OAuth management routes (automatically registered)
-/pipedrive/oauth/authorize    # Start OAuth flow
+/pipedrive/oauth/authorize    # Start OAuth flow (protected)
 /pipedrive/oauth/callback     # OAuth callback (set this in Pipedrive app)
-/pipedrive/oauth/status       # Check connection status
-/pipedrive/oauth/disconnect   # Disconnect from Pipedrive
+/pipedrive/oauth/status       # Check connection status (protected)
+/pipedrive/oauth/disconnect   # Disconnect from Pipedrive (protected)
+/pipedrive/webhook/health     # Webhook health check (protected)
 ```
+
+> **🔒 Security Note**: Most routes are protected by dashboard authorization in non-local environments. See [Dashboard Authorization](docs/authorization/dashboard-authorization.md) for configuration details.
 
 #### **Step 5: Initiate OAuth Flow**
 
@@ -293,6 +296,48 @@ php artisan pipedrive:webhooks list
 # Test webhook endpoint
 curl https://your-app.com/pipedrive/webhook/health
 ```
+
+## 🔒 **Dashboard Authorization**
+
+The package includes a Telescope-like authorization system to protect management routes in production:
+
+### **Quick Setup**
+```bash
+# Complete installation (config, migrations, views, service provider)
+php artisan pipedrive:install
+
+# Run migrations
+php artisan migrate
+
+# Add to config/app.php providers array
+App\Providers\PipedriveServiceProvider::class,
+```
+
+### **Configuration Options**
+
+**Option 1: Simple Email/ID Authorization**
+```php
+// config/pipedrive.php
+'dashboard' => [
+    'authorized_emails' => [
+        'admin@example.com',
+        'developer@example.com',
+    ],
+    'authorized_user_ids' => [1, 2],
+],
+```
+
+**Option 2: Custom Gate Logic**
+```php
+// app/Providers/PipedriveServiceProvider.php
+Gate::define('viewPipedrive', function ($user) {
+    return $user->hasRole('admin') || $user->can('manage-pipedrive');
+});
+```
+
+**Protected Routes**: `/pipedrive/oauth/*`, `/pipedrive/webhook/health`
+
+📖 **[Complete Authorization Guide →](docs/authorization/dashboard-authorization.md)**
 
 ## 📊 **Models & Relationships**
 
