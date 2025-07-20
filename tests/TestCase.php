@@ -32,11 +32,6 @@ class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix' => '',
         ]);
-
-        // Set up authentication configuration
-        config()->set('auth.providers.users.model', \Skeylup\LaravelPipedrive\Tests\Models\User::class);
-
-        // Run test migrations
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+ 
     }
 }
