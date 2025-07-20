@@ -2,10 +2,10 @@
 
 namespace Skeylup\LaravelPipedrive\Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
 use Skeylup\LaravelPipedrive\Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PipedriveCustomFieldTest extends TestCase
 {
@@ -14,7 +14,7 @@ class PipedriveCustomFieldTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Run migrations
         $this->artisan('migrate', ['--database' => 'testing']);
     }
@@ -257,7 +257,7 @@ class PipedriveCustomFieldTest extends TestCase
 
         $formatted = $service->formatFieldValue($monetaryField, [
             'amount' => 1500.50,
-            'currency' => 'EUR'
+            'currency' => 'EUR',
         ]);
         $this->assertEquals('1,500.50 EUR', $formatted);
 

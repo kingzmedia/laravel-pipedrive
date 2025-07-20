@@ -2,21 +2,23 @@
 
 namespace Skeylup\LaravelPipedrive\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Skeylup\LaravelPipedrive\Exceptions\PipedriveRateLimitException;
-use Carbon\Carbon;
 
 /**
  * Token-based rate limiting manager for Pipedrive API
- * 
+ *
  * Supports Pipedrive's December 2024 token-based rate limiting system
  * with daily budget tracking, exponential backoff, and request queuing
  */
 class PipedriveRateLimitManager
 {
     protected array $config;
+
     protected string $cachePrefix = 'pipedrive_rate_limit';
+
     protected array $defaultTokenCosts = [
         'activities' => 1,
         'deals' => 1,
@@ -47,9 +49,9 @@ class PipedriveRateLimitManager
     /**
      * Check if request can be made and consume tokens
      */
-    public function canMakeRequest(string $endpoint, int $tokenCost = null): bool
+    public function canMakeRequest(string $endpoint, ?int $tokenCost = null): bool
     {
-        if (!$this->config['enabled']) {
+        if (! $this->config['enabled']) {
             return true;
         }
 
@@ -59,6 +61,7 @@ class PipedriveRateLimitManager
 
         if (($currentUsage + $tokenCost) > $dailyBudget) {
             $this->logRateLimitHit($endpoint, $tokenCost, $currentUsage, $dailyBudget);
+
             return false;
         }
 
@@ -68,18 +71,18 @@ class PipedriveRateLimitManager
     /**
      * Consume tokens for a request
      */
-    public function consumeTokens(string $endpoint, int $tokenCost = null): void
+    public function consumeTokens(string $endpoint, ?int $tokenCost = null): void
     {
-        if (!$this->config['enabled']) {
+        if (! $this->config['enabled']) {
             return;
         }
 
         $tokenCost = $tokenCost ?? $this->getTokenCost($endpoint);
         $cacheKey = $this->getCacheKey('usage');
-        
+
         $currentUsage = Cache::get($cacheKey, 0);
         $newUsage = $currentUsage + $tokenCost;
-        
+
         // Cache until end of day
         $expiresAt = Carbon::tomorrow();
         Cache::put($cacheKey, $newUsage, $expiresAt);
@@ -99,7 +102,7 @@ class PipedriveRateLimitManager
     public function waitForRateLimit(int $retryAttempt = 1, ?int $retryAfter = null): void
     {
         $delay = $this->calculateBackoffDelay($retryAttempt, $retryAfter);
-        
+
         Log::info('Waiting for Pipedrive rate limit', [
             'retry_attempt' => $retryAttempt,
             'delay_seconds' => $delay,
@@ -136,7 +139,7 @@ class PipedriveRateLimitManager
      */
     public function getCurrentUsage(): int
     {
-        if (!$this->config['enabled']) {
+        if (! $this->config['enabled']) {
             return 0;
         }
 
@@ -194,7 +197,7 @@ class PipedriveRateLimitManager
     {
         // Extract entity type from endpoint
         $entityType = $this->extractEntityType($endpoint);
-        
+
         return $this->config['token_costs'][$entityType] ?? 1;
     }
 
@@ -206,11 +209,11 @@ class PipedriveRateLimitManager
         // Remove query parameters and leading/trailing slashes
         $path = strtok($endpoint, '?');
         $path = trim($path, '/');
-        
+
         // Split by slash and get first segment
         $segments = explode('/', $path);
         $entityType = $segments[0] ?? 'unknown';
-        
+
         // Map common variations
         $entityMap = [
             'activity' => 'activities',
@@ -235,6 +238,7 @@ class PipedriveRateLimitManager
     protected function getCacheKey(string $type): string
     {
         $date = Carbon::now()->format('Y-m-d');
+
         return "{$this->cachePrefix}:{$type}:{$date}";
     }
 
@@ -263,7 +267,7 @@ class PipedriveRateLimitManager
         $tokensRemaining = (int) ($headers['x-ratelimit-remaining'] ?? $headers['X-RateLimit-Remaining'] ?? 0);
         $tokensUsed = (int) ($headers['x-ratelimit-used'] ?? $headers['X-RateLimit-Used'] ?? 0);
         $dailyLimit = (int) ($headers['x-ratelimit-limit'] ?? $headers['X-RateLimit-Limit'] ?? $this->config['daily_budget']);
-        $resetTime = isset($headers['x-ratelimit-reset']) ? (int) $headers['x-ratelimit-reset'] : 
+        $resetTime = isset($headers['x-ratelimit-reset']) ? (int) $headers['x-ratelimit-reset'] :
                     (isset($headers['X-RateLimit-Reset']) ? (int) $headers['X-RateLimit-Reset'] : null);
         $retryAfter = (int) ($headers['retry-after'] ?? $headers['Retry-After'] ?? 60);
 

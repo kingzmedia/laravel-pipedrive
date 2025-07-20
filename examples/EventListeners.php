@@ -2,14 +2,12 @@
 
 namespace App\Listeners;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Cache;
-use Skeylup\LaravelPipedrive\Events\{
-    PipedriveEntityCreated,
-    PipedriveEntityUpdated,
-    PipedriveEntityDeleted
-};
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityCreated;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityDeleted;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityUpdated;
 
 /**
  * Example listener for Pipedrive entity created events
@@ -39,12 +37,12 @@ class PipedriveEntityCreatedListener
     private function handleNewDeal($event): void
     {
         $deal = $event->entity;
-        
+
         // Only process deals from webhooks (real-time)
         if ($event->isFromWebhook()) {
             // Send notification to sales team
             Mail::to('sales@company.com')->send(new NewDealNotification($deal));
-            
+
             // Update dashboard metrics
             Cache::increment('deals_created_today');
             Cache::increment('deals_value_today', $deal->value ?? 0);
@@ -54,10 +52,10 @@ class PipedriveEntityCreatedListener
     private function handleNewPerson($event): void
     {
         $person = $event->entity;
-        
+
         // Create welcome activity
         CreateWelcomeActivityJob::dispatch($person->pipedrive_id);
-        
+
         // Add to mailing list
         AddToMailingListJob::dispatch($person->email);
     }
@@ -65,7 +63,7 @@ class PipedriveEntityCreatedListener
     private function handleNewOrganization($event): void
     {
         $organization = $event->entity;
-        
+
         // Sync with external CRM
         SyncOrganizationToExternalCrmJob::dispatch($organization);
     }
@@ -114,10 +112,10 @@ class PipedriveEntityUpdatedListener
             // Send congratulations email
             Mail::to($deal->user->email ?? 'sales@company.com')
                 ->send(new DealWonNotification($deal));
-            
+
             // Create invoice
             CreateInvoiceJob::dispatch($deal);
-            
+
             // Update metrics
             Cache::increment('deals_won_today');
             Cache::increment('deals_won_value_today', $deal->value ?? 0);
@@ -231,7 +229,7 @@ class PipedriveEntityDeletedListener
     {
         // Clean up entity links
         CleanupEntityLinksJob::dispatch($event->getEntityName(), $event->getPipedriveId());
-        
+
         // Clean up cached data
         Cache::forget("pipedrive_{$event->getEntityName()}_{$event->getPipedriveId()}");
     }
@@ -261,7 +259,7 @@ class PipedriveAnalyticsListener
     {
         // Send to analytics service
         Analytics::track("pipedrive_{$entityType}_{$action}", $data);
-        
+
         // Update daily counters
         $today = now()->format('Y-m-d');
         Cache::increment("pipedrive_events_{$today}");

@@ -6,16 +6,21 @@ use Throwable;
 
 /**
  * Base exception for HTTP API-related errors
- * 
+ *
  * Extends PipedriveException with HTTP-specific functionality
  */
 class PipedriveApiException extends PipedriveException
 {
     protected int $httpStatusCode = 0;
+
     protected array $httpHeaders = [];
+
     protected ?string $httpMethod = null;
+
     protected ?string $httpUrl = null;
+
     protected ?array $requestData = null;
+
     protected ?string $responseBody = null;
 
     public function __construct(
@@ -69,6 +74,7 @@ class PipedriveApiException extends PipedriveException
     public function setHttpStatusCode(int $httpStatusCode): self
     {
         $this->httpStatusCode = $httpStatusCode;
+
         return $this;
     }
 
@@ -86,6 +92,7 @@ class PipedriveApiException extends PipedriveException
     public function setHttpHeaders(array $httpHeaders): self
     {
         $this->httpHeaders = $httpHeaders;
+
         return $this;
     }
 
@@ -103,6 +110,7 @@ class PipedriveApiException extends PipedriveException
     public function setHttpMethod(?string $httpMethod): self
     {
         $this->httpMethod = $httpMethod;
+
         return $this;
     }
 
@@ -120,6 +128,7 @@ class PipedriveApiException extends PipedriveException
     public function setHttpUrl(?string $httpUrl): self
     {
         $this->httpUrl = $httpUrl;
+
         return $this;
     }
 
@@ -137,6 +146,7 @@ class PipedriveApiException extends PipedriveException
     public function setRequestData(?array $requestData): self
     {
         $this->requestData = $requestData;
+
         return $this;
     }
 
@@ -154,6 +164,7 @@ class PipedriveApiException extends PipedriveException
     public function setResponseBody(?string $responseBody): self
     {
         $this->responseBody = $responseBody;
+
         return $this;
     }
 
@@ -179,7 +190,7 @@ class PipedriveApiException extends PipedriveException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['http'] = [
             'status_code' => $this->httpStatusCode,
             'method' => $this->httpMethod,
@@ -198,7 +209,7 @@ class PipedriveApiException extends PipedriveException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['http'] = [
             'status_code' => $this->httpStatusCode,
             'method' => $this->httpMethod,
@@ -224,10 +235,10 @@ class PipedriveApiException extends PipedriveException
         ?array $pipedriveResponse = null
     ): static {
         $message = "HTTP {$statusCode} error for {$method} {$url}";
-        
+
         // Determine if retryable based on status code
         $retryable = in_array($statusCode, [429, 500, 502, 503, 504]);
-        
+
         // Get retry-after from headers if available
         $retryAfter = 0;
         if (isset($headers['retry-after'])) {

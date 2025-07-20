@@ -2,10 +2,10 @@
 
 namespace Skeylup\LaravelPipedrive\Services;
 
-use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
-use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 
 class PipedriveCustomFieldService
 {
@@ -32,6 +32,7 @@ class PipedriveCustomFieldService
                         return $field['active_flag'] ?? true;
                     })->values();
                 }
+
                 return $cached;
             }
         }
@@ -66,8 +67,10 @@ class PipedriveCustomFieldService
                 $filtered = $cached->filter(function ($field) use ($activeOnly) {
                     $isCustom = $field['pipedrive_data']['edit_flag'] ?? false;
                     $isActive = $activeOnly ? ($field['active_flag'] ?? true) : true;
+
                     return $isCustom && $isActive;
                 });
+
                 return $filtered->values();
             }
         }
@@ -88,11 +91,11 @@ class PipedriveCustomFieldService
     public function getFieldsByType(string $entityType, string $fieldType, bool $activeOnly = true): Collection
     {
         $query = PipedriveCustomField::forEntity($entityType)->ofType($fieldType);
-        
+
         if ($activeOnly) {
             $query->active();
         }
-        
+
         return $query->orderBy('name')->get();
     }
 
@@ -173,7 +176,7 @@ class PipedriveCustomFieldService
             ->whereIn('field_type', [
                 PipedriveCustomField::TYPE_USER,
                 PipedriveCustomField::TYPE_ORG,
-                PipedriveCustomField::TYPE_PEOPLE
+                PipedriveCustomField::TYPE_PEOPLE,
             ])
             ->active()
             ->orderBy('name')
@@ -186,7 +189,7 @@ class PipedriveCustomFieldService
     public function getFieldStatistics(string $entityType): array
     {
         $fields = PipedriveCustomField::forEntity($entityType);
-        
+
         return [
             'total' => $fields->count(),
             'active' => $fields->active()->count(),
@@ -215,25 +218,25 @@ class PipedriveCustomFieldService
         switch ($field->field_type) {
             case PipedriveCustomField::TYPE_VARCHAR:
             case PipedriveCustomField::TYPE_VARCHAR_AUTO:
-                if (!empty($value) && strlen($value) > 255) {
+                if (! empty($value) && strlen($value) > 255) {
                     $errors[] = "Field '{$field->name}' cannot exceed 255 characters.";
                 }
                 break;
 
             case PipedriveCustomField::TYPE_DOUBLE:
-                if (!empty($value) && !is_numeric($value)) {
+                if (! empty($value) && ! is_numeric($value)) {
                     $errors[] = "Field '{$field->name}' must be a numeric value.";
                 }
                 break;
 
             case PipedriveCustomField::TYPE_SET:
             case PipedriveCustomField::TYPE_ENUM:
-                if (!empty($value) && $field->hasOptions()) {
+                if (! empty($value) && $field->hasOptions()) {
                     $validOptions = array_column($field->getOptions(), 'id');
                     $values = is_array($value) ? $value : [$value];
-                    
+
                     foreach ($values as $val) {
-                        if (!in_array($val, $validOptions)) {
+                        if (! in_array($val, $validOptions)) {
                             $errors[] = "Invalid option '{$val}' for field '{$field->name}'.";
                         }
                     }
@@ -241,7 +244,7 @@ class PipedriveCustomFieldService
                 break;
 
             case PipedriveCustomField::TYPE_DATE:
-                if (!empty($value) && !strtotime($value)) {
+                if (! empty($value) && ! strtotime($value)) {
                     $errors[] = "Field '{$field->name}' must be a valid date.";
                 }
                 break;
@@ -275,8 +278,9 @@ class PipedriveCustomFieldService
     protected function formatMonetaryValue($value): string
     {
         if (is_array($value) && isset($value['amount'], $value['currency'])) {
-            return number_format($value['amount'], 2) . ' ' . $value['currency'];
+            return number_format($value['amount'], 2).' '.$value['currency'];
         }
+
         return (string) $value;
     }
 
@@ -288,8 +292,9 @@ class PipedriveCustomFieldService
     protected function formatDateRangeValue($value): string
     {
         if (is_array($value) && isset($value['start_date'], $value['end_date'])) {
-            return $this->formatDateValue($value['start_date']) . ' - ' . $this->formatDateValue($value['end_date']);
+            return $this->formatDateValue($value['start_date']).' - '.$this->formatDateValue($value['end_date']);
         }
+
         return (string) $value;
     }
 
@@ -301,20 +306,21 @@ class PipedriveCustomFieldService
     protected function formatTimeRangeValue($value): string
     {
         if (is_array($value) && isset($value['start_time'], $value['end_time'])) {
-            return $this->formatTimeValue($value['start_time']) . ' - ' . $this->formatTimeValue($value['end_time']);
+            return $this->formatTimeValue($value['start_time']).' - '.$this->formatTimeValue($value['end_time']);
         }
+
         return (string) $value;
     }
 
     protected function formatOptionValue(PipedriveCustomField $field, $value): string
     {
-        if (!$field->hasOptions()) {
+        if (! $field->hasOptions()) {
             return (string) $value;
         }
 
         $options = collect($field->getOptions())->keyBy('id');
         $values = is_array($value) ? $value : [$value];
-        
+
         $labels = collect($values)->map(function ($val) use ($options) {
             return $options->get($val)['label'] ?? $val;
         });
@@ -338,8 +344,10 @@ class PipedriveCustomFieldService
                 $value['postal_code'] ?? '',
                 $value['country'] ?? '',
             ]);
+
             return implode(', ', $parts);
         }
+
         return (string) $value;
     }
 
@@ -370,7 +378,7 @@ class PipedriveCustomFieldService
      */
     public function refreshCache(string $entityType): bool
     {
-        if (!$this->cacheService->isEnabled()) {
+        if (! $this->cacheService->isEnabled()) {
             return false;
         }
 
@@ -391,7 +399,8 @@ class PipedriveCustomFieldService
 
             return $success;
         } catch (\Exception $e) {
-            Log::error("Error refreshing cache for {$entityType}: " . $e->getMessage());
+            Log::error("Error refreshing cache for {$entityType}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -401,7 +410,7 @@ class PipedriveCustomFieldService
      */
     public function getCacheStatistics(): array
     {
-        if (!$this->cacheService->isEnabled()) {
+        if (! $this->cacheService->isEnabled()) {
             return ['enabled' => false];
         }
 

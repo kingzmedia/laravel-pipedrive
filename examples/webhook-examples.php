@@ -4,9 +4,9 @@
  * Exemples pratiques d'utilisation des webhooks Pipedrive
  */
 
-use Skeylup\LaravelPipedrive\Events\PipedriveWebhookReceived;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Skeylup\LaravelPipedrive\Events\PipedriveWebhookReceived;
 
 // Exemple 1: Listener pour notifications automatiques
 class DealStageChangeListener
@@ -14,7 +14,7 @@ class DealStageChangeListener
     public function handle(PipedriveWebhookReceived $event)
     {
         // Seulement pour les deals mis à jour
-        if (!$event->isUpdate() || !$event->isObjectType('deal')) {
+        if (! $event->isUpdate() || ! $event->isObjectType('deal')) {
             return;
         }
 
@@ -41,10 +41,10 @@ class DealStageChangeListener
     {
         // Envoyer notification à l'équipe
         $message = "Deal '{$current['title']}' moved from stage {$previous['stage_id']} to {$current['stage_id']}";
-        
+
         // Slack notification
         \Slack::to('#sales')->send($message);
-        
+
         // Email notification
         Mail::to('sales@company.com')->send(new DealStageChangedMail($current, $previous));
     }
@@ -53,12 +53,12 @@ class DealStageChangeListener
     {
         $value = number_format($deal['value'], 2);
         $currency = $deal['currency'];
-        
+
         $message = "🎉 Deal WON! '{$deal['title']}' - {$value} {$currency}";
-        
+
         // Celebration notification
         \Slack::to('#sales')->send($message);
-        
+
         // Update CRM metrics
         $this->updateSalesMetrics($deal);
     }
@@ -66,9 +66,9 @@ class DealStageChangeListener
     protected function notifyDealLost($current, $previous)
     {
         $reason = $current['lost_reason'] ?? 'No reason specified';
-        
+
         $message = "😞 Deal lost: '{$current['title']}' - Reason: {$reason}";
-        
+
         \Slack::to('#sales')->send($message);
     }
 }
@@ -97,7 +97,7 @@ class ExternalSystemSyncListener
     protected function syncPersonToExternalCRM($event)
     {
         $person = $event->current;
-        
+
         if ($event->isCreate()) {
             // Créer dans le CRM externe
             ExternalCRM::createContact([
@@ -168,7 +168,7 @@ class RealTimeAnalyticsListener
     protected function updateDealMetrics($event)
     {
         $deal = $event->current;
-        
+
         if ($event->isCreate()) {
             // Nouveau deal créé
             Redis::incr('deals:created:today');
@@ -177,16 +177,16 @@ class RealTimeAnalyticsListener
 
         if ($event->isUpdate()) {
             $previous = $event->previous;
-            
+
             // Deal gagné
             if ($deal['status'] === 'won' && $previous['status'] !== 'won') {
                 Redis::incr('deals:won:today');
                 Redis::incrByFloat('deals:won:value:today', $deal['value'] ?? 0);
-                
+
                 // Mettre à jour le dashboard en temps réel
                 broadcast(new DealWonEvent($deal));
             }
-            
+
             // Changement de valeur
             if ($deal['value'] !== $previous['value']) {
                 $difference = ($deal['value'] ?? 0) - ($previous['value'] ?? 0);
@@ -198,12 +198,12 @@ class RealTimeAnalyticsListener
     protected function updateActivityMetrics($event)
     {
         $activity = $event->current;
-        
-        if ($event->isUpdate() && $activity['done'] && !$event->previous['done']) {
+
+        if ($event->isUpdate() && $activity['done'] && ! $event->previous['done']) {
             // Activité complétée
             Redis::incr('activities:completed:today');
             Redis::incr("activities:completed:user:{$activity['user_id']}:today");
-            
+
             // Mettre à jour le leaderboard
             $this->updateActivityLeaderboard($activity['user_id']);
         }
@@ -229,26 +229,26 @@ class DataValidationListener
     protected function validatePersonData($person)
     {
         $issues = [];
-        
+
         // Vérifier l'email
-        if (!empty($person['email']) && !filter_var($person['email'][0]['value'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($person['email']) && ! filter_var($person['email'][0]['value'], FILTER_VALIDATE_EMAIL)) {
             $issues[] = 'Invalid email format';
         }
-        
+
         // Vérifier le téléphone
-        if (!empty($person['phone']) && !$this->isValidPhone($person['phone'][0]['value'])) {
+        if (! empty($person['phone']) && ! $this->isValidPhone($person['phone'][0]['value'])) {
             $issues[] = 'Invalid phone format';
         }
-        
+
         // Vérifier les champs obligatoires
         if (empty($person['name'])) {
             $issues[] = 'Missing name';
         }
-        
-        if (!empty($issues)) {
+
+        if (! empty($issues)) {
             // Notifier l'équipe des problèmes de données
             \Slack::to('#data-quality')->send(
-                "Data quality issues for person {$person['id']}: " . implode(', ', $issues)
+                "Data quality issues for person {$person['id']}: ".implode(', ', $issues)
             );
         }
     }
@@ -257,11 +257,11 @@ class DataValidationListener
     {
         // Standardiser le nom de l'organisation
         $cleanName = $this->standardizeCompanyName($organization['name']);
-        
+
         if ($cleanName !== $organization['name']) {
             // Mettre à jour via l'API Pipedrive
             UpdatePipedriveOrganizationJob::dispatch($organization['id'], [
-                'name' => $cleanName
+                'name' => $cleanName,
             ]);
         }
     }
@@ -271,14 +271,14 @@ class DataValidationListener
         // Supprimer les suffixes communs et standardiser
         $suffixes = ['Inc.', 'LLC', 'Ltd.', 'Corp.', 'Co.'];
         $name = trim($name);
-        
+
         foreach ($suffixes as $suffix) {
             if (str_ends_with($name, $suffix)) {
                 $name = trim(str_replace($suffix, '', $name));
                 break;
             }
         }
-        
+
         return $name;
     }
 }
@@ -292,7 +292,7 @@ class BillingIntegrationListener
         if ($event->isUpdate() && $event->isObjectType('deal')) {
             $deal = $event->current;
             $previous = $event->previous;
-            
+
             if ($deal['status'] === 'won' && $previous['status'] !== 'won') {
                 $this->createInvoice($deal);
             }
@@ -304,7 +304,7 @@ class BillingIntegrationListener
         // Récupérer les détails du deal
         $person = PipedrivePerson::where('pipedrive_id', $deal['person_id'])->first();
         $organization = PipedriveOrganization::where('pipedrive_id', $deal['org_id'])->first();
-        
+
         // Créer la facture dans le système de facturation
         $invoice = BillingSystem::createInvoice([
             'deal_id' => $deal['id'],
@@ -315,7 +315,7 @@ class BillingIntegrationListener
             'description' => $deal['title'],
             'due_date' => now()->addDays(30),
         ]);
-        
+
         // Ajouter une note au deal avec le lien de la facture
         CreatePipedriveNoteJob::dispatch($deal['id'], [
             'content' => "Invoice created: {$invoice->number} - {$invoice->url}",

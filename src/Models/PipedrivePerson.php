@@ -9,7 +9,7 @@ class PipedrivePerson extends BasePipedriveModel
 {
     protected $table = 'pipedrive_persons';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'name',
         'email',
@@ -65,7 +65,7 @@ class PipedrivePerson extends BasePipedriveModel
     // Helper methods
     public function getPrimaryEmail(): ?string
     {
-        if (!$this->email || !is_array($this->email)) {
+        if (! $this->email || ! is_array($this->email)) {
             return null;
         }
 
@@ -80,7 +80,7 @@ class PipedrivePerson extends BasePipedriveModel
 
     public function getPrimaryPhone(): ?string
     {
-        if (!$this->phone || !is_array($this->phone)) {
+        if (! $this->phone || ! is_array($this->phone)) {
             return null;
         }
 
@@ -95,7 +95,7 @@ class PipedrivePerson extends BasePipedriveModel
 
     public function getFullName(): string
     {
-        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? '')) ?: $this->name;
+        return trim(($this->first_name ?? '').' '.($this->last_name ?? '')) ?: $this->name;
     }
 
     // Relations

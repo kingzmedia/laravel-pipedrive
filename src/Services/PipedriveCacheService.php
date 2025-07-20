@@ -6,18 +6,19 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 
 /**
  * Pipedrive Cache Service
- * 
+ *
  * Handles intelligent caching of Pipedrive data with automatic invalidation,
  * configurable TTL, and support for multiple cache drivers.
  */
 class PipedriveCacheService implements PipedriveCacheInterface
 {
     protected string $cachePrefix = 'pipedrive';
+
     protected array $config;
+
     protected PipedriveAuthService $authService;
 
     public function __construct(PipedriveAuthService $authService)
@@ -31,7 +32,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function cacheCustomFields(string $entityType, Collection $customFields, ?int $ttl = null): bool
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return false;
         }
 
@@ -41,7 +42,8 @@ class PipedriveCacheService implements PipedriveCacheInterface
         try {
             return Cache::put($key, $customFields->toArray(), $ttl);
         } catch (\Exception $e) {
-            Log::error("Failed to cache custom fields for {$entityType}: " . $e->getMessage());
+            Log::error("Failed to cache custom fields for {$entityType}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -51,17 +53,19 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function getCustomFields(string $entityType): ?Collection
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
         $key = $this->getCacheKey('custom_fields', $entityType);
-        
+
         try {
             $cached = Cache::get($key);
+
             return $cached ? collect($cached) : null;
         } catch (\Exception $e) {
-            Log::error("Failed to retrieve cached custom fields for {$entityType}: " . $e->getMessage());
+            Log::error("Failed to retrieve cached custom fields for {$entityType}: ".$e->getMessage());
+
             return null;
         }
     }
@@ -71,7 +75,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function cachePipelines(Collection $pipelines, ?int $ttl = null): bool
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return false;
         }
 
@@ -81,7 +85,8 @@ class PipedriveCacheService implements PipedriveCacheInterface
         try {
             return Cache::put($key, $pipelines->toArray(), $ttl);
         } catch (\Exception $e) {
-            Log::error("Failed to cache pipelines: " . $e->getMessage());
+            Log::error('Failed to cache pipelines: '.$e->getMessage());
+
             return false;
         }
     }
@@ -91,17 +96,19 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function getPipelines(): ?Collection
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
         $key = $this->getCacheKey('pipelines');
-        
+
         try {
             $cached = Cache::get($key);
+
             return $cached ? collect($cached) : null;
         } catch (\Exception $e) {
-            Log::error("Failed to retrieve cached pipelines: " . $e->getMessage());
+            Log::error('Failed to retrieve cached pipelines: '.$e->getMessage());
+
             return null;
         }
     }
@@ -111,7 +118,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function cacheStages(Collection $stages, ?int $ttl = null): bool
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return false;
         }
 
@@ -121,7 +128,8 @@ class PipedriveCacheService implements PipedriveCacheInterface
         try {
             return Cache::put($key, $stages->toArray(), $ttl);
         } catch (\Exception $e) {
-            Log::error("Failed to cache stages: " . $e->getMessage());
+            Log::error('Failed to cache stages: '.$e->getMessage());
+
             return false;
         }
     }
@@ -131,17 +139,19 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function getStages(): ?Collection
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
         $key = $this->getCacheKey('stages');
-        
+
         try {
             $cached = Cache::get($key);
+
             return $cached ? collect($cached) : null;
         } catch (\Exception $e) {
-            Log::error("Failed to retrieve cached stages: " . $e->getMessage());
+            Log::error('Failed to retrieve cached stages: '.$e->getMessage());
+
             return null;
         }
     }
@@ -151,7 +161,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function cacheUsers(Collection $users, ?int $ttl = null): bool
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return false;
         }
 
@@ -161,7 +171,8 @@ class PipedriveCacheService implements PipedriveCacheInterface
         try {
             return Cache::put($key, $users->toArray(), $ttl);
         } catch (\Exception $e) {
-            Log::error("Failed to cache users: " . $e->getMessage());
+            Log::error('Failed to cache users: '.$e->getMessage());
+
             return false;
         }
     }
@@ -171,17 +182,19 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function getUsers(): ?Collection
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
         $key = $this->getCacheKey('users');
-        
+
         try {
             $cached = Cache::get($key);
+
             return $cached ? collect($cached) : null;
         } catch (\Exception $e) {
-            Log::error("Failed to retrieve cached users: " . $e->getMessage());
+            Log::error('Failed to retrieve cached users: '.$e->getMessage());
+
             return null;
         }
     }
@@ -191,7 +204,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function cacheFieldOptions(string $fieldKey, array $options, ?int $ttl = null): bool
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return false;
         }
 
@@ -201,7 +214,8 @@ class PipedriveCacheService implements PipedriveCacheInterface
         try {
             return Cache::put($key, $options, $ttl);
         } catch (\Exception $e) {
-            Log::error("Failed to cache field options for {$fieldKey}: " . $e->getMessage());
+            Log::error("Failed to cache field options for {$fieldKey}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -211,16 +225,17 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function getFieldOptions(string $fieldKey): ?array
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
         $key = $this->getCacheKey('field_options', $fieldKey);
-        
+
         try {
             return Cache::get($key);
         } catch (\Exception $e) {
-            Log::error("Failed to retrieve cached field options for {$fieldKey}: " . $e->getMessage());
+            Log::error("Failed to retrieve cached field options for {$fieldKey}: ".$e->getMessage());
+
             return null;
         }
     }
@@ -231,11 +246,11 @@ class PipedriveCacheService implements PipedriveCacheInterface
     protected function getCacheKey(string $type, ?string $identifier = null): string
     {
         $key = "{$this->cachePrefix}:{$type}";
-        
+
         if ($identifier) {
             $key .= ":{$identifier}";
         }
-        
+
         return $key;
     }
 
@@ -270,9 +285,11 @@ class PipedriveCacheService implements PipedriveCacheInterface
     {
         try {
             $key = $this->getCacheKey('custom_fields', $entityType);
+
             return Cache::forget($key);
         } catch (\Exception $e) {
-            Log::error("Failed to invalidate cache for {$entityType}: " . $e->getMessage());
+            Log::error("Failed to invalidate cache for {$entityType}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -283,10 +300,12 @@ class PipedriveCacheService implements PipedriveCacheInterface
     public function invalidateCustomFieldsCache(): bool
     {
         try {
-            $pattern = $this->getCacheKey('custom_fields') . ':*';
+            $pattern = $this->getCacheKey('custom_fields').':*';
+
             return $this->forgetByPattern($pattern);
         } catch (\Exception $e) {
-            Log::error("Failed to invalidate custom fields cache: " . $e->getMessage());
+            Log::error('Failed to invalidate custom fields cache: '.$e->getMessage());
+
             return false;
         }
     }
@@ -298,9 +317,11 @@ class PipedriveCacheService implements PipedriveCacheInterface
     {
         try {
             $key = $this->getCacheKey('pipelines');
+
             return Cache::forget($key);
         } catch (\Exception $e) {
-            Log::error("Failed to invalidate pipelines cache: " . $e->getMessage());
+            Log::error('Failed to invalidate pipelines cache: '.$e->getMessage());
+
             return false;
         }
     }
@@ -312,9 +333,11 @@ class PipedriveCacheService implements PipedriveCacheInterface
     {
         try {
             $key = $this->getCacheKey('stages');
+
             return Cache::forget($key);
         } catch (\Exception $e) {
-            Log::error("Failed to invalidate stages cache: " . $e->getMessage());
+            Log::error('Failed to invalidate stages cache: '.$e->getMessage());
+
             return false;
         }
     }
@@ -326,9 +349,11 @@ class PipedriveCacheService implements PipedriveCacheInterface
     {
         try {
             $key = $this->getCacheKey('users');
+
             return Cache::forget($key);
         } catch (\Exception $e) {
-            Log::error("Failed to invalidate users cache: " . $e->getMessage());
+            Log::error('Failed to invalidate users cache: '.$e->getMessage());
+
             return false;
         }
     }
@@ -340,9 +365,11 @@ class PipedriveCacheService implements PipedriveCacheInterface
     {
         try {
             $key = $this->getCacheKey('field_options', $fieldKey);
+
             return Cache::forget($key);
         } catch (\Exception $e) {
-            Log::error("Failed to invalidate field options cache for {$fieldKey}: " . $e->getMessage());
+            Log::error("Failed to invalidate field options cache for {$fieldKey}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -353,10 +380,12 @@ class PipedriveCacheService implements PipedriveCacheInterface
     public function clearAll(): bool
     {
         try {
-            $pattern = $this->cachePrefix . ':*';
+            $pattern = $this->cachePrefix.':*';
+
             return $this->forgetByPattern($pattern);
         } catch (\Exception $e) {
-            Log::error("Failed to clear all Pipedrive cache: " . $e->getMessage());
+            Log::error('Failed to clear all Pipedrive cache: '.$e->getMessage());
+
             return false;
         }
     }
@@ -395,7 +424,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
      */
     public function refreshEntityCache(string $entityType): bool
     {
-        if (!$this->isEnabled() || !$this->isAutoRefreshEnabled()) {
+        if (! $this->isEnabled() || ! $this->isAutoRefreshEnabled()) {
             return false;
         }
 
@@ -410,7 +439,8 @@ class PipedriveCacheService implements PipedriveCacheInterface
             // Cache the fresh data
             return $this->cacheCustomFields($entityType, $customFields);
         } catch (\Exception $e) {
-            Log::error("Failed to refresh cache for {$entityType}: " . $e->getMessage());
+            Log::error("Failed to refresh cache for {$entityType}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -427,13 +457,14 @@ class PipedriveCacheService implements PipedriveCacheInterface
                 $redis = Cache::getRedis();
                 $keys = $redis->keys($pattern);
 
-                if (!empty($keys)) {
+                if (! empty($keys)) {
                     return $redis->del($keys) > 0;
                 }
 
                 return true;
             } catch (\Exception $e) {
-                Log::error("Failed to delete Redis keys by pattern {$pattern}: " . $e->getMessage());
+                Log::error("Failed to delete Redis keys by pattern {$pattern}: ".$e->getMessage());
+
                 return false;
             }
         }
@@ -455,7 +486,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
             try {
                 Cache::forget($this->getCacheKey('custom_fields', $entityType));
             } catch (\Exception $e) {
-                Log::error("Failed to clear cache for entity {$entityType}: " . $e->getMessage());
+                Log::error("Failed to clear cache for entity {$entityType}: ".$e->getMessage());
                 $success = false;
             }
         }
@@ -466,7 +497,7 @@ class PipedriveCacheService implements PipedriveCacheInterface
             try {
                 Cache::forget($this->getCacheKey($key));
             } catch (\Exception $e) {
-                Log::error("Failed to clear cache for {$key}: " . $e->getMessage());
+                Log::error("Failed to clear cache for {$key}: ".$e->getMessage());
                 $success = false;
             }
         }

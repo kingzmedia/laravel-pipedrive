@@ -2,25 +2,25 @@
 
 namespace Skeylup\LaravelPipedrive\Jobs;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
-use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
-use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
 use Skeylup\LaravelPipedrive\Data\SyncOptions;
 use Skeylup\LaravelPipedrive\Data\SyncResult;
 use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
-use Carbon\Carbon;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
 
 /**
  * Main parsing job with dual execution modes
- * 
+ *
  * Supports both synchronous (for commands) and asynchronous (for schedulers)
  * execution with progress tracking and batch processing
  */
@@ -29,13 +29,19 @@ class SyncPipedriveEntityJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public SyncOptions $options;
+
     public int $tries;
+
     public int $timeout;
 
     protected PipedriveParsingService $parsingService;
+
     protected PipedriveRateLimitManager $rateLimitManager;
+
     protected PipedriveErrorHandler $errorHandler;
+
     protected PipedriveMemoryManager $memoryManager;
+
     protected PipedriveHealthChecker $healthChecker;
 
     public function __construct(SyncOptions $options)
@@ -71,8 +77,8 @@ class SyncPipedriveEntityJob implements ShouldQueue
         try {
             // Validate options
             $validationErrors = $this->options->validateOptions();
-            if (!empty($validationErrors)) {
-                throw new \InvalidArgumentException('Invalid sync options: ' . implode(', ', $validationErrors));
+            if (! empty($validationErrors)) {
+                throw new \InvalidArgumentException('Invalid sync options: '.implode(', ', $validationErrors));
             }
 
             Log::info('Starting Pipedrive entity sync job', [
@@ -84,7 +90,7 @@ class SyncPipedriveEntityJob implements ShouldQueue
 
             // Initialize Pipedrive client
             $clientInfo = $this->parsingService->initializePipedriveClient();
-            
+
             Log::info('Pipedrive client initialized', [
                 'entity_type' => $this->options->entityType,
                 'user' => $clientInfo['user'],
@@ -218,7 +224,7 @@ class SyncPipedriveEntityJob implements ShouldQueue
         // Determine if job should be retried
         if ($e->isRetryable() && $this->errorHandler->shouldRetry($e, $this->attempts())) {
             $delay = $this->errorHandler->getRetryDelay($e, $this->attempts());
-            
+
             Log::info('Retrying Pipedrive entity sync job', [
                 'entity_type' => $this->options->entityType,
                 'attempt' => $this->attempts(),
@@ -228,11 +234,13 @@ class SyncPipedriveEntityJob implements ShouldQueue
             ]);
 
             $this->release($delay);
+
             return $result;
         }
 
         // Job failed permanently
         $this->fail($e);
+
         return $result;
     }
 

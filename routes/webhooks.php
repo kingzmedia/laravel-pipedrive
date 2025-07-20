@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Skeylup\LaravelPipedrive\Http\Controllers\PipedriveWebhookController;
-use Skeylup\LaravelPipedrive\Http\Middleware\AuthorizePipedrive;
 use Skeylup\LaravelPipedrive\Http\Middleware\AuthorizeWebhookHealth;
 
 /*
@@ -25,7 +24,7 @@ Route::post(
 // Health check endpoint for webhook URL validation
 // Uses special middleware that allows access for both authorized users AND Pipedrive servers
 Route::get(
-    config('pipedrive.webhooks.route.path', 'pipedrive/webhook') . '/health',
+    config('pipedrive.webhooks.route.path', 'pipedrive/webhook').'/health',
     [PipedriveWebhookController::class, 'health']
 )->middleware(['web', AuthorizeWebhookHealth::class])
-->name('pipedrive.webhook.health');
+    ->name('pipedrive.webhook.health');

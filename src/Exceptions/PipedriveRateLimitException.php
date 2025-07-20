@@ -6,15 +6,19 @@ use Throwable;
 
 /**
  * Exception for rate limit errors (HTTP 429)
- * 
+ *
  * Handles Pipedrive's token-based rate limiting system
  */
 class PipedriveRateLimitException extends PipedriveApiException
 {
     protected int $tokensRemaining = 0;
+
     protected int $tokensUsed = 0;
+
     protected int $dailyLimit = 0;
+
     protected ?int $resetTime = null;
+
     protected string $limitType = 'requests'; // 'requests' or 'tokens'
 
     public function __construct(
@@ -75,6 +79,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function setTokensRemaining(int $tokensRemaining): self
     {
         $this->tokensRemaining = $tokensRemaining;
+
         return $this;
     }
 
@@ -92,6 +97,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function setTokensUsed(int $tokensUsed): self
     {
         $this->tokensUsed = $tokensUsed;
+
         return $this;
     }
 
@@ -109,6 +115,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function setDailyLimit(int $dailyLimit): self
     {
         $this->dailyLimit = $dailyLimit;
+
         return $this;
     }
 
@@ -126,6 +133,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function setResetTime(?int $resetTime): self
     {
         $this->resetTime = $resetTime;
+
         return $this;
     }
 
@@ -143,6 +151,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function setLimitType(string $limitType): self
     {
         $this->limitType = $limitType;
+
         return $this;
     }
 
@@ -156,6 +165,7 @@ class PipedriveRateLimitException extends PipedriveApiException
         }
 
         $secondsUntilReset = $this->resetTime - time();
+
         return max(0, $secondsUntilReset);
     }
 
@@ -189,7 +199,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['rate_limit'] = [
             'tokens_remaining' => $this->tokensRemaining,
             'tokens_used' => $this->tokensUsed,
@@ -210,7 +220,7 @@ class PipedriveRateLimitException extends PipedriveApiException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['rate_limit'] = [
             'tokens_remaining' => $this->tokensRemaining,
             'tokens_used' => $this->tokensUsed,
@@ -236,17 +246,17 @@ class PipedriveRateLimitException extends PipedriveApiException
         $tokensRemaining = (int) ($headers['x-ratelimit-remaining'] ?? $headers['X-RateLimit-Remaining'] ?? 0);
         $tokensUsed = (int) ($headers['x-ratelimit-used'] ?? $headers['X-RateLimit-Used'] ?? 0);
         $dailyLimit = (int) ($headers['x-ratelimit-limit'] ?? $headers['X-RateLimit-Limit'] ?? 0);
-        $resetTime = isset($headers['x-ratelimit-reset']) ? (int) $headers['x-ratelimit-reset'] : 
+        $resetTime = isset($headers['x-ratelimit-reset']) ? (int) $headers['x-ratelimit-reset'] :
                     (isset($headers['X-RateLimit-Reset']) ? (int) $headers['X-RateLimit-Reset'] : null);
-        
+
         // Get retry-after
         $retryAfter = (int) ($headers['retry-after'] ?? $headers['Retry-After'] ?? 60);
-        
+
         // Determine limit type based on headers
         $limitType = isset($headers['x-ratelimit-tokens']) || isset($headers['X-RateLimit-Tokens']) ? 'tokens' : 'requests';
 
         $message = "Rate limit exceeded. {$tokensUsed}/{$dailyLimit} {$limitType} used. ";
-        $message .= $resetTime ? "Resets at " . date('Y-m-d H:i:s', $resetTime) : "Retry after {$retryAfter} seconds";
+        $message .= $resetTime ? 'Resets at '.date('Y-m-d H:i:s', $resetTime) : "Retry after {$retryAfter} seconds";
 
         return new static(
             message: $message,

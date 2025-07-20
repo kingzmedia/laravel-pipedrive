@@ -2,11 +2,10 @@
 
 namespace Skeylup\LaravelPipedrive\Commands;
 
+use Devio\Pipedrive\Pipedrive;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Config;
 use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
-use Devio\Pipedrive\Pipedrive;
 
 class SyncPipedriveCustomFieldsCommand extends Command
 {
@@ -18,6 +17,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
     public $description = 'Synchronize custom fields from Pipedrive API. By default, fetches latest modifications (sorted by update_time DESC). Use --full-data to retrieve all fields with pagination.';
 
     protected Pipedrive $pipedrive;
+
     protected PipedriveAuthService $authService;
 
     public function __construct(PipedriveAuthService $authService)
@@ -36,18 +36,20 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
             // Test connection
             $connectionTest = $this->authService->testConnection();
-            if (!$connectionTest['success']) {
-                $this->error('Failed to connect to Pipedrive: ' . $connectionTest['message']);
+            if (! $connectionTest['success']) {
+                $this->error('Failed to connect to Pipedrive: '.$connectionTest['message']);
+
                 return self::FAILURE;
             }
 
             if ($this->getOutput()->isVerbose()) {
-                $this->info('Connected to Pipedrive as: ' . $connectionTest['user'] . ' (' . $connectionTest['company'] . ')');
-                $this->info('Using authentication method: ' . $this->authService->getAuthMethod());
+                $this->info('Connected to Pipedrive as: '.$connectionTest['user'].' ('.$connectionTest['company'].')');
+                $this->info('Using authentication method: '.$this->authService->getAuthMethod());
             }
 
         } catch (\Exception $e) {
-            $this->error('Error initializing Pipedrive client: ' . $e->getMessage());
+            $this->error('Error initializing Pipedrive client: '.$e->getMessage());
+
             return self::FAILURE;
         }
 
@@ -64,8 +66,9 @@ class SyncPipedriveCustomFieldsCommand extends Command
             // Check memory limit
             $this->checkMemoryRequirements();
 
-            if (!$force && !$this->confirm('Do you want to continue?', false)) {
+            if (! $force && ! $this->confirm('Do you want to continue?', false)) {
                 $this->info('Operation cancelled.');
+
                 return self::SUCCESS;
             }
 
@@ -75,8 +78,9 @@ class SyncPipedriveCustomFieldsCommand extends Command
         }
 
         if ($entityType) {
-            if (!in_array($entityType, PipedriveCustomField::getEntityTypes())) {
-                $this->error("Invalid entity type. Available types: " . implode(', ', PipedriveCustomField::getEntityTypes()));
+            if (! in_array($entityType, PipedriveCustomField::getEntityTypes())) {
+                $this->error('Invalid entity type. Available types: '.implode(', ', PipedriveCustomField::getEntityTypes()));
+
                 return self::FAILURE;
             }
 
@@ -89,6 +93,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
         }
 
         $this->info('Custom fields synchronization completed!');
+
         return self::SUCCESS;
     }
 
@@ -97,9 +102,9 @@ class SyncPipedriveCustomFieldsCommand extends Command
         $this->info("Syncing {$entityType} fields...");
 
         if ($fullData) {
-            $this->line("  → Full data mode: Retrieving ALL custom fields with pagination (sorted by creation date, oldest first)");
+            $this->line('  → Full data mode: Retrieving ALL custom fields with pagination (sorted by creation date, oldest first)');
         } else {
-            $this->line("  → Standard mode: Retrieving latest modifications (sorted by update_time DESC)");
+            $this->line('  → Standard mode: Retrieving latest modifications (sorted by update_time DESC)');
         }
 
         try {
@@ -107,6 +112,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
             if (empty($fields)) {
                 $this->warn("No fields found for entity type: {$entityType}");
+
                 return;
             }
 
@@ -126,11 +132,12 @@ class SyncPipedriveCustomFieldsCommand extends Command
                 }
 
                 // Skip fields without an ID (system/primary fields)
-                if (!isset($fieldData['id']) || $fieldData['id'] === null) {
+                if (! isset($fieldData['id']) || $fieldData['id'] === null) {
                     if ($this->getOutput()->isVerbose()) {
                         $this->warn("  ⚠ Skipped system field: {$fieldData['name']} ({$fieldData['key']})");
                     }
                     $skipped++;
+
                     continue;
                 }
 
@@ -138,8 +145,9 @@ class SyncPipedriveCustomFieldsCommand extends Command
                     ->where('entity_type', $entityType)
                     ->first();
 
-                if ($existingField && !$force) {
+                if ($existingField && ! $force) {
                     $skipped++;
+
                     continue;
                 }
 
@@ -158,10 +166,11 @@ class SyncPipedriveCustomFieldsCommand extends Command
                         }
                     }
                 } catch (\Exception $e) {
-                    $this->error("  ✗ Error processing field {$fieldData['name']}: " . $e->getMessage());
+                    $this->error("  ✗ Error processing field {$fieldData['name']}: ".$e->getMessage());
                     if ($this->getOutput()->isVerbose()) {
-                        $this->error("    Stack trace: " . $e->getTraceAsString());
+                        $this->error('    Stack trace: '.$e->getTraceAsString());
                     }
+
                     continue;
                 }
             }
@@ -169,7 +178,7 @@ class SyncPipedriveCustomFieldsCommand extends Command
             $this->info("  {$entityType}: {$synced} created, {$updated} updated, {$skipped} skipped");
 
         } catch (\Exception $e) {
-            $this->error("Error syncing {$entityType} fields: " . $e->getMessage());
+            $this->error("Error syncing {$entityType} fields: ".$e->getMessage());
         }
     }
 
@@ -182,10 +191,11 @@ class SyncPipedriveCustomFieldsCommand extends Command
                 return $this->getLatestFieldModifications($entityType);
             }
         } catch (\Exception $e) {
-            $this->error("Failed to fetch {$entityType} fields from Pipedrive: " . $e->getMessage());
+            $this->error("Failed to fetch {$entityType} fields from Pipedrive: ".$e->getMessage());
             if ($this->getOutput()->isVerbose()) {
-                $this->error("Stack trace: " . $e->getTraceAsString());
+                $this->error('Stack trace: '.$e->getTraceAsString());
             }
+
             return [];
         }
     }
@@ -203,15 +213,15 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
         $response = $this->makeFieldApiCall($entityType, $options);
 
-        if (!$response->isSuccess()) {
-            throw new \Exception("API request failed with status: " . $response->getStatusCode());
+        if (! $response->isSuccess()) {
+            throw new \Exception('API request failed with status: '.$response->getStatusCode());
         }
 
         $data = $response->getData() ?? [];
 
         // Convert objects to arrays if needed
         if (is_array($data)) {
-            $data = array_map(function($item) {
+            $data = array_map(function ($item) {
                 return is_object($item) ? json_decode(json_encode($item), true) : $item;
             }, $data);
         }
@@ -246,15 +256,15 @@ class SyncPipedriveCustomFieldsCommand extends Command
 
             $response = $this->makeFieldApiCall($entityType, $options);
 
-            if (!$response->isSuccess()) {
-                throw new \Exception("API request failed with status: " . $response->getStatusCode() . " on page {$pageCount}");
+            if (! $response->isSuccess()) {
+                throw new \Exception('API request failed with status: '.$response->getStatusCode()." on page {$pageCount}");
             }
 
             $pageData = $response->getData() ?? [];
 
             // Convert objects to arrays if needed
             if (is_array($pageData)) {
-                $pageData = array_map(function($item) {
+                $pageData = array_map(function ($item) {
                     return is_object($item) ? json_decode(json_encode($item), true) : $item;
                 }, $pageData);
             }
@@ -266,31 +276,31 @@ class SyncPipedriveCustomFieldsCommand extends Command
             $start += $limit;
 
             if ($this->getOutput()->isVerbose()) {
-                $this->line("    → Page {$pageCount}: " . count($pageData) . " fields (total: " . count($allFields) . ")");
+                $this->line("    → Page {$pageCount}: ".count($pageData).' fields (total: '.count($allFields).')');
             }
 
             // Safety check to prevent infinite loops
             if ($pageCount > 100) {
-                $this->warn("    ⚠ Reached maximum page limit (100). Stopping pagination.");
+                $this->warn('    ⚠ Reached maximum page limit (100). Stopping pagination.');
                 break;
             }
         }
 
         if ($this->getOutput()->isVerbose()) {
-            $this->line("    → Pagination completed: {$pageCount} pages, " . count($allFields) . " total fields");
+            $this->line("    → Pagination completed: {$pageCount} pages, ".count($allFields).' total fields');
         }
 
         return $allFields;
-    } 
+    }
 
     /**
      * Make API call for specific field entity type with rate limiting
      */
     protected function makeFieldApiCall(string $entityType, array $options)
-    { 
+    {
 
         if ($this->getOutput()->isVerbose()) {
-            $this->line("  → Making API call for {$entityType} fields with options: " . json_encode($options));
+            $this->line("  → Making API call for {$entityType} fields with options: ".json_encode($options));
         }
 
         return match ($entityType) {
@@ -317,14 +327,14 @@ class SyncPipedriveCustomFieldsCommand extends Command
         // Recommend at least 512MB for custom fields full-data mode
         $recommendedBytes = 512 * 1024 * 1024; // 512MB
 
-        $this->info("💾 Memory Check:");
+        $this->info('💾 Memory Check:');
         $this->info("   Current limit: {$memoryLimit}");
         $this->info("   Current usage: {$currentUsageMB}MB");
-        $this->info("   Recommended for full-data: 512MB+");
+        $this->info('   Recommended for full-data: 512MB+');
 
         if ($memoryLimitBytes !== -1 && $memoryLimitBytes < $recommendedBytes) {
             $this->error('❌ MEMORY WARNING: Your PHP memory limit may be insufficient for full-data mode.');
-            $this->error('   Current limit: ' . $memoryLimit);
+            $this->error('   Current limit: '.$memoryLimit);
             $this->error('   Recommended: 512MB or higher');
             $this->error('');
             $this->error('💡 Solutions:');
@@ -333,12 +343,12 @@ class SyncPipedriveCustomFieldsCommand extends Command
             $this->error('   3. Update php.ini: memory_limit = 1024M');
             $this->error('');
 
-            if (!$this->confirm('Continue anyway? (may cause out-of-memory errors)', false)) {
+            if (! $this->confirm('Continue anyway? (may cause out-of-memory errors)', false)) {
                 $this->info('Operation cancelled. Use one of the solutions above.');
                 exit(self::FAILURE);
             }
         } else {
-            $this->info("✅ Memory limit appears sufficient for full-data mode.");
+            $this->info('✅ Memory limit appears sufficient for full-data mode.');
         }
     }
 

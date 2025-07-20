@@ -2,21 +2,22 @@
 
 namespace Skeylup\LaravelPipedrive\Tests\Feature\Commands;
 
-use Skeylup\LaravelPipedrive\Tests\TestCase;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 use Mockery;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Tests\TestCase;
 
 class SyncCommandsTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Mock the PipedriveAuthService to avoid real API calls
         $this->app->bind(PipedriveAuthService::class, function () {
             $mock = Mockery::mock(PipedriveAuthService::class);
             $mock->shouldReceive('testConnection')
                 ->andReturn(['success' => false, 'message' => 'Test mode - no real connection']);
+
             return $mock;
         });
     }

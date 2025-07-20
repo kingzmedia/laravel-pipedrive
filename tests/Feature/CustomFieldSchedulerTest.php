@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Console\Scheduling\Schedule;
 use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
+use Tests\TestCase;
 
 class CustomFieldSchedulerTest extends TestCase
 {
@@ -23,13 +23,13 @@ class CustomFieldSchedulerTest extends TestCase
         ]);
 
         $schedule = $this->app->make(Schedule::class);
-        
+
         // Trigger the service provider's boot method
         $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();
-        
+
         // Find the custom fields sync command in scheduled events
         $customFieldsEvent = collect($events)->first(function ($event) {
             return str_contains($event->command, 'pipedrive:sync-custom-fields');
@@ -47,13 +47,13 @@ class CustomFieldSchedulerTest extends TestCase
         ]);
 
         $schedule = $this->app->make(Schedule::class);
-        
+
         // Trigger the service provider's boot method
         $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();
-        
+
         // Find the custom fields sync command in scheduled events
         $customFieldsEvent = collect($events)->first(function ($event) {
             return str_contains($event->command, 'pipedrive:sync-custom-fields');
@@ -71,19 +71,19 @@ class CustomFieldSchedulerTest extends TestCase
         ]);
 
         $schedule = $this->app->make(Schedule::class);
-        
+
         // Trigger the service provider's boot method
         $this->app->make(\Skeylup\LaravelPipedrive\LaravelPipedriveServiceProvider::class)
             ->packageBooted();
 
         $events = $schedule->events();
-        
+
         $customFieldsEvent = collect($events)->first(function ($event) {
             return str_contains($event->command, 'pipedrive:sync-custom-fields');
         });
 
         $this->assertNotNull($customFieldsEvent);
-        
+
         // Check if it's scheduled hourly (cron expression should be '0 * * * *')
         $this->assertEquals('0 * * * *', $customFieldsEvent->expression);
     }
@@ -98,7 +98,7 @@ class CustomFieldSchedulerTest extends TestCase
         ]);
 
         $schedule = $this->app->make(Schedule::class);
-        
+
         // Clear existing events
         $reflection = new \ReflectionClass($schedule);
         $eventsProperty = $reflection->getProperty('events');
@@ -110,13 +110,13 @@ class CustomFieldSchedulerTest extends TestCase
             ->packageBooted();
 
         $events = $schedule->events();
-        
+
         $customFieldsEvent = collect($events)->first(function ($event) {
             return str_contains($event->command, 'pipedrive:sync-custom-fields');
         });
 
         $this->assertNotNull($customFieldsEvent);
-        
+
         // Check if it's scheduled every two hours (cron expression should be '0 */2 * * *')
         $this->assertEquals('0 */2 * * *', $customFieldsEvent->expression);
     }
@@ -130,8 +130,8 @@ class CustomFieldSchedulerTest extends TestCase
         SyncPipedriveCustomFieldsJob::dispatch('deal', true, false);
 
         Queue::assertPushed(SyncPipedriveCustomFieldsJob::class, function ($job) {
-            return $job->entityType === 'deal' && 
-                   $job->force === true && 
+            return $job->entityType === 'deal' &&
+                   $job->force === true &&
                    $job->fullData === false;
         });
     }

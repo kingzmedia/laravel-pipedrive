@@ -2,10 +2,10 @@
 
 namespace Skeylup\LaravelPipedrive\Services;
 
+use Carbon\Carbon;
 use Devio\Pipedrive\PipedriveToken;
 use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 use Skeylup\LaravelPipedrive\Models\PipedriveOAuthToken;
-use Carbon\Carbon;
 
 class PersistentTokenStorage implements PipedriveTokenStorageInterface
 {
@@ -15,7 +15,7 @@ class PersistentTokenStorage implements PipedriveTokenStorageInterface
     public function setToken(PipedriveToken $token): void
     {
         $expiresAt = $token->expiresAt();
-        
+
         PipedriveOAuthToken::updateDefault([
             'access_token' => $token->getAccessToken(),
             'refresh_token' => $token->getRefreshToken(),
@@ -30,7 +30,7 @@ class PersistentTokenStorage implements PipedriveTokenStorageInterface
     {
         $tokenModel = PipedriveOAuthToken::getDefault();
 
-        if (!$tokenModel) {
+        if (! $tokenModel) {
             return null;
         }
 
@@ -64,7 +64,7 @@ class PersistentTokenStorage implements PipedriveTokenStorageInterface
     {
         $tokenModel = PipedriveOAuthToken::getDefault();
 
-        if (!$tokenModel) {
+        if (! $tokenModel) {
             return null;
         }
 

@@ -8,7 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * Optimized Pipedrive Queries Trait
- * 
+ *
  * Provides query optimization features for Pipedrive models including
  * automatic eager loading, intelligent pagination, and performance optimizations.
  */
@@ -41,11 +41,11 @@ trait OptimizedPipedriveQueries
      */
     public function scopeWithDefaultRelations(Builder $query): Builder
     {
-        if (!empty($this->defaultEagerLoad)) {
+        if (! empty($this->defaultEagerLoad)) {
             $query->with($this->defaultEagerLoad);
         }
 
-        if (!empty($this->defaultWithCount)) {
+        if (! empty($this->defaultWithCount)) {
             $query->withCount($this->defaultWithCount);
         }
 
@@ -64,7 +64,7 @@ trait OptimizedPipedriveQueries
         $query->withDefaultRelations();
 
         // Add basic ordering for consistent results
-        if (!$query->getQuery()->orders) {
+        if (! $query->getQuery()->orders) {
             $query->orderBy($this->getKeyName());
         }
 
@@ -83,7 +83,7 @@ trait OptimizedPipedriveQueries
         // Add model-specific detail relationships
         if (method_exists($this, 'getDetailRelationships')) {
             $detailRelations = $this->getDetailRelationships();
-            if (!empty($detailRelations)) {
+            if (! empty($detailRelations)) {
                 $query->with($detailRelations);
             }
         }
@@ -99,7 +99,7 @@ trait OptimizedPipedriveQueries
     {
         // Remove unnecessary selects and relationships for counting
         $query->select($this->getKeyName());
-        
+
         return $query;
     }
 
@@ -113,7 +113,7 @@ trait OptimizedPipedriveQueries
         $query->withDefaultRelations();
 
         // Add requested includes
-        if (!empty($includes)) {
+        if (! empty($includes)) {
             $query->with($includes);
         }
 
@@ -147,7 +147,7 @@ trait OptimizedPipedriveQueries
     {
         $query = static::query()->withDefaultRelations();
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -167,7 +167,7 @@ trait OptimizedPipedriveQueries
             ->withDefaultRelations()
             ->where('pipedrive_id', $pipedriveId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -183,7 +183,7 @@ trait OptimizedPipedriveQueries
             ->withDefaultRelations()
             ->active();
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -200,14 +200,14 @@ trait OptimizedPipedriveQueries
     public static function loadByPipedriveIds(array $pipedriveIds, array $relations = []): Collection
     {
         if (empty($pipedriveIds)) {
-            return new Collection();
+            return new Collection;
         }
 
         $query = static::query()
             ->withDefaultRelations()
             ->whereIn('pipedrive_id', $pipedriveIds);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -259,7 +259,7 @@ trait OptimizedPipedriveQueries
     {
         // Remove unnecessary relationships for export
         // Only load essential data
-        return $query->select($this->getTable() . '.*');
+        return $query->select($this->getTable().'.*');
     }
 
     /**
@@ -267,7 +267,7 @@ trait OptimizedPipedriveQueries
      */
     public static function getPerformanceStats(): array
     {
-        $instance = new static();
+        $instance = new static;
         $table = $instance->getTable();
 
         return [
@@ -288,7 +288,7 @@ trait OptimizedPipedriveQueries
     {
         // Add index hints or other database-specific optimizations
         // This can be extended based on your database engine
-        
+
         return $query;
     }
 }

@@ -4,26 +4,25 @@ namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Exceptions\{
-    PipedriveException,
-    PipedriveApiException,
-    PipedriveRateLimitException,
-    PipedriveAuthException,
-    PipedriveQuotaException,
-    PipedriveServerException,
-    PipedriveConnectionException
-};
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveApiException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveAuthException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveConnectionException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveQuotaException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveRateLimitException;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveServerException;
 use Throwable;
 
 /**
  * Error classification and retry logic service
- * 
+ *
  * Implements circuit breaker pattern and intelligent retry strategies
  * for different error types
  */
 class PipedriveErrorHandler
 {
     protected array $config;
+
     protected string $cachePrefix = 'pipedrive_circuit_breaker';
 
     public function __construct(array $config = [])
@@ -48,7 +47,7 @@ class PipedriveErrorHandler
 
         // Classify based on exception type and message
         $classified = $this->classifyGenericException($exception, $context);
-        
+
         Log::debug('Exception classified', [
             'original_class' => get_class($exception),
             'classified_class' => get_class($classified),
@@ -173,11 +172,11 @@ class PipedriveErrorHandler
     {
         $connectionKeywords = [
             'connection', 'timeout', 'timed out', 'dns', 'ssl', 'certificate',
-            'network', 'unreachable', 'refused', 'reset', 'broken pipe'
+            'network', 'unreachable', 'refused', 'reset', 'broken pipe',
         ];
 
         $lowerMessage = strtolower($message);
-        
+
         foreach ($connectionKeywords as $keyword) {
             if (str_contains($lowerMessage, $keyword)) {
                 return true;
@@ -194,7 +193,7 @@ class PipedriveErrorHandler
     {
         $memoryKeywords = [
             'memory', 'out of memory', 'memory limit', 'memory exhausted',
-            'allocation', 'fatal error'
+            'allocation', 'fatal error',
         ];
 
         $lowerMessage = strtolower($message);
@@ -238,7 +237,7 @@ class PipedriveErrorHandler
                 'error_type' => 'item_not_found',
                 'entity_type' => $entityType,
                 'operation' => $operation,
-                'suggestion' => "Consider removing '{$entityType}' from PIPEDRIVE_ENABLED_ENTITIES if this entity is not available in your Pipedrive account."
+                'suggestion' => "Consider removing '{$entityType}' from PIPEDRIVE_ENABLED_ENTITIES if this entity is not available in your Pipedrive account.",
             ]),
             retryable: false
         );
@@ -253,7 +252,7 @@ class PipedriveErrorHandler
             $entityType = $context['entity_type'] ?? 'unknown';
             $operation = $context['operation'] ?? 'unknown';
 
-            return "Pipedrive API error during '{$operation}' for entity '{$entityType}'. Exception: " . class_basename($exceptionClass);
+            return "Pipedrive API error during '{$operation}' for entity '{$entityType}'. Exception: ".class_basename($exceptionClass);
         }
 
         return $originalMessage;
@@ -270,11 +269,12 @@ class PipedriveErrorHandler
                 'error_type' => $exception->getErrorType(),
                 'attempt' => $attemptNumber,
             ]);
+
             return false;
         }
 
         // Check if exception is retryable
-        if (!$exception->isRetryable()) {
+        if (! $exception->isRetryable()) {
             return false;
         }
 
@@ -292,7 +292,7 @@ class PipedriveErrorHandler
     public function getRetryDelay(PipedriveException $exception, int $attemptNumber): int
     {
         $baseDelay = $exception->getRetryAfter();
-        
+
         // Apply exponential backoff for certain error types
         if (in_array($exception->getErrorType(), ['server', 'connection', 'rate_limit'])) {
             $exponentialDelay = min(pow(2, $attemptNumber - 1), 60); // Max 60 seconds
@@ -301,7 +301,7 @@ class PipedriveErrorHandler
 
         // Add jitter to prevent thundering herd
         $jitter = rand(0, (int) ($baseDelay * 0.1));
-        
+
         return $baseDelay + $jitter;
     }
 
@@ -312,7 +312,7 @@ class PipedriveErrorHandler
     {
         $errorType = $exception->getErrorType();
         $cacheKey = $this->getCircuitBreakerKey($errorType);
-        
+
         $failures = Cache::get($cacheKey, 0) + 1;
         Cache::put($cacheKey, $failures, now()->addMinutes(10));
 
@@ -335,7 +335,7 @@ class PipedriveErrorHandler
     {
         $cacheKey = $this->getCircuitBreakerKey($errorType);
         Cache::forget($cacheKey);
-        
+
         // Close circuit breaker
         $this->closeCircuitBreaker($errorType);
 
@@ -350,6 +350,7 @@ class PipedriveErrorHandler
     public function isCircuitBreakerOpen(string $errorType): bool
     {
         $cacheKey = $this->getCircuitBreakerOpenKey($errorType);
+
         return Cache::has($cacheKey);
     }
 
@@ -374,7 +375,7 @@ class PipedriveErrorHandler
     {
         $openKey = $this->getCircuitBreakerOpenKey($errorType);
         $failureKey = $this->getCircuitBreakerKey($errorType);
-        
+
         Cache::forget($openKey);
         Cache::forget($failureKey);
 
@@ -410,7 +411,7 @@ class PipedriveErrorHandler
         foreach ($errorTypes as $errorType) {
             $failureKey = $this->getCircuitBreakerKey($errorType);
             $openKey = $this->getCircuitBreakerOpenKey($errorType);
-            
+
             $status[$errorType] = [
                 'failures' => Cache::get($failureKey, 0),
                 'is_open' => Cache::has($openKey),
@@ -424,7 +425,7 @@ class PipedriveErrorHandler
     /**
      * Reset circuit breaker (for testing)
      */
-    public function resetCircuitBreaker(string $errorType = null): void
+    public function resetCircuitBreaker(?string $errorType = null): void
     {
         if ($errorType) {
             Cache::forget($this->getCircuitBreakerKey($errorType));

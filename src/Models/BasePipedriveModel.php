@@ -2,14 +2,14 @@
 
 namespace Skeylup\LaravelPipedrive\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Skeylup\LaravelPipedrive\Traits\OptimizedPipedriveQueries;
 
 abstract class BasePipedriveModel extends Model
 {
     use OptimizedPipedriveQueries;
+
     /**
      * Get the attributes that should be cast.
      */
@@ -67,7 +67,7 @@ abstract class BasePipedriveModel extends Model
      */
     protected static function prepareDataManually(array $data): array
     {
-        $model = new static();
+        $model = new static;
         $fillable = $model->getFillable();
         $casts = $model->getCasts();
         $preparedData = [];
@@ -80,12 +80,14 @@ abstract class BasePipedriveModel extends Model
 
         // Map only essential fields that exist in fillable (excluding pipedrive_data)
         foreach ($fillable as $field) {
-            if (in_array($field, ['pipedrive_id', 'pipedrive_data'])) continue;
+            if (in_array($field, ['pipedrive_id', 'pipedrive_data'])) {
+                continue;
+            }
 
             // Handle timestamp fields
             if (in_array($field, ['pipedrive_add_time', 'pipedrive_update_time'])) {
                 $apiField = str_replace('pipedrive_', '', $field);
-                if (isset($data[$apiField]) && !empty($data[$apiField])) {
+                if (isset($data[$apiField]) && ! empty($data[$apiField])) {
                     try {
                         $parsed = \Carbon\Carbon::parse($data[$apiField]);
                         $preparedData[$field] = $parsed->year > 1970 ? $parsed : null;
@@ -95,6 +97,7 @@ abstract class BasePipedriveModel extends Model
                 } else {
                     $preparedData[$field] = null;
                 }
+
                 continue;
             }
 
@@ -153,7 +156,7 @@ abstract class BasePipedriveModel extends Model
         if (property_exists($this, 'active')) {
             return $this->active;
         }
-        
+
         return $this->active_flag ?? true;
     }
 
@@ -178,7 +181,7 @@ abstract class BasePipedriveModel extends Model
      */
     public function getAgeInDays(): ?int
     {
-        if (!$this->pipedrive_add_time) {
+        if (! $this->pipedrive_add_time) {
             return null;
         }
 
@@ -190,7 +193,7 @@ abstract class BasePipedriveModel extends Model
      */
     public function getLastUpdateAgeInDays(): ?int
     {
-        if (!$this->pipedrive_update_time) {
+        if (! $this->pipedrive_update_time) {
             return null;
         }
 

@@ -2,10 +2,8 @@
 
 namespace Skeylup\LaravelPipedrive\Services;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Collection;
-use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Illuminate\Support\Facades\Log;
 use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
 
 class PipedriveCustomFieldDetectionService
@@ -37,17 +35,17 @@ class PipedriveCustomFieldDetectionService
         try {
             // Extract custom fields from current data
             $currentCustomFields = $this->extractCustomFields($currentData);
-            
+
             // For added events, check if we have any custom fields we don't know about
             if ($eventType === 'added') {
                 $result = $this->detectNewCustomFields($entityType, $currentCustomFields);
-            } 
+            }
             // For updated events, compare current vs previous
             elseif ($eventType === 'updated' && $previousData) {
                 $previousCustomFields = $this->extractCustomFields($previousData);
                 $result = $this->detectCustomFieldChanges(
-                    $entityType, 
-                    $currentCustomFields, 
+                    $entityType,
+                    $currentCustomFields,
                     $previousCustomFields
                 );
             }
@@ -65,7 +63,7 @@ class PipedriveCustomFieldDetectionService
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $result['reason'] = 'Error during detection: ' . $e->getMessage();
+            $result['reason'] = 'Error during detection: '.$e->getMessage();
         }
 
         return $result;
@@ -103,6 +101,7 @@ class PipedriveCustomFieldDetectionService
 
         if (empty($currentCustomFields)) {
             $result['reason'] = 'No custom fields in entity data';
+
             return $result;
         }
 
@@ -113,15 +112,15 @@ class PipedriveCustomFieldDetectionService
         // Check for unknown custom field keys
         $unknownFields = [];
         foreach (array_keys($currentCustomFields) as $fieldKey) {
-            if (!in_array($fieldKey, $knownFieldKeys)) {
+            if (! in_array($fieldKey, $knownFieldKeys)) {
                 $unknownFields[] = $fieldKey;
             }
         }
 
-        if (!empty($unknownFields)) {
+        if (! empty($unknownFields)) {
             $result['detected_changes'] = true;
             $result['new_fields'] = $unknownFields;
-            $result['reason'] = 'New custom fields detected: ' . implode(', ', $unknownFields);
+            $result['reason'] = 'New custom fields detected: '.implode(', ', $unknownFields);
 
             Log::info('New custom fields detected in webhook', [
                 'entity_type' => $entityType,
@@ -153,7 +152,7 @@ class PipedriveCustomFieldDetectionService
 
         // Check for new custom fields (keys that exist in current but not in previous)
         $newFields = array_diff_key($currentCustomFields, $previousCustomFields);
-        
+
         // Check for changed custom field values
         $changedFields = [];
         foreach ($currentCustomFields as $key => $currentValue) {
@@ -165,19 +164,19 @@ class PipedriveCustomFieldDetectionService
             }
         }
 
-        if (!empty($newFields)) {
+        if (! empty($newFields)) {
             $result['detected_changes'] = true;
             $result['new_fields'] = array_keys($newFields);
-            
+
             // Check if these are truly unknown fields
             $knownFields = $this->customFieldService->getFieldsForEntity($entityType, false, true);
             $knownFieldKeys = $knownFields->pluck('key')->toArray();
-            
+
             $unknownNewFields = array_diff(array_keys($newFields), $knownFieldKeys);
-            
-            if (!empty($unknownNewFields)) {
-                $result['reason'] = 'New unknown custom fields detected: ' . implode(', ', $unknownNewFields);
-                
+
+            if (! empty($unknownNewFields)) {
+                $result['reason'] = 'New unknown custom fields detected: '.implode(', ', $unknownNewFields);
+
                 Log::info('New custom fields detected in webhook update', [
                     'entity_type' => $entityType,
                     'new_fields' => $unknownNewFields,
@@ -189,15 +188,15 @@ class PipedriveCustomFieldDetectionService
             }
         }
 
-        if (!empty($changedFields)) {
+        if (! empty($changedFields)) {
             $result['changed_fields'] = array_keys($changedFields);
-            
-            if (!$result['detected_changes']) {
+
+            if (! $result['detected_changes']) {
                 $result['reason'] = 'Custom field values changed but no new fields detected';
             }
         }
 
-        if (!$result['detected_changes'] && empty($changedFields)) {
+        if (! $result['detected_changes'] && empty($changedFields)) {
             $result['reason'] = 'No custom field changes detected';
         }
 
@@ -212,12 +211,12 @@ class PipedriveCustomFieldDetectionService
         try {
             // Check if we should use jobs or direct command execution
             $useJobs = config('pipedrive.sync.use_jobs', true);
-            
+
             if ($useJobs) {
                 // Dispatch job for async execution
                 SyncPipedriveCustomFieldsJob::dispatch($entityType)
                     ->onQueue(config('pipedrive.sync.queue', 'pipedrive-sync'));
-                
+
                 Log::info('Custom fields sync job dispatched', [
                     'entity_type' => $entityType,
                     'trigger' => 'webhook_detection',
@@ -228,7 +227,7 @@ class PipedriveCustomFieldDetectionService
                     '--entity' => $entityType,
                     '--force' => true,
                 ]);
-                
+
                 if ($exitCode === 0) {
                     Log::info('Custom fields sync command executed successfully', [
                         'entity_type' => $entityType,
@@ -240,6 +239,7 @@ class PipedriveCustomFieldDetectionService
                         'exit_code' => $exitCode,
                         'trigger' => 'webhook_detection',
                     ]);
+
                     return false;
                 }
             }

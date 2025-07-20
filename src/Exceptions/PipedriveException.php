@@ -7,16 +7,21 @@ use Throwable;
 
 /**
  * Base exception for all Pipedrive-related errors
- * 
+ *
  * Provides context information and retry capabilities for all Pipedrive exceptions
  */
 class PipedriveException extends Exception
 {
     protected array $context = [];
+
     protected bool $retryable = false;
+
     protected int $retryAfter = 0;
+
     protected int $maxRetries = 3;
+
     protected string $errorType = 'general';
+
     protected ?array $pipedriveResponse = null;
 
     public function __construct(
@@ -31,7 +36,7 @@ class PipedriveException extends Exception
         ?array $pipedriveResponse = null
     ) {
         parent::__construct($message, $code, $previous);
-        
+
         $this->context = $context;
         $this->retryable = $retryable;
         $this->retryAfter = $retryAfter;
@@ -54,6 +59,7 @@ class PipedriveException extends Exception
     public function setContext(array $context): self
     {
         $this->context = $context;
+
         return $this;
     }
 
@@ -63,6 +69,7 @@ class PipedriveException extends Exception
     public function addContext(string $key, mixed $value): self
     {
         $this->context[$key] = $value;
+
         return $this;
     }
 
@@ -80,6 +87,7 @@ class PipedriveException extends Exception
     public function setRetryable(bool $retryable): self
     {
         $this->retryable = $retryable;
+
         return $this;
     }
 
@@ -97,6 +105,7 @@ class PipedriveException extends Exception
     public function setRetryAfter(int $retryAfter): self
     {
         $this->retryAfter = $retryAfter;
+
         return $this;
     }
 
@@ -114,6 +123,7 @@ class PipedriveException extends Exception
     public function setMaxRetries(int $maxRetries): self
     {
         $this->maxRetries = $maxRetries;
+
         return $this;
     }
 
@@ -131,6 +141,7 @@ class PipedriveException extends Exception
     public function setErrorType(string $errorType): self
     {
         $this->errorType = $errorType;
+
         return $this;
     }
 
@@ -148,6 +159,7 @@ class PipedriveException extends Exception
     public function setPipedriveResponse(?array $pipedriveResponse): self
     {
         $this->pipedriveResponse = $pipedriveResponse;
+
         return $this;
     }
 

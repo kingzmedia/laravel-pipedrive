@@ -3,8 +3,8 @@
 namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
-use Skeylup\LaravelPipedrive\Services\PipedriveEntityLinkService;
 use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityLinkService;
 
 class ManagePipedriveEntityLinksCommand extends Command
 {
@@ -52,13 +52,13 @@ class ManagePipedriveEntityLinksCommand extends Command
 
         $this->line('');
         $this->info('📈 By Entity Type:');
-        
+
         $entityTypeData = [];
         foreach ($stats['by_entity_type'] as $type => $count) {
             $entityTypeData[] = [ucfirst($type), $count];
         }
-        
-        if (!empty($entityTypeData)) {
+
+        if (! empty($entityTypeData)) {
             $this->table(['Entity Type', 'Count'], $entityTypeData);
         } else {
             $this->warn('No entity links found.');
@@ -66,13 +66,13 @@ class ManagePipedriveEntityLinksCommand extends Command
 
         $this->line('');
         $this->info('🔄 By Sync Status:');
-        
+
         $statusData = [];
         foreach ($stats['by_sync_status'] as $status => $count) {
             $statusData[] = [ucfirst($status), $count];
         }
-        
-        if (!empty($statusData)) {
+
+        if (! empty($statusData)) {
             $this->table(['Status', 'Count'], $statusData);
         }
 
@@ -82,19 +82,19 @@ class ManagePipedriveEntityLinksCommand extends Command
     protected function syncLinks(): int
     {
         $entityType = $this->option('entity-type');
-        
+
         if ($entityType) {
             $this->info("🔄 Syncing links for entity type: {$entityType}");
             $results = $this->linkService->syncLinksForEntityType($entityType);
         } else {
             $this->info('🔄 Syncing all entity links...');
-            
+
             $query = PipedriveEntityLink::active();
-            
+
             if ($status = $this->option('status')) {
                 $query->where('sync_status', $status);
             }
-            
+
             $results = collect();
             $query->chunk(100, function ($links) use ($results) {
                 foreach ($links as $link) {
@@ -120,7 +120,7 @@ class ManagePipedriveEntityLinksCommand extends Command
         if ($this->getOutput()->isVerbose()) {
             $this->line('');
             $this->info('📋 Detailed Results:');
-            
+
             $tableData = $results->map(function ($result) {
                 return [
                     $result['link_id'],
@@ -139,11 +139,12 @@ class ManagePipedriveEntityLinksCommand extends Command
     protected function cleanupLinks(): int
     {
         $this->info('🧹 Finding orphaned links...');
-        
+
         $orphaned = $this->linkService->findOrphanedLinks();
-        
+
         if ($orphaned->isEmpty()) {
             $this->info('✅ No orphaned links found.');
+
             return 0;
         }
 
@@ -181,6 +182,7 @@ class ManagePipedriveEntityLinksCommand extends Command
 
         if ($links->isEmpty()) {
             $this->warn('No links found matching the criteria.');
+
             return 0;
         }
 
@@ -201,18 +203,18 @@ class ManagePipedriveEntityLinksCommand extends Command
         })->toArray();
 
         $this->table([
-            'ID', 'Model Type', 'Model ID', 'Entity Type', 
-            'Entity ID', 'Primary', 'Status', 'Created'
+            'ID', 'Model Type', 'Model ID', 'Entity Type',
+            'Entity ID', 'Primary', 'Status', 'Created',
         ], $tableData);
 
         if ($this->getOutput()->isVerbose()) {
             $this->line('');
             $this->info('📊 Summary:');
             $this->line("Total links: {$links->count()}");
-            $this->line("Primary links: " . $links->where('is_primary', true)->count());
-            $this->line("Synced links: " . $links->where('sync_status', 'synced')->count());
-            $this->line("Pending links: " . $links->where('sync_status', 'pending')->count());
-            $this->line("Error links: " . $links->where('sync_status', 'error')->count());
+            $this->line('Primary links: '.$links->where('is_primary', true)->count());
+            $this->line('Synced links: '.$links->where('sync_status', 'synced')->count());
+            $this->line('Pending links: '.$links->where('sync_status', 'pending')->count());
+            $this->line('Error links: '.$links->where('sync_status', 'error')->count());
         }
 
         return 0;

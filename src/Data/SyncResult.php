@@ -2,12 +2,12 @@
 
 namespace Skeylup\LaravelPipedrive\Data;
 
-use Spatie\LaravelData\Data;
 use Carbon\Carbon;
+use Spatie\LaravelData\Data;
 
 /**
  * Data Transfer Object for sync operation results
- * 
+ *
  * Standardizes sync results across jobs and commands
  */
 class SyncResult extends Data
@@ -124,6 +124,7 @@ class SyncResult extends Data
     public function withMemoryStats(array $memoryStats): self
     {
         $this->memoryStats = $memoryStats;
+
         return $this;
     }
 
@@ -133,6 +134,7 @@ class SyncResult extends Data
     public function withRateLimitStats(array $rateLimitStats): self
     {
         $this->rateLimitStats = $rateLimitStats;
+
         return $this;
     }
 
@@ -142,6 +144,7 @@ class SyncResult extends Data
     public function withHealthStats(array $healthStats): self
     {
         $this->healthStats = $healthStats;
+
         return $this;
     }
 
@@ -151,6 +154,7 @@ class SyncResult extends Data
     public function withProgressData(array $progressData): self
     {
         $this->progressData = $progressData;
+
         return $this;
     }
 
@@ -161,12 +165,12 @@ class SyncResult extends Data
     {
         $this->startedAt = $startedAt;
         $this->completedAt = $completedAt ?? Carbon::now()->toISOString();
-        
+
         // Calculate execution time
         $start = Carbon::parse($this->startedAt);
         $end = Carbon::parse($this->completedAt);
         $this->executionTime = $end->diffInSeconds($start, true);
-        
+
         return $this;
     }
 
@@ -177,6 +181,7 @@ class SyncResult extends Data
     {
         $this->context = $context;
         $this->metadata = array_merge($this->metadata, $metadata);
+
         return $this;
     }
 
@@ -193,7 +198,7 @@ class SyncResult extends Data
      */
     public function isFailure(): bool
     {
-        return !$this->success;
+        return ! $this->success;
     }
 
     /**
@@ -222,6 +227,7 @@ class SyncResult extends Data
         }
 
         $successful = $this->synced + $this->updated;
+
         return ($successful / $this->totalProcessed) * 100;
     }
 
@@ -255,13 +261,13 @@ class SyncResult extends Data
     public function getFormattedExecutionTime(): string
     {
         if ($this->executionTime < 60) {
-            return number_format($this->executionTime, 2) . ' seconds';
+            return number_format($this->executionTime, 2).' seconds';
         }
 
         $minutes = floor($this->executionTime / 60);
         $seconds = $this->executionTime % 60;
-        
-        return "{$minutes}m " . number_format($seconds, 2) . 's';
+
+        return "{$minutes}m ".number_format($seconds, 2).'s';
     }
 
     /**
@@ -301,7 +307,7 @@ class SyncResult extends Data
     public function getDetailedReport(): array
     {
         $report = $this->getSummary();
-        
+
         $report['processed_items'] = $this->processedItems;
         $report['error_items'] = $this->errorItems;
         $report['memory_stats'] = $this->memoryStats;
@@ -309,15 +315,15 @@ class SyncResult extends Data
         $report['health_stats'] = $this->healthStats;
         $report['progress_data'] = $this->progressData;
         $report['metadata'] = $this->metadata;
-        
+
         if ($this->errorMessage) {
             $report['error_message'] = $this->errorMessage;
         }
-        
+
         if ($this->exception) {
             $report['exception'] = $this->exception;
         }
-        
+
         return $report;
     }
 
@@ -339,22 +345,22 @@ class SyncResult extends Data
                 'success_rate' => $this->getSuccessRate(),
                 'processing_speed' => $this->getProcessingSpeed(),
                 'context' => $this->context,
-            ]
+            ],
         ];
 
         if ($this->errorMessage) {
             $log['sync_result']['error_message'] = $this->errorMessage;
         }
 
-        if (!empty($this->memoryStats)) {
+        if (! empty($this->memoryStats)) {
             $log['memory_stats'] = $this->memoryStats;
         }
 
-        if (!empty($this->rateLimitStats)) {
+        if (! empty($this->rateLimitStats)) {
             $log['rate_limit_stats'] = $this->rateLimitStats;
         }
 
-        if (!empty($this->metadata)) {
+        if (! empty($this->metadata)) {
             $log['metadata'] = $this->metadata;
         }
 

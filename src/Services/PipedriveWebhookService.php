@@ -2,19 +2,26 @@
 
 namespace Skeylup\LaravelPipedrive\Services;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Skeylup\LaravelPipedrive\Events\PipedriveWebhookReceived;
+use Skeylup\LaravelPipedrive\Models\PipedriveActivity;
+use Skeylup\LaravelPipedrive\Models\PipedriveDeal;
+use Skeylup\LaravelPipedrive\Models\PipedriveFile;
+use Skeylup\LaravelPipedrive\Models\PipedriveGoal;
+use Skeylup\LaravelPipedrive\Models\PipedriveNote;
+use Skeylup\LaravelPipedrive\Models\PipedriveOrganization;
+use Skeylup\LaravelPipedrive\Models\PipedrivePerson;
+use Skeylup\LaravelPipedrive\Models\PipedrivePipeline;
+use Skeylup\LaravelPipedrive\Models\PipedriveProduct;
+use Skeylup\LaravelPipedrive\Models\PipedriveStage;
+use Skeylup\LaravelPipedrive\Models\PipedriveUser;
 use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Skeylup\LaravelPipedrive\Models\{
-    PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
-    PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
-    PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal
-};
 
 class PipedriveWebhookService
 {
     use EmitsPipedriveEvents;
+
     /**
      * Model mapping for webhook objects
      */
@@ -57,7 +64,7 @@ class PipedriveWebhookService
         Event::dispatch(new PipedriveWebhookReceived($webhookData));
 
         // Skip processing if auto-sync is disabled
-        if (!config('pipedrive.webhooks.auto_sync', true)) {
+        if (! config('pipedrive.webhooks.auto_sync', true)) {
             return [
                 'processed' => false,
                 'action' => 'skipped',
@@ -66,7 +73,7 @@ class PipedriveWebhookService
         }
 
         // Skip unsupported objects
-        if (!isset($this->modelMap[$object])) {
+        if (! isset($this->modelMap[$object])) {
             Log::info('Pipedrive webhook: Unsupported object type', [
                 'object' => $object,
                 'action' => $action,
@@ -141,7 +148,7 @@ class PipedriveWebhookService
             $current = $webhookData['current'] ?? null;
         }
 
-        if (empty($current) || !isset($current['id'])) {
+        if (empty($current) || ! isset($current['id'])) {
             throw new \InvalidArgumentException('Invalid webhook data: missing current object data');
         }
 
@@ -214,7 +221,7 @@ class PipedriveWebhookService
             $previous = $webhookData['previous'] ?? null;
         }
 
-        if (empty($previous) || !isset($previous['id'])) {
+        if (empty($previous) || ! isset($previous['id'])) {
             throw new \InvalidArgumentException('Invalid webhook data: missing previous object data');
         }
 
@@ -260,7 +267,7 @@ class PipedriveWebhookService
         $previous = $webhookData['previous'] ?? null;
         $meta = $webhookData['meta'] ?? [];
 
-        if (empty($current) || !isset($current['id'])) {
+        if (empty($current) || ! isset($current['id'])) {
             throw new \InvalidArgumentException('Invalid webhook data: missing current object data');
         }
 
@@ -268,9 +275,9 @@ class PipedriveWebhookService
         $createUpdateResult = $this->handleCreateOrUpdate($modelClass, $webhookData);
 
         // If we have previous data, it represents the record being merged (should be deleted)
-        if (!empty($previous) && isset($previous['id']) && $previous['id'] !== $current['id']) {
+        if (! empty($previous) && isset($previous['id']) && $previous['id'] !== $current['id']) {
             $deletedCount = $modelClass::where('pipedrive_id', $previous['id'])->delete();
-            
+
             Log::info('Pipedrive webhook: Merged object cleaned up', [
                 'object' => $meta['object'],
                 'merged_id' => $previous['id'],
@@ -297,9 +304,9 @@ class PipedriveWebhookService
             'pipedrive_id' => $data['id'],
             'pipedrive_data' => $data,
             'active_flag' => $data['active_flag'] ?? true,
-            'pipedrive_add_time' => isset($data['add_time']) ? 
+            'pipedrive_add_time' => isset($data['add_time']) ?
                 \Carbon\Carbon::parse($data['add_time']) : null,
-            'pipedrive_update_time' => isset($data['update_time']) ? 
+            'pipedrive_update_time' => isset($data['update_time']) ?
                 \Carbon\Carbon::parse($data['update_time']) : null,
         ];
     }

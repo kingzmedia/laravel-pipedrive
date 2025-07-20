@@ -2,33 +2,38 @@
 
 namespace Skeylup\LaravelPipedrive\Jobs;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
 use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
 use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
-use Carbon\Carbon;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 
 class PushToPipedriveJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, EmitsPipedriveEvents;
+    use Dispatchable, EmitsPipedriveEvents, InteractsWithQueue, Queueable, SerializesModels;
 
     public Model $model;
+
     public array $modifications;
+
     public array $customFields;
+
     public string $entityType;
+
     public int $pipedriveId;
+
     public ?string $queue;
+
     public int $maxRetries;
 
     /**
@@ -49,11 +54,11 @@ class PushToPipedriveJob implements ShouldQueue
         $this->entityType = $entityType;
         $this->pipedriveId = $pipedriveId;
         $this->maxRetries = $maxRetries;
-        
+
         if ($queue) {
             $this->onQueue($queue);
         }
-        
+
         // Set retry attempts
         $this->tries = $maxRetries;
     }
@@ -85,7 +90,7 @@ class PushToPipedriveJob implements ShouldQueue
             $memoryManager->monitorMemoryUsage("push_{$this->entityType}");
 
             // Check rate limits before making API call
-            if (!$rateLimitManager->canMakeRequest($this->entityType)) {
+            if (! $rateLimitManager->canMakeRequest($this->entityType)) {
                 throw $rateLimitManager->handleRateLimitResponse([], $this->entityType);
             }
 
@@ -104,8 +109,8 @@ class PushToPipedriveJob implements ShouldQueue
                 $errorHandler
             );
 
-            if (!$response || !isset($response['success']) || !$response['success']) {
-                throw new \Exception('Pipedrive API update failed: ' . ($response['error'] ?? 'Unknown error'));
+            if (! $response || ! isset($response['success']) || ! $response['success']) {
+                throw new \Exception('Pipedrive API update failed: '.($response['error'] ?? 'Unknown error'));
             }
 
             // Consume rate limit tokens on success
@@ -206,11 +211,13 @@ class PushToPipedriveJob implements ShouldQueue
             ]);
 
             $this->release($delay);
+
             return $result;
         }
 
         // Job failed permanently
         $this->fail($e);
+
         return $result;
     }
 
@@ -261,7 +268,7 @@ class PushToPipedriveJob implements ShouldQueue
                 return $response;
 
             } catch (PipedriveException $e) {
-                if (!$e->isRetryable() || $attempt >= $maxRetries) {
+                if (! $e->isRetryable() || $attempt >= $maxRetries) {
                     throw $e;
                 }
 
@@ -343,7 +350,7 @@ class PushToPipedriveJob implements ShouldQueue
         }
 
         // Add custom fields with proper key mapping
-        if (!empty($this->customFields)) {
+        if (! empty($this->customFields)) {
             foreach ($this->customFields as $fieldName => $value) {
                 // Try to find the field by name first
                 $field = PipedriveCustomField::where('entity_type', $this->entityType)
@@ -351,7 +358,7 @@ class PushToPipedriveJob implements ShouldQueue
                     ->active()
                     ->first();
 
-                if (!$field) {
+                if (! $field) {
                     // Try to find by key if name doesn't work
                     $field = PipedriveCustomField::where('entity_type', $this->entityType)
                         ->where('key', $fieldName)
@@ -403,7 +410,7 @@ class PushToPipedriveJob implements ShouldQueue
                 'update_data' => $updateData,
                 'job_id' => $this->job->getJobId() ?? 'unknown',
             ]);
-            
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -427,24 +434,24 @@ class PushToPipedriveJob implements ShouldQueue
         }
 
         // Update custom fields in pipedrive_data
-        if (!empty($this->customFields)) {
+        if (! empty($this->customFields)) {
             $pipedriveData = $this->model->pipedrive_data ?? [];
-            
+
             foreach ($this->customFields as $fieldName => $value) {
                 // Store both by name and by key for easier access
                 $pipedriveData[$fieldName] = $value;
-                
+
                 // Also try to store by Pipedrive key if we can find it
                 $field = PipedriveCustomField::where('entity_type', $this->entityType)
                     ->where('name', $fieldName)
                     ->active()
                     ->first();
-                
+
                 if ($field) {
                     $pipedriveData[$field->key] = $value;
                 }
             }
-            
+
             $this->model->pipedrive_data = $pipedriveData;
         }
 
@@ -536,6 +543,7 @@ class PushToPipedriveJob implements ShouldQueue
     public function retryUntil(): \DateTime
     {
         $timeout = config('pipedrive.jobs.timeout', 3600);
+
         return now()->addSeconds($timeout);
     }
 

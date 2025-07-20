@@ -43,7 +43,7 @@ class DatabaseTokenStorage implements PipedriveTokenStorageInterface
     {
         $tokenData = Cache::get($this->cacheKey);
 
-        if (!$tokenData) {
+        if (! $tokenData) {
             return null;
         }
 

@@ -9,7 +9,7 @@ class PipedriveUser extends BasePipedriveModel
 {
     protected $table = 'pipedrive_users';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'name',
         'email',
@@ -99,12 +99,13 @@ class PipedriveUser extends BasePipedriveModel
 
     public function getTimezoneDisplay(): ?string
     {
-        if (!$this->timezone_name) {
+        if (! $this->timezone_name) {
             return null;
         }
 
         $offset = $this->timezone_offset ? " ({$this->timezone_offset})" : '';
-        return $this->timezone_name . $offset;
+
+        return $this->timezone_name.$offset;
     }
 
     // Relations

@@ -6,13 +6,12 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 
 class AuthorizeWebhookHealth
 {
     /**
      * Handle an incoming request for webhook health endpoint.
-     * 
+     *
      * This middleware allows access if either:
      * 1. User is authenticated and authorized via dashboard gate, OR
      * 2. Request passes webhook verification (for Pipedrive servers)
@@ -38,7 +37,7 @@ class AuthorizeWebhookHealth
         // If neither condition is met, deny access
         return response()->json([
             'error' => 'Forbidden',
-            'message' => 'You are not authorized to access this endpoint.'
+            'message' => 'You are not authorized to access this endpoint.',
         ], Response::HTTP_FORBIDDEN);
     }
 
@@ -54,30 +53,30 @@ class AuthorizeWebhookHealth
 
         // Check HTTP Basic Auth if configured
         if ($this->shouldVerifyBasicAuth()) {
-            if (!$this->verifyBasicAuth($request)) {
+            if (! $this->verifyBasicAuth($request)) {
                 return false;
             }
         }
 
         // Check IP whitelist if configured
         if ($this->shouldVerifyIpWhitelist()) {
-            if (!$this->verifyIpWhitelist($request)) {
+            if (! $this->verifyIpWhitelist($request)) {
                 return false;
             }
         }
 
         // Check signature if configured
         if ($this->shouldVerifySignature()) {
-            if (!$this->verifySignature($request)) {
+            if (! $this->verifySignature($request)) {
                 return false;
             }
         }
 
         // If no webhook security is configured, allow access
         // This maintains backward compatibility
-        if (!$this->shouldVerifyBasicAuth() && 
-            !$this->shouldVerifyIpWhitelist() && 
-            !$this->shouldVerifySignature()) {
+        if (! $this->shouldVerifyBasicAuth() &&
+            ! $this->shouldVerifyIpWhitelist() &&
+            ! $this->shouldVerifySignature()) {
             return true;
         }
 
@@ -121,13 +120,13 @@ class AuthorizeWebhookHealth
     protected function verifyIpWhitelist(Request $request): bool
     {
         $allowedIps = config('pipedrive.webhooks.security.ip_whitelist.ips', []);
-        
+
         if (empty($allowedIps)) {
             return false;
         }
 
         $clientIp = $request->ip();
-        
+
         foreach ($allowedIps as $allowedIp) {
             if ($this->ipMatches($clientIp, $allowedIp)) {
                 return true;
@@ -152,19 +151,19 @@ class AuthorizeWebhookHealth
     {
         $secret = config('pipedrive.webhooks.security.signature.secret');
         $header = config('pipedrive.webhooks.security.signature.header', 'X-Pipedrive-Signature');
-        
+
         if (empty($secret)) {
             return false;
         }
 
         $signature = $request->header($header);
-        if (!$signature) {
+        if (! $signature) {
             return false;
         }
 
         $payload = $request->getContent();
         $expectedSignature = hash_hmac('sha256', $payload, $secret);
-        
+
         return hash_equals($expectedSignature, $signature);
     }
 
@@ -191,8 +190,8 @@ class AuthorizeWebhookHealth
      */
     protected function ipInCidr(string $ip, string $cidr): bool
     {
-        list($subnet, $mask) = explode('/', $cidr);
-        
+        [$subnet, $mask] = explode('/', $cidr);
+
         if ((ip2long($ip) & ~((1 << (32 - $mask)) - 1)) == ip2long($subnet)) {
             return true;
         }

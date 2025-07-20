@@ -9,7 +9,7 @@ class PipedriveProduct extends BasePipedriveModel
 {
     protected $table = 'pipedrive_products';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'name',
         'code',
@@ -83,12 +83,12 @@ class PipedriveProduct extends BasePipedriveModel
 
     public function getFormattedTax(): ?string
     {
-        return $this->tax ? number_format($this->tax, 2) . '%' : null;
+        return $this->tax ? number_format($this->tax, 2).'%' : null;
     }
 
     public function getPriceForCurrency(string $currency): ?array
     {
-        if (!$this->prices || !is_array($this->prices)) {
+        if (! $this->prices || ! is_array($this->prices)) {
             return null;
         }
 
@@ -103,7 +103,7 @@ class PipedriveProduct extends BasePipedriveModel
 
     public function getDefaultPrice(): ?array
     {
-        if (!$this->prices || !is_array($this->prices)) {
+        if (! $this->prices || ! is_array($this->prices)) {
             return null;
         }
 

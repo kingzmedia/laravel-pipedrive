@@ -22,7 +22,7 @@ class PipedriveFileData extends BasePipedriveData
         public ?string $s3_bucket = null,
         public ?string $mail_message_id = null,
         public ?string $mail_template_id = null,
-        
+
         // Related entities
         public ?int $deal_id = null,
         public ?int $person_id = null,
@@ -31,23 +31,23 @@ class PipedriveFileData extends BasePipedriveData
         public ?int $activity_id = null,
         public ?int $note_id = null,
         public ?int $log_id = null,
-        
+
         // User fields
         public ?int $user_id = null,
-        
+
         // Additional fields
         public ?string $description = null,
         public bool $inline_flag = false,
-        
+
         // Base class properties
         #[MapInputName('add_time')]
         #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s')]
         public ?Carbon $pipedrive_add_time = null,
-        
+
         #[MapInputName('update_time')]
         #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s')]
         public ?Carbon $pipedrive_update_time = null,
-        
+
         public bool $active_flag = true,
     ) {}
 }

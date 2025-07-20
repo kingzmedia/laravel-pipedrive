@@ -3,17 +3,12 @@
 namespace Skeylup\LaravelPipedrive\Services;
 
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
-use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
-use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
 use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
 use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 
 /**
  * Centralized parsing service for Pipedrive data
- * 
+ *
  * Extracts common logic from commands and provides unified
  * data fetching, processing, and synchronization capabilities
  */
@@ -22,10 +17,15 @@ class PipedriveParsingService
     use EmitsPipedriveEvents;
 
     protected PipedriveAuthService $authService;
+
     protected PipedriveRateLimitManager $rateLimitManager;
+
     protected PipedriveErrorHandler $errorHandler;
+
     protected PipedriveMemoryManager $memoryManager;
+
     protected PipedriveHealthChecker $healthChecker;
+
     protected $pipedrive;
 
     protected array $entityModelMap = [
@@ -63,17 +63,17 @@ class PipedriveParsingService
     {
         try {
             $this->pipedrive = $this->authService->getPipedriveInstance();
-            
+
             // Test connection
             $connectionTest = $this->authService->testConnection();
-            if (!$connectionTest['success']) {
-                throw new \Exception('Failed to connect to Pipedrive: ' . $connectionTest['message']);
+            if (! $connectionTest['success']) {
+                throw new \Exception('Failed to connect to Pipedrive: '.$connectionTest['message']);
             }
 
             // Perform health check if enabled
             if ($this->healthChecker->shouldPerformHealthCheck()) {
                 $healthStatus = $this->healthChecker->performHealthCheck();
-                if (!$healthStatus['healthy']) {
+                if (! $healthStatus['healthy']) {
                     Log::warning('Pipedrive API health check failed', $healthStatus);
                 }
             }
@@ -89,7 +89,7 @@ class PipedriveParsingService
             $classified = $this->errorHandler->classifyException($e, [
                 'operation' => 'initialize_client',
             ]);
-            
+
             throw $classified;
         }
     }
@@ -117,7 +117,7 @@ class PipedriveParsingService
                 'entity_type' => $entityType,
                 'options' => $options,
             ]);
-            
+
             throw $classified;
         }
     }
@@ -134,7 +134,7 @@ class PipedriveParsingService
         ], $options);
 
         $modelClass = $this->entityModelMap[$entityType] ?? null;
-        if (!$modelClass) {
+        if (! $modelClass) {
             throw new \InvalidArgumentException("Unsupported entity type: {$entityType}");
         }
 
@@ -158,15 +158,17 @@ class PipedriveParsingService
             }
 
             // Skip items without an ID
-            if (!isset($itemData['id']) || $itemData['id'] === null) {
+            if (! isset($itemData['id']) || $itemData['id'] === null) {
                 $results['skipped']++;
+
                 continue;
             }
 
             $existingRecord = $modelClass::where('pipedrive_id', $itemData['id'])->first();
 
-            if ($existingRecord && !$options['force']) {
+            if ($existingRecord && ! $options['force']) {
                 $results['skipped']++;
+
                 continue;
             }
 
@@ -309,8 +311,8 @@ class PipedriveParsingService
 
             } catch (PipedriveException $e) {
                 $this->errorHandler->recordFailure($e);
-                
-                if (!$this->errorHandler->shouldRetry($e, 1)) {
+
+                if (! $this->errorHandler->shouldRetry($e, 1)) {
                     throw $e;
                 }
 
@@ -323,6 +325,7 @@ class PipedriveParsingService
                 ]);
 
                 sleep($delay);
+
                 continue;
             }
         }
@@ -336,13 +339,13 @@ class PipedriveParsingService
     protected function makeApiCallWithRetry(string $entityType, array $options, int $maxRetries = 3)
     {
         $attempt = 0;
-        
+
         while ($attempt < $maxRetries) {
             $attempt++;
-            
+
             try {
                 // Check rate limits
-                if (!$this->rateLimitManager->canMakeRequest($entityType)) {
+                if (! $this->rateLimitManager->canMakeRequest($entityType)) {
                     throw $this->rateLimitManager->handleRateLimitResponse([], $entityType);
                 }
 
@@ -354,7 +357,7 @@ class PipedriveParsingService
 
                 // Consume tokens on success
                 $this->rateLimitManager->consumeTokens($entityType);
-                
+
                 // Record success for circuit breaker
                 $this->errorHandler->recordSuccess('api');
 
@@ -363,7 +366,7 @@ class PipedriveParsingService
             } catch (PipedriveException $e) {
                 $this->errorHandler->recordFailure($e);
 
-                if (!$this->errorHandler->shouldRetry($e, $attempt)) {
+                if (! $this->errorHandler->shouldRetry($e, $attempt)) {
                     throw $e;
                 }
 
@@ -409,11 +412,11 @@ class PipedriveParsingService
      */
     protected function normalizeDataArray($data): array
     {
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
 
-        return array_map(function($item) {
+        return array_map(function ($item) {
             return is_object($item) ? json_decode(json_encode($item), true) : $item;
         }, $data);
     }

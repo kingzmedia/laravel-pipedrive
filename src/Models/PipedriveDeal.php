@@ -19,7 +19,7 @@ class PipedriveDeal extends BasePipedriveModel
      */
     protected array $defaultWithCount = ['activities', 'notes', 'files'];
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'title',
         'value',
@@ -61,8 +61,11 @@ class PipedriveDeal extends BasePipedriveModel
      * Deal status constants
      */
     public const STATUS_OPEN = 'open';
+
     public const STATUS_WON = 'won';
+
     public const STATUS_LOST = 'lost';
+
     public const STATUS_DELETED = 'deleted';
 
     public static function getPipedriveEntityName(): string
@@ -124,13 +127,13 @@ class PipedriveDeal extends BasePipedriveModel
     public function scopeClosingSoon(Builder $query, int $days = 7): Builder
     {
         return $query->where('expected_close_date', '<=', now()->addDays($days))
-                    ->where('status', self::STATUS_OPEN);
+            ->where('status', self::STATUS_OPEN);
     }
 
     public function scopeOverdue(Builder $query): Builder
     {
         return $query->where('expected_close_date', '<', today())
-                    ->where('status', self::STATUS_OPEN);
+            ->where('status', self::STATUS_OPEN);
     }
 
     // Helper methods
@@ -156,39 +159,39 @@ class PipedriveDeal extends BasePipedriveModel
 
     public function isOverdue(): bool
     {
-        return $this->expected_close_date && 
-               $this->expected_close_date->isPast() && 
+        return $this->expected_close_date &&
+               $this->expected_close_date->isPast() &&
                $this->isOpen();
     }
 
     public function isClosingSoon(int $days = 7): bool
     {
-        return $this->expected_close_date && 
-               $this->expected_close_date->isBefore(now()->addDays($days)) && 
+        return $this->expected_close_date &&
+               $this->expected_close_date->isBefore(now()->addDays($days)) &&
                $this->isOpen();
     }
 
     public function getFormattedValue(): string
     {
-        if (!$this->value || !$this->currency) {
+        if (! $this->value || ! $this->currency) {
             return 'N/A';
         }
 
-        return number_format($this->value, 2) . ' ' . strtoupper($this->currency);
+        return number_format($this->value, 2).' '.strtoupper($this->currency);
     }
 
     public function getFormattedWeightedValue(): string
     {
-        if (!$this->weighted_value || !$this->currency) {
+        if (! $this->weighted_value || ! $this->currency) {
             return 'N/A';
         }
 
-        return number_format($this->weighted_value, 2) . ' ' . strtoupper($this->currency);
+        return number_format($this->weighted_value, 2).' '.strtoupper($this->currency);
     }
 
     public function getProbabilityPercentage(): string
     {
-        return ($this->probability ?? 0) . '%';
+        return ($this->probability ?? 0).'%';
     }
 
     // Relations
@@ -246,7 +249,7 @@ class PipedriveDeal extends BasePipedriveModel
             },
             'files' => function ($query) {
                 $query->latest('pipedrive_add_time')->limit(10);
-            }
+            },
         ];
     }
 

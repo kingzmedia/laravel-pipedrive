@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
 use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
 
 /**
  * Example Order model showing how to use push and display methods
@@ -265,12 +265,12 @@ echo "\nPipedrive Details:\n";
 if ($detailedView['pipedrive']['has_entity']) {
     echo "Pipedrive ID: " . $detailedView['pipedrive']['pipedrive_id'] . "\n";
     echo "Entity Type: " . $detailedView['pipedrive']['entity_type'] . "\n";
-    
+
     echo "\nBasic Fields:\n";
     foreach ($detailedView['pipedrive']['basic_fields'] as $field => $value) {
         echo "  {$field}: {$value}\n";
     }
-    
+
     echo "\nCustom Fields:\n";
     foreach ($detailedView['pipedrive']['custom_fields'] as $name => $fieldData) {
         echo "  {$name}: {$fieldData['value']} (Type: {$fieldData['field_type']})\n";

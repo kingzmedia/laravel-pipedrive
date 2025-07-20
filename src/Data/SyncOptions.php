@@ -2,15 +2,15 @@
 
 namespace Skeylup\LaravelPipedrive\Data;
 
-use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\In;
-use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
+use Spatie\LaravelData\Attributes\Validation\Required;
+use Spatie\LaravelData\Data;
 
 /**
  * Data Transfer Object for sync configuration options
- * 
+ *
  * Standardizes sync parameters across jobs and commands
  */
 class SyncOptions extends Data
@@ -230,7 +230,7 @@ class SyncOptions extends Data
      */
     public function getEffectiveBatchSize(): int
     {
-        if (!$this->adaptivePagination) {
+        if (! $this->adaptivePagination) {
             return $this->limit;
         }
 

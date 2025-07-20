@@ -5,7 +5,6 @@ namespace Skeylup\LaravelPipedrive\Services;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
-use Skeylup\LaravelPipedrive\Models\BasePipedriveModel;
 
 class PipedriveEntityLinkService
 {
@@ -168,7 +167,7 @@ class PipedriveEntityLinkService
         PipedriveEntityLink::active()->chunk(100, function ($links) use ($orphaned) {
             foreach ($links as $link) {
                 $localModel = $link->getLocalPipedriveModel();
-                if (!$localModel) {
+                if (! $localModel) {
                     $orphaned->push($link);
                 }
             }
@@ -209,7 +208,7 @@ class PipedriveEntityLinkService
                 $metadata = $linkData['metadata'] ?? [];
 
                 $link = $this->createLink($model, $entityType, $entityId, $isPrimary, $metadata);
-                
+
                 $results->push([
                     'success' => true,
                     'link' => $link,
@@ -236,11 +235,11 @@ class PipedriveEntityLinkService
         $validTypes = [
             'deals', 'persons', 'organizations', 'activities',
             'products', 'files', 'notes', 'users', 'pipelines',
-            'stages', 'goals'
+            'stages', 'goals',
         ];
 
-        if (!in_array($entityType, $validTypes)) {
-            throw new \InvalidArgumentException("Invalid entity type: {$entityType}. Valid types are: " . implode(', ', $validTypes));
+        if (! in_array($entityType, $validTypes)) {
+            throw new \InvalidArgumentException("Invalid entity type: {$entityType}. Valid types are: ".implode(', ', $validTypes));
         }
     }
 
@@ -273,7 +272,7 @@ class PipedriveEntityLinkService
     {
         try {
             $synced = $link->syncLocalPipedriveModel();
-            
+
             if ($synced) {
                 $link->markAsSynced();
             } else {
@@ -283,6 +282,7 @@ class PipedriveEntityLinkService
             return $synced;
         } catch (\Exception $e) {
             $link->markAsError($e->getMessage());
+
             return false;
         }
     }

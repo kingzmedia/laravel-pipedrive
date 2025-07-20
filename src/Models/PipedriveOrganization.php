@@ -9,7 +9,7 @@ class PipedriveOrganization extends BasePipedriveModel
 {
     protected $table = 'pipedrive_organizations';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'name',
         'owner_id',
@@ -61,7 +61,7 @@ class PipedriveOrganization extends BasePipedriveModel
     // Helper methods
     public function hasAddress(): bool
     {
-        return !empty($this->address_formatted) || ($this->address_lat && $this->address_lng);
+        return ! empty($this->address_formatted) || ($this->address_lat && $this->address_lng);
     }
 
     public function getFormattedAddress(): ?string

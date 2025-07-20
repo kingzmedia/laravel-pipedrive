@@ -2,21 +2,28 @@
 
 namespace Skeylup\LaravelPipedrive\Events;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Database\Eloquent\Model;
 
 class PipedriveEntityMerged
 {
     use Dispatchable, SerializesModels;
 
     public string $entityType;
+
     public int $mergedId;
+
     public int $survivingId;
+
     public ?Model $survivingEntity;
+
     public array $originalData;
+
     public string $source;
+
     public ?array $metadata;
+
     public int $migratedRelationsCount;
 
     /**
@@ -119,7 +126,7 @@ class PipedriveEntityMerged
             'surviving_entity_available' => $this->survivingEntity !== null,
             'source' => $this->source,
             'migrated_relations_count' => $this->migratedRelationsCount,
-            'has_metadata' => !empty($this->metadata),
+            'has_metadata' => ! empty($this->metadata),
         ];
     }
 

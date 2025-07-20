@@ -2,18 +2,22 @@
 
 namespace Skeylup\LaravelPipedrive\Events;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Database\Eloquent\Model;
 
 class PipedriveEntityCreated
 {
     use Dispatchable, SerializesModels;
 
     public string $entityType;
+
     public Model $entity;
+
     public array $originalData;
+
     public string $source;
+
     public ?array $metadata;
 
     /**
@@ -110,7 +114,7 @@ class PipedriveEntityCreated
             'model_class' => $this->getModelClass(),
             'source' => $this->source,
             'created_at' => $this->entity->created_at?->toISOString(),
-            'has_metadata' => !empty($this->metadata),
+            'has_metadata' => ! empty($this->metadata),
         ];
     }
 

@@ -9,7 +9,7 @@ class PipedriveActivity extends BasePipedriveModel
 {
     protected $table = 'pipedrive_activities';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'subject',
         'type',
@@ -45,10 +45,15 @@ class PipedriveActivity extends BasePipedriveModel
      * Activity types constants
      */
     public const TYPE_CALL = 'call';
+
     public const TYPE_MEETING = 'meeting';
+
     public const TYPE_TASK = 'task';
+
     public const TYPE_DEADLINE = 'deadline';
+
     public const TYPE_EMAIL = 'email';
+
     public const TYPE_LUNCH = 'lunch';
 
     public static function getPipedriveEntityName(): string
@@ -60,8 +65,6 @@ class PipedriveActivity extends BasePipedriveModel
     {
         return PipedriveActivityData::class;
     }
-
-
 
     // Scopes
     public function scopeDone(Builder $query): Builder
@@ -107,7 +110,7 @@ class PipedriveActivity extends BasePipedriveModel
     public function scopeOverdue(Builder $query): Builder
     {
         return $query->where('due_date', '<', today())
-                    ->where('done', false);
+            ->where('done', false);
     }
 
     // Helper methods
@@ -118,12 +121,12 @@ class PipedriveActivity extends BasePipedriveModel
 
     public function isPending(): bool
     {
-        return !$this->done;
+        return ! $this->done;
     }
 
     public function isOverdue(): bool
     {
-        return $this->due_date && $this->due_date->isPast() && !$this->done;
+        return $this->due_date && $this->due_date->isPast() && ! $this->done;
     }
 
     public function isDueToday(): bool
@@ -133,12 +136,12 @@ class PipedriveActivity extends BasePipedriveModel
 
     public function hasLocation(): bool
     {
-        return !empty($this->location) || ($this->location_lat && $this->location_lng);
+        return ! empty($this->location) || ($this->location_lat && $this->location_lng);
     }
 
     public function getFormattedDuration(): ?string
     {
-        if (!$this->duration) {
+        if (! $this->duration) {
             return null;
         }
 
@@ -146,10 +149,10 @@ class PipedriveActivity extends BasePipedriveModel
         $minutes = $this->duration % 60;
 
         if ($hours > 0) {
-            return $hours . 'h ' . $minutes . 'm';
+            return $hours.'h '.$minutes.'m';
         }
 
-        return $minutes . 'm';
+        return $minutes.'m';
     }
 
     // Relations

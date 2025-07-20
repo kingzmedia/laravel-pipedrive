@@ -2,16 +2,16 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Skeylup\LaravelPipedrive\Jobs\ProcessPipedriveWebhookJob;
 use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
-use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
 use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
+use Tests\TestCase;
 
 class WebhookCustomFieldIntegrationTest extends TestCase
 {
@@ -20,7 +20,7 @@ class WebhookCustomFieldIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Enable custom field detection
         config(['pipedrive.webhooks.detect_custom_fields' => true]);
     }

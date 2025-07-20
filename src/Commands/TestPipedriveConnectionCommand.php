@@ -30,11 +30,11 @@ class TestPipedriveConnectionCommand extends Command
 
         if ($authMethod === 'token') {
             $token = config('pipedrive.token');
-            $tokenDisplay = $token ? substr($token, 0, 8) . '...' : 'NOT SET';
+            $tokenDisplay = $token ? substr($token, 0, 8).'...' : 'NOT SET';
             $this->info("API Token: <fg=yellow>{$tokenDisplay}</>");
         } else {
             $clientId = config('pipedrive.oauth.client_id');
-            $this->info("OAuth Client ID: <fg=yellow>" . ($clientId ?: 'NOT SET') . "</>");
+            $this->info('OAuth Client ID: <fg=yellow>'.($clientId ?: 'NOT SET').'</>');
 
             // Show token status for OAuth
             $tokenStatus = $this->authService->getTokenStatus();
@@ -42,7 +42,7 @@ class TestPipedriveConnectionCommand extends Command
 
             if (isset($tokenStatus['expires_at_human'])) {
                 $this->info("Token Expires: <fg=yellow>{$tokenStatus['expires_at_human']}</>");
-                $this->info("Needs Refresh: <fg=yellow>" . ($tokenStatus['needs_refresh'] ? 'Yes' : 'No') . "</>");
+                $this->info('Needs Refresh: <fg=yellow>'.($tokenStatus['needs_refresh'] ? 'Yes' : 'No').'</>');
             }
         }
 
@@ -55,21 +55,21 @@ class TestPipedriveConnectionCommand extends Command
             $this->info('✅ <fg=green>Connection successful!</>');
             $this->info("User: <fg=cyan>{$result['user']}</>");
             $this->info("Company: <fg=cyan>{$result['company']}</>");
-            
+
             return self::SUCCESS;
         } else {
             $this->error('❌ <fg=red>Connection failed!</>');
             $this->error("Error: {$result['message']}");
-            
+
             if (isset($result['error'])) {
                 $this->newLine();
                 $this->warn('Debug information:');
                 $this->line($result['error']);
             }
-            
+
             $this->newLine();
             $this->warn('💡 Troubleshooting tips:');
-            
+
             if ($authMethod === 'token') {
                 $this->line('• Make sure PIPEDRIVE_TOKEN is set in your .env file');
                 $this->line('• Verify your API token in Pipedrive: Settings > Personal preferences > API');
@@ -79,7 +79,7 @@ class TestPipedriveConnectionCommand extends Command
                 $this->line('• Verify your OAuth app configuration in Pipedrive Developer Hub');
                 $this->line('• Ensure you have completed the OAuth authorization flow');
             }
-            
+
             return self::FAILURE;
         }
     }

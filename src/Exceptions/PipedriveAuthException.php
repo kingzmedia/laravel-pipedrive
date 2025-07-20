@@ -6,13 +6,15 @@ use Throwable;
 
 /**
  * Exception for authentication and authorization errors (HTTP 401/403)
- * 
+ *
  * These errors are typically not retryable as they indicate credential issues
  */
 class PipedriveAuthException extends PipedriveApiException
 {
     protected string $authMethod = 'unknown';
+
     protected bool $tokenExpired = false;
+
     protected ?int $tokenExpiresAt = null;
 
     public function __construct(
@@ -68,6 +70,7 @@ class PipedriveAuthException extends PipedriveApiException
     public function setAuthMethod(string $authMethod): self
     {
         $this->authMethod = $authMethod;
+
         return $this;
     }
 
@@ -85,13 +88,13 @@ class PipedriveAuthException extends PipedriveApiException
     public function setTokenExpired(bool $tokenExpired): self
     {
         $this->tokenExpired = $tokenExpired;
-        
+
         // If token is expired and we have OAuth, it might be retryable
         if ($tokenExpired && $this->authMethod === 'oauth') {
             $this->setRetryable(true);
             $this->setMaxRetries(2);
         }
-        
+
         return $this;
     }
 
@@ -109,6 +112,7 @@ class PipedriveAuthException extends PipedriveApiException
     public function setTokenExpiresAt(?int $tokenExpiresAt): self
     {
         $this->tokenExpiresAt = $tokenExpiresAt;
+
         return $this;
     }
 
@@ -145,6 +149,7 @@ class PipedriveAuthException extends PipedriveApiException
             if ($this->tokenExpired && $this->authMethod === 'oauth') {
                 return 'refresh_token';
             }
+
             return 'check_credentials';
         }
 
@@ -161,7 +166,7 @@ class PipedriveAuthException extends PipedriveApiException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['auth'] = [
             'auth_method' => $this->authMethod,
             'token_expired' => $this->tokenExpired,
@@ -181,7 +186,7 @@ class PipedriveAuthException extends PipedriveApiException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['auth'] = [
             'auth_method' => $this->authMethod,
             'token_expired' => $this->tokenExpired,

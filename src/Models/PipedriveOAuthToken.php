@@ -3,7 +3,6 @@
 namespace Skeylup\LaravelPipedrive\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class PipedriveOAuthToken extends Model
 {
@@ -27,7 +26,7 @@ class PipedriveOAuthToken extends Model
      */
     public function isExpired(): bool
     {
-        if (!$this->expires_at) {
+        if (! $this->expires_at) {
             return false; // Non-expiring token
         }
 
@@ -39,7 +38,7 @@ class PipedriveOAuthToken extends Model
      */
     public function needsRefresh(): bool
     {
-        if (!$this->expires_at) {
+        if (! $this->expires_at) {
             return false; // Non-expiring token
         }
 

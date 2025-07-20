@@ -4,7 +4,6 @@ namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Str;
 
 class InstallPipedriveCommand extends Command
 {
@@ -83,19 +82,20 @@ class InstallPipedriveCommand extends Command
      */
     protected function publishServiceProvider(): void
     {
-        $filesystem = new Filesystem();
+        $filesystem = new Filesystem;
 
-        $stub = __DIR__ . '/../../stubs/PipedriveServiceProvider.stub';
+        $stub = __DIR__.'/../../stubs/PipedriveServiceProvider.stub';
         $target = app_path('Providers/PipedriveServiceProvider.php');
 
-        if ($filesystem->exists($target) && !$this->option('force')) {
+        if ($filesystem->exists($target) && ! $this->option('force')) {
             $this->warn('PipedriveServiceProvider already exists. Use --force to overwrite.');
+
             return;
         }
 
         $filesystem->ensureDirectoryExists(dirname($target));
         $filesystem->copy($stub, $target);
 
-        $this->info('Published: ' . $target);
+        $this->info('Published: '.$target);
     }
 }

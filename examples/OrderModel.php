@@ -7,7 +7,7 @@ use Skeylup\LaravelPipedrive\Traits\HasPipedriveEntity;
 
 /**
  * Example Order model showing how to use the HasPipedriveEntity trait
- * 
+ *
  * This is just an example - you would create this in your Laravel app
  */
 class Order extends Model
@@ -60,8 +60,8 @@ class Order extends Model
     public function syncWithPipedrive(): bool
     {
         $deal = $this->getPipedriveDeal();
-        
-        if (!$deal) {
+
+        if (! $deal) {
             return false;
         }
 
@@ -94,7 +94,7 @@ class Order extends Model
     public function getOrderStats(): array
     {
         $pipedriveStats = $this->getPipedriveEntityStats();
-        
+
         return [
             'order_id' => $this->id,
             'order_number' => $this->order_number,

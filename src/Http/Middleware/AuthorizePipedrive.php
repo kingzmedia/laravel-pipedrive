@@ -34,7 +34,7 @@ class AuthorizePipedrive
         // Return 403 Forbidden if not authorized
         return response()->json([
             'error' => 'Forbidden',
-            'message' => 'You are not authorized to access Pipedrive management interface.'
+            'message' => 'You are not authorized to access Pipedrive management interface.',
         ], Response::HTTP_FORBIDDEN);
     }
 
@@ -46,7 +46,7 @@ class AuthorizePipedrive
         $path = $request->path();
         $webhookPath = config('pipedrive.webhooks.route.path', 'pipedrive/webhook');
 
-        return $path === $webhookPath . '/health';
+        return $path === $webhookPath.'/health';
     }
 
     /**

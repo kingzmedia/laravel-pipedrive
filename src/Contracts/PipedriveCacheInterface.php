@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Interface for Pipedrive cache operations
- * 
+ *
  * Provides methods for caching and retrieving Pipedrive entity data
  * with automatic invalidation and TTL management.
  */
@@ -15,9 +15,9 @@ interface PipedriveCacheInterface
     /**
      * Cache custom fields for a specific entity type
      *
-     * @param string $entityType The Pipedrive entity type (deal, person, organization, etc.)
-     * @param Collection $customFields Collection of custom fields to cache
-     * @param int|null $ttl Time to live in seconds (null uses default from config)
+     * @param  string  $entityType  The Pipedrive entity type (deal, person, organization, etc.)
+     * @param  Collection  $customFields  Collection of custom fields to cache
+     * @param  int|null  $ttl  Time to live in seconds (null uses default from config)
      * @return bool Success status
      */
     public function cacheCustomFields(string $entityType, Collection $customFields, ?int $ttl = null): bool;
@@ -25,7 +25,7 @@ interface PipedriveCacheInterface
     /**
      * Retrieve cached custom fields for an entity type
      *
-     * @param string $entityType The Pipedrive entity type
+     * @param  string  $entityType  The Pipedrive entity type
      * @return Collection|null Cached custom fields or null if not found/expired
      */
     public function getCustomFields(string $entityType): ?Collection;
@@ -33,8 +33,8 @@ interface PipedriveCacheInterface
     /**
      * Cache pipelines data
      *
-     * @param Collection $pipelines Collection of pipelines to cache
-     * @param int|null $ttl Time to live in seconds
+     * @param  Collection  $pipelines  Collection of pipelines to cache
+     * @param  int|null  $ttl  Time to live in seconds
      * @return bool Success status
      */
     public function cachePipelines(Collection $pipelines, ?int $ttl = null): bool;
@@ -49,8 +49,8 @@ interface PipedriveCacheInterface
     /**
      * Cache stages data
      *
-     * @param Collection $stages Collection of stages to cache
-     * @param int|null $ttl Time to live in seconds
+     * @param  Collection  $stages  Collection of stages to cache
+     * @param  int|null  $ttl  Time to live in seconds
      * @return bool Success status
      */
     public function cacheStages(Collection $stages, ?int $ttl = null): bool;
@@ -65,8 +65,8 @@ interface PipedriveCacheInterface
     /**
      * Cache users data
      *
-     * @param Collection $users Collection of users to cache
-     * @param int|null $ttl Time to live in seconds
+     * @param  Collection  $users  Collection of users to cache
+     * @param  int|null  $ttl  Time to live in seconds
      * @return bool Success status
      */
     public function cacheUsers(Collection $users, ?int $ttl = null): bool;
@@ -81,9 +81,9 @@ interface PipedriveCacheInterface
     /**
      * Cache enum/set field options for a specific field
      *
-     * @param string $fieldKey The custom field key
-     * @param array $options Array of field options
-     * @param int|null $ttl Time to live in seconds
+     * @param  string  $fieldKey  The custom field key
+     * @param  array  $options  Array of field options
+     * @param  int|null  $ttl  Time to live in seconds
      * @return bool Success status
      */
     public function cacheFieldOptions(string $fieldKey, array $options, ?int $ttl = null): bool;
@@ -91,7 +91,7 @@ interface PipedriveCacheInterface
     /**
      * Retrieve cached field options
      *
-     * @param string $fieldKey The custom field key
+     * @param  string  $fieldKey  The custom field key
      * @return array|null Cached field options or null if not found/expired
      */
     public function getFieldOptions(string $fieldKey): ?array;
@@ -99,7 +99,7 @@ interface PipedriveCacheInterface
     /**
      * Invalidate cache for a specific entity type
      *
-     * @param string $entityType The entity type to invalidate
+     * @param  string  $entityType  The entity type to invalidate
      * @return bool Success status
      */
     public function invalidateEntityCache(string $entityType): bool;
@@ -135,7 +135,7 @@ interface PipedriveCacheInterface
     /**
      * Invalidate field options cache for a specific field
      *
-     * @param string $fieldKey The custom field key
+     * @param  string  $fieldKey  The custom field key
      * @return bool Success status
      */
     public function invalidateFieldOptionsCache(string $fieldKey): bool;
@@ -165,7 +165,7 @@ interface PipedriveCacheInterface
      * Refresh cache for a specific entity type
      * This will fetch fresh data from Pipedrive API and update cache
      *
-     * @param string $entityType The entity type to refresh
+     * @param  string  $entityType  The entity type to refresh
      * @return bool Success status
      */
     public function refreshEntityCache(string $entityType): bool;

@@ -58,7 +58,7 @@ return [
         // Leave empty or set to "all" to sync all available entities
         'enabled_entities' => array_filter(
             explode(',', env('PIPEDRIVE_ENABLED_ENTITIES', 'activities,deals,files,notes,organizations,persons,pipelines,products,stages,users')),
-            fn($entity) => !empty(trim($entity))
+            fn ($entity) => ! empty(trim($entity))
         ),
 
         // Automatic scheduled synchronization

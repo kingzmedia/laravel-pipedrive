@@ -2,9 +2,9 @@
 
 namespace Skeylup\LaravelPipedrive\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class PipedriveCustomField extends Model
 {
@@ -33,30 +33,50 @@ class PipedriveCustomField extends Model
      * Entity types constants
      */
     public const ENTITY_DEAL = 'deal';
+
     public const ENTITY_PERSON = 'person';
+
     public const ENTITY_ORGANIZATION = 'organization';
+
     public const ENTITY_PRODUCT = 'product';
+
     public const ENTITY_ACTIVITY = 'activity';
+
     public const ENTITY_NOTE = 'note';
 
     /**
      * Field types constants
      */
     public const TYPE_VARCHAR = 'varchar';
+
     public const TYPE_VARCHAR_AUTO = 'varchar_auto';
+
     public const TYPE_TEXT = 'text';
+
     public const TYPE_DOUBLE = 'double';
+
     public const TYPE_MONETARY = 'monetary';
+
     public const TYPE_SET = 'set';
+
     public const TYPE_ENUM = 'enum';
+
     public const TYPE_USER = 'user';
+
     public const TYPE_ORG = 'org';
+
     public const TYPE_PEOPLE = 'people';
+
     public const TYPE_PHONE = 'phone';
+
     public const TYPE_TIME = 'time';
+
     public const TYPE_TIMERANGE = 'timerange';
+
     public const TYPE_DATE = 'date';
+
     public const TYPE_DATERANGE = 'daterange';
+
     public const TYPE_ADDRESS = 'address';
 
     /**
@@ -131,8 +151,6 @@ class PipedriveCustomField extends Model
         return $query->whereRaw("JSON_EXTRACT(pipedrive_data, '$.edit_flag') = true");
     }
 
-
-
     /**
      * Scope to get only mandatory fields
      */
@@ -165,8 +183,6 @@ class PipedriveCustomField extends Model
         return $this->pipedrive_data['edit_flag'] ?? false;
     }
 
-
-
     /**
      * Check if this field is mandatory
      */
@@ -181,7 +197,8 @@ class PipedriveCustomField extends Model
     public function hasOptions(): bool
     {
         $options = $this->pipedrive_data['options'] ?? null;
-        return in_array($this->field_type, [self::TYPE_SET, self::TYPE_ENUM]) && !empty($options);
+
+        return in_array($this->field_type, [self::TYPE_SET, self::TYPE_ENUM]) && ! empty($options);
     }
 
     /**
@@ -232,22 +249,27 @@ class PipedriveCustomField extends Model
     public static function createOrUpdateFromPipedriveData(array $data, string $entityType): self
     {
         // Skip fields without an ID (system/primary fields)
-        if (!isset($data['id']) || $data['id'] === null) {
-            throw new \InvalidArgumentException("Field data must have an 'id' field. Field key: " . ($data['key'] ?? 'unknown'));
+        if (! isset($data['id']) || $data['id'] === null) {
+            throw new \InvalidArgumentException("Field data must have an 'id' field. Field key: ".($data['key'] ?? 'unknown'));
         }
 
         // Helper function to safely convert values
-        $safeValue = function($value, $default = null) {
+        $safeValue = function ($value, $default = null) {
             if (is_array($value) || is_object($value)) {
                 return json_encode($value);
             }
+
             return $value ?? $default;
         };
 
         // Helper function to safely parse timestamps
-        $safeTimestamp = function($value) {
-            if (empty($value)) return null;
-            if (is_array($value) || is_object($value)) return null;
+        $safeTimestamp = function ($value) {
+            if (empty($value)) {
+                return null;
+            }
+            if (is_array($value) || is_object($value)) {
+                return null;
+            }
 
             try {
                 $parsed = Carbon::parse($value);

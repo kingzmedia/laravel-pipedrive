@@ -2,38 +2,44 @@
 
 namespace Skeylup\LaravelPipedrive\Jobs;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
-use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
 use Skeylup\LaravelPipedrive\Data\SyncOptions;
 use Skeylup\LaravelPipedrive\Data\SyncResult;
 use Skeylup\LaravelPipedrive\Exceptions\PipedriveException;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
+use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
 use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Carbon\Carbon;
 
 /**
  * Webhook processing job with retry mechanism and dead letter queue support
- * 
+ *
  * Processes Pipedrive webhook events with robust error handling and retry logic
  */
 class ProcessPipedriveWebhookJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, EmitsPipedriveEvents;
+    use Dispatchable, EmitsPipedriveEvents, InteractsWithQueue, Queueable, SerializesModels;
 
     public array $webhookData;
+
     public string $eventType;
+
     public string $entityType;
+
     public int $entityId;
+
     public array $metadata;
-    
+
     public int $tries = 5;
+
     public int $timeout = 300;
+
     public int $maxExceptions = 3;
 
     public function __construct(
@@ -125,11 +131,11 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
             throw new \InvalidArgumentException('Webhook data is empty');
         }
 
-        if (!isset($this->webhookData['current'])) {
+        if (! isset($this->webhookData['current'])) {
             throw new \InvalidArgumentException('Webhook data missing current object');
         }
 
-        if (!isset($this->webhookData['current']['id'])) {
+        if (! isset($this->webhookData['current']['id'])) {
             throw new \InvalidArgumentException('Webhook data missing entity ID');
         }
 
@@ -145,10 +151,10 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     protected function processAddedEvent(PipedriveParsingService $parsingService): SyncResult
     {
         $options = SyncOptions::forWebhook($this->entityType, $this->webhookData);
-        
+
         // For added events, we sync the new entity
         $data = [$this->webhookData['current']];
-        
+
         $processingResult = $parsingService->processEntityData(
             $this->entityType,
             $data,
@@ -177,10 +183,10 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     protected function processUpdatedEvent(PipedriveParsingService $parsingService): SyncResult
     {
         $options = SyncOptions::forWebhook($this->entityType, $this->webhookData);
-        
+
         // For updated events, we sync the current state
         $data = [$this->webhookData['current']];
-        
+
         $processingResult = $parsingService->processEntityData(
             $this->entityType,
             $data,
@@ -219,15 +225,15 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     {
         // For deleted events, we need to handle the deletion in our local database
         $modelClass = $this->getModelClass();
-        
+
         if ($modelClass) {
             $record = $modelClass::where('pipedrive_id', $this->entityId)->first();
-            
+
             if ($record) {
                 // Soft delete or mark as deleted
                 if (method_exists($record, 'delete')) {
                     $record->delete();
-                    
+
                     // Emit deleted event
                     $this->emitModelDeleted($record, $this->webhookData['previous'] ?? [], 'webhook', [
                         'entity_type' => $this->entityType,
@@ -261,10 +267,10 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
         if ($survivingId && $mergedId) {
             // Process the surviving entity
             $result = $this->processUpdatedEvent($parsingService);
-            
+
             // Handle the merged entity (mark as deleted or update references)
             $this->handleMergedEntity($mergedId, $survivingId);
-            
+
             // Add merge information to metadata
             $result->metadata = array_merge($result->metadata, [
                 'merged_from_id' => $mergedId,
@@ -319,7 +325,7 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
         // Determine if job should be retried
         if ($e->isRetryable() && $errorHandler->shouldRetry($e, $this->attempts())) {
             $delay = $errorHandler->getRetryDelay($e, $this->attempts());
-            
+
             Log::info('Retrying webhook processing job', [
                 'event_type' => $this->eventType,
                 'entity_type' => $this->entityType,
@@ -330,6 +336,7 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
             ]);
 
             $this->release($delay);
+
             return;
         }
 
@@ -410,7 +417,7 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
      */
     protected function extractChanges(): array
     {
-        if (!isset($this->webhookData['previous']) || !isset($this->webhookData['current'])) {
+        if (! isset($this->webhookData['previous']) || ! isset($this->webhookData['current'])) {
             return [];
         }
 
@@ -419,7 +426,7 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
         $changes = [];
 
         foreach ($current as $key => $value) {
-            if (!isset($previous[$key]) || $previous[$key] !== $value) {
+            if (! isset($previous[$key]) || $previous[$key] !== $value) {
                 $changes[$key] = [
                     'old' => $previous[$key] ?? null,
                     'new' => $value,
@@ -520,7 +527,7 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     protected function moveToDeadLetterQueue(): void
     {
         $deadLetterQueue = config('pipedrive.jobs.retry_queue', 'pipedrive-retry');
-        
+
         // Create a new job for the dead letter queue with the original data
         $deadLetterJob = new static(
             $this->webhookData,
@@ -529,9 +536,9 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
             $this->entityId,
             array_merge($this->metadata, ['dead_letter' => true])
         );
-        
+
         dispatch($deadLetterJob)->onQueue($deadLetterQueue);
-        
+
         Log::info('Moved webhook job to dead letter queue', [
             'event_type' => $this->eventType,
             'entity_type' => $this->entityType,
@@ -589,13 +596,13 @@ class ProcessPipedriveWebhookJob implements ShouldQueue
     protected function detectCustomFieldChanges(PipedriveCustomFieldDetectionService $detectionService): void
     {
         // Skip if custom field detection is disabled
-        if (!$detectionService->isEnabled()) {
+        if (! $detectionService->isEnabled()) {
             return;
         }
 
         // Skip for unsupported entity types
         $entityType = $detectionService->getEntityTypeFromWebhookObject($this->entityType);
-        if (!$entityType) {
+        if (! $entityType) {
             return;
         }
 

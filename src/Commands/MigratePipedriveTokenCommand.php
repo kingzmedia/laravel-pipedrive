@@ -2,11 +2,11 @@
 
 namespace Skeylup\LaravelPipedrive\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Skeylup\LaravelPipedrive\Models\PipedriveOAuthToken;
-use Carbon\Carbon;
 
 class MigratePipedriveTokenCommand extends Command
 {
@@ -23,13 +23,14 @@ class MigratePipedriveTokenCommand extends Command
         $existingToken = PipedriveOAuthToken::getDefault();
         if ($existingToken) {
             $this->warn('⚠️  Token already exists in database:');
-            $this->info('Created: ' . $existingToken->created_at->format('Y-m-d H:i:s'));
-            $this->info('Expires: ' . ($existingToken->expires_at ? $existingToken->expires_at->format('Y-m-d H:i:s') : 'Never'));
-            $this->info('Status: ' . ($existingToken->isExpired() ? 'Expired' : 'Valid'));
-            
-            if (!$this->option('force')) {
-                if (!$this->confirm('Do you want to overwrite the existing token?')) {
+            $this->info('Created: '.$existingToken->created_at->format('Y-m-d H:i:s'));
+            $this->info('Expires: '.($existingToken->expires_at ? $existingToken->expires_at->format('Y-m-d H:i:s') : 'Never'));
+            $this->info('Status: '.($existingToken->isExpired() ? 'Expired' : 'Valid'));
+
+            if (! $this->option('force')) {
+                if (! $this->confirm('Do you want to overwrite the existing token?')) {
                     $this->info('Migration cancelled.');
+
                     return self::SUCCESS;
                 }
             }
@@ -37,21 +38,23 @@ class MigratePipedriveTokenCommand extends Command
 
         // Try to get token from cache
         $cacheToken = $this->getTokenFromCache();
-        
-        if (!$cacheToken) {
+
+        if (! $cacheToken) {
             $this->error('❌ No token found in cache. Please re-authenticate via OAuth.');
+
             return self::FAILURE;
         }
 
         $this->info('✅ Found token in cache:');
-        $this->info('Access token: ' . substr($cacheToken['access_token'], 0, 20) . '...');
-        $this->info('Expires at: ' . date('Y-m-d H:i:s', $cacheToken['expires_at']));
-        $this->info('Expired: ' . ($cacheToken['expires_at'] < time() ? 'YES' : 'NO'));
+        $this->info('Access token: '.substr($cacheToken['access_token'], 0, 20).'...');
+        $this->info('Expires at: '.date('Y-m-d H:i:s', $cacheToken['expires_at']));
+        $this->info('Expired: '.($cacheToken['expires_at'] < time() ? 'YES' : 'NO'));
         $this->newLine();
 
-        if (!$this->option('force')) {
-            if (!$this->confirm('Migrate this token to database?')) {
+        if (! $this->option('force')) {
+            if (! $this->confirm('Migrate this token to database?')) {
                 $this->info('Migration cancelled.');
+
                 return self::SUCCESS;
             }
         }
@@ -66,7 +69,7 @@ class MigratePipedriveTokenCommand extends Command
 
             $this->info('✅ <fg=green>Token successfully migrated to database!</>');
             $this->newLine();
-            
+
             // Ask if user wants to clear cache token
             if ($this->confirm('Clear the token from cache?', true)) {
                 Cache::forget('pipedrive_oauth_token');
@@ -76,7 +79,8 @@ class MigratePipedriveTokenCommand extends Command
             return self::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error('❌ Failed to migrate token: ' . $e->getMessage());
+            $this->error('❌ Failed to migrate token: '.$e->getMessage());
+
             return self::FAILURE;
         }
     }

@@ -9,7 +9,7 @@ class PipedriveNote extends BasePipedriveModel
 {
     protected $table = 'pipedrive_notes';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'content',
         'person_id',
@@ -111,12 +111,12 @@ class PipedriveNote extends BasePipedriveModel
 
     public function getShortContent(int $length = 100): string
     {
-        if (!$this->content) {
+        if (! $this->content) {
             return '';
         }
 
-        return strlen($this->content) > $length 
-            ? substr($this->content, 0, $length) . '...'
+        return strlen($this->content) > $length
+            ? substr($this->content, 0, $length).'...'
             : $this->content;
     }
 

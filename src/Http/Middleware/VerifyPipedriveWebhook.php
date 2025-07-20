@@ -21,7 +21,7 @@ class VerifyPipedriveWebhook
 
         // Verify HTTP Basic Auth if configured
         if ($this->shouldVerifyBasicAuth()) {
-            if (!$this->verifyBasicAuth($request)) {
+            if (! $this->verifyBasicAuth($request)) {
                 Log::warning('Pipedrive webhook authentication failed', [
                     'ip' => $request->ip(),
                     'user_agent' => $request->userAgent(),
@@ -29,41 +29,41 @@ class VerifyPipedriveWebhook
                 ]);
 
                 return response()->json([
-                    'error' => 'Unauthorized'
+                    'error' => 'Unauthorized',
                 ], Response::HTTP_UNAUTHORIZED);
             }
         }
 
         // Verify IP whitelist if configured
         if ($this->shouldVerifyIpWhitelist()) {
-            if (!$this->verifyIpWhitelist($request)) {
+            if (! $this->verifyIpWhitelist($request)) {
                 Log::warning('Pipedrive webhook IP not whitelisted', [
                     'ip' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                 ]);
 
                 return response()->json([
-                    'error' => 'Forbidden'
+                    'error' => 'Forbidden',
                 ], Response::HTTP_FORBIDDEN);
             }
         }
 
         // Verify webhook signature if configured
         if ($this->shouldVerifySignature()) {
-            if (!$this->verifySignature($request)) {
+            if (! $this->verifySignature($request)) {
                 Log::warning('Pipedrive webhook signature verification failed', [
                     'ip' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                 ]);
 
                 return response()->json([
-                    'error' => 'Invalid signature'
+                    'error' => 'Invalid signature',
                 ], Response::HTTP_UNAUTHORIZED);
             }
         }
 
         // Verify request format
-        if (!$this->verifyRequestFormat($request)) {
+        if (! $this->verifyRequestFormat($request)) {
             Log::warning('Pipedrive webhook invalid format', [
                 'ip' => $request->ip(),
                 'content_type' => $request->header('Content-Type'),
@@ -72,7 +72,7 @@ class VerifyPipedriveWebhook
             ]);
 
             return response()->json([
-                'error' => 'Invalid webhook format'
+                'error' => 'Invalid webhook format',
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -116,13 +116,13 @@ class VerifyPipedriveWebhook
     protected function verifyIpWhitelist(Request $request): bool
     {
         $allowedIps = config('pipedrive.webhooks.security.ip_whitelist.ips', []);
-        
+
         if (empty($allowedIps)) {
             return false;
         }
 
         $clientIp = $request->ip();
-        
+
         foreach ($allowedIps as $allowedIp) {
             if ($this->ipMatches($clientIp, $allowedIp)) {
                 return true;
@@ -144,7 +144,8 @@ class VerifyPipedriveWebhook
 
         // CIDR notation
         if (strpos($pattern, '/') !== false) {
-            list($subnet, $mask) = explode('/', $pattern);
+            [$subnet, $mask] = explode('/', $pattern);
+
             return (ip2long($ip) & ~((1 << (32 - $mask)) - 1)) === ip2long($subnet);
         }
 
@@ -165,13 +166,13 @@ class VerifyPipedriveWebhook
     protected function verifySignature(Request $request): bool
     {
         $secret = config('pipedrive.webhooks.security.signature.secret');
-        
+
         if (empty($secret)) {
             return false;
         }
 
         $signature = $request->header('X-Pipedrive-Signature');
-        
+
         if (empty($signature)) {
             return false;
         }
@@ -188,17 +189,17 @@ class VerifyPipedriveWebhook
     protected function verifyRequestFormat(Request $request): bool
     {
         // Must be POST request
-        if (!$request->isMethod('POST')) {
+        if (! $request->isMethod('POST')) {
             return false;
         }
 
         // Must have JSON content type
-        if (!$request->isJson()) {
+        if (! $request->isJson()) {
             return false;
         }
 
         // Must have meta field (required for both v1 and v2)
-        if (!$request->has('meta')) {
+        if (! $request->has('meta')) {
             return false;
         }
 
@@ -209,16 +210,16 @@ class VerifyPipedriveWebhook
 
         if ($version === '2.0') {
             // Webhooks v2.0 format validation
-            if (!isset($meta['action'], $meta['entity'], $meta['entity_id'])) {
+            if (! isset($meta['action'], $meta['entity'], $meta['entity_id'])) {
                 return false;
             }
         } else {
             // Webhooks v1.0 format validation (legacy)
-            if (!$request->has('event')) {
+            if (! $request->has('event')) {
                 return false;
             }
 
-            if (!isset($meta['action'], $meta['object'], $meta['id'])) {
+            if (! isset($meta['action'], $meta['object'], $meta['id'])) {
                 return false;
             }
         }

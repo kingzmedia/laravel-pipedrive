@@ -12,6 +12,7 @@ class PipedriveMergeDetectionService
     use EmitsPipedriveEvents;
 
     protected int $detectionWindowSeconds;
+
     protected string $cachePrefix;
 
     public function __construct()
@@ -25,7 +26,7 @@ class PipedriveMergeDetectionService
      */
     public function trackWebhookEvent(array $webhookData): void
     {
-        if (!config('pipedrive.merge.enable_heuristic_detection', true)) {
+        if (! config('pipedrive.merge.enable_heuristic_detection', true)) {
             return;
         }
 
@@ -35,14 +36,14 @@ class PipedriveMergeDetectionService
         $entityType = $meta['entity'] ?? $meta['object'] ?? null;
         $entityId = $meta['entity_id'] ?? $meta['id'] ?? null;
 
-        if (!$correlationId || !$entityType || !$entityId) {
+        if (! $correlationId || ! $entityType || ! $entityId) {
             return;
         }
 
         // Store the event in cache for correlation analysis
-        $cacheKey = $this->cachePrefix . $correlationId;
+        $cacheKey = $this->cachePrefix.$correlationId;
         $events = Cache::get($cacheKey, []);
-        
+
         $events[] = [
             'action' => $action,
             'entity_type' => $entityType,
@@ -65,19 +66,19 @@ class PipedriveMergeDetectionService
     {
         // Look for the pattern: update(s) followed by delete
         $entitiesByType = [];
-        
+
         foreach ($events as $event) {
             $type = $event['entity_type'];
             $id = $event['entity_id'];
-            
-            if (!isset($entitiesByType[$type])) {
+
+            if (! isset($entitiesByType[$type])) {
                 $entitiesByType[$type] = [];
             }
-            
-            if (!isset($entitiesByType[$type][$id])) {
+
+            if (! isset($entitiesByType[$type][$id])) {
                 $entitiesByType[$type][$id] = [];
             }
-            
+
             $entitiesByType[$type][$id][] = $event;
         }
 
@@ -120,14 +121,14 @@ class PipedriveMergeDetectionService
         // this could be a merge
         if (count($deletedEntities) === 1 && count($updatedEntities) >= 1) {
             $mergedId = $deletedEntities[0];
-            
+
             // Find the most likely surviving entity (the one that was updated but not deleted)
             $survivingCandidates = array_diff($updatedEntities, $deletedEntities);
-            
-            if (!empty($survivingCandidates)) {
+
+            if (! empty($survivingCandidates)) {
                 // Take the first candidate as the surviving entity
                 $survivingId = $survivingCandidates[0];
-                
+
                 Log::info('Detected potential merge via heuristic analysis', [
                     'correlation_id' => $correlationId,
                     'entity_type' => $entityType,
@@ -248,6 +249,6 @@ class PipedriveMergeDetectionService
      */
     public function clearDetectionCache(string $correlationId): void
     {
-        Cache::forget($this->cachePrefix . $correlationId);
+        Cache::forget($this->cachePrefix.$correlationId);
     }
 }

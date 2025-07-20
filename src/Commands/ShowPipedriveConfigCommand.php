@@ -43,6 +43,7 @@ class ShowPipedriveConfigCommand extends Command
                 'entity_configuration' => $configSummary,
                 'validation_issues' => $issues,
             ], JSON_PRETTY_PRINT));
+
             return self::SUCCESS;
         }
 
@@ -50,7 +51,7 @@ class ShowPipedriveConfigCommand extends Command
         $this->line('');
 
         // Summary
-        $this->line("📊 Summary:");
+        $this->line('📊 Summary:');
         $this->line("  → Total entities: {$configSummary['total_entities']}");
         $this->line("  → Enabled: {$configSummary['enabled_count']}");
         $this->line("  → Disabled: {$configSummary['disabled_count']}");
@@ -58,7 +59,7 @@ class ShowPipedriveConfigCommand extends Command
         $this->line('');
 
         // Enabled entities
-        if (!empty($configSummary['enabled_entities'])) {
+        if (! empty($configSummary['enabled_entities'])) {
             $this->line("✅ Enabled entities ({$configSummary['enabled_count']}):");
             foreach ($configSummary['enabled_entities'] as $entity) {
                 $this->line("  → {$entity}");
@@ -67,7 +68,7 @@ class ShowPipedriveConfigCommand extends Command
         }
 
         // Disabled entities
-        if (!empty($configSummary['disabled_entities'])) {
+        if (! empty($configSummary['disabled_entities'])) {
             $this->line("❌ Disabled entities ({$configSummary['disabled_count']}):");
             foreach ($configSummary['disabled_entities'] as $entity) {
                 $this->line("  → {$entity}");
@@ -76,15 +77,15 @@ class ShowPipedriveConfigCommand extends Command
         }
 
         // Configuration instructions
-        $this->line("⚙️  Configuration:");
-        $this->line("  → To enable/disable entities, set PIPEDRIVE_ENABLED_ENTITIES in your .env file");
-        $this->line("  → Format: PIPEDRIVE_ENABLED_ENTITIES=deals,activities,persons");
+        $this->line('⚙️  Configuration:');
+        $this->line('  → To enable/disable entities, set PIPEDRIVE_ENABLED_ENTITIES in your .env file');
+        $this->line('  → Format: PIPEDRIVE_ENABLED_ENTITIES=deals,activities,persons');
         $this->line("  → Use 'all' to enable all entities: PIPEDRIVE_ENABLED_ENTITIES=all");
         $this->line('');
 
         // Validation issues
-        if (!empty($issues)) {
-            $this->line("⚠️  Configuration Issues:");
+        if (! empty($issues)) {
+            $this->line('⚠️  Configuration Issues:');
             foreach ($issues as $issue) {
                 $icon = $issue['type'] === 'warning' ? '⚠️ ' : 'ℹ️ ';
                 $this->line("  {$icon} {$issue['message']}");
@@ -111,6 +112,7 @@ class ShowPipedriveConfigCommand extends Command
             ];
 
             $this->line(json_encode($fullConfig, JSON_PRETTY_PRINT));
+
             return self::SUCCESS;
         }
 
@@ -121,16 +123,16 @@ class ShowPipedriveConfigCommand extends Command
         $this->showEntityConfiguration(false);
 
         // Additional configuration
-        $this->line("🔄 Sync Configuration:");
-        $this->line("  → Auto sync: " . (env('PIPEDRIVE_AUTO_SYNC', false) ? 'enabled' : 'disabled'));
-        $this->line("  → Scheduler: " . (env('PIPEDRIVE_SCHEDULER_ENABLED', false) ? 'enabled' : 'disabled'));
+        $this->line('🔄 Sync Configuration:');
+        $this->line('  → Auto sync: '.(env('PIPEDRIVE_AUTO_SYNC', false) ? 'enabled' : 'disabled'));
+        $this->line('  → Scheduler: '.(env('PIPEDRIVE_SCHEDULER_ENABLED', false) ? 'enabled' : 'disabled'));
         $this->line('');
 
-        $this->line("📚 Available Commands:");
-        $this->line("  → pipedrive:sync-entities          Sync entities manually");
-        $this->line("  → pipedrive:scheduled-sync         Run scheduled sync");
-        $this->line("  → pipedrive:sync-custom-fields     Sync custom fields");
-        $this->line("  → pipedrive:test-connection        Test API connection");
+        $this->line('📚 Available Commands:');
+        $this->line('  → pipedrive:sync-entities          Sync entities manually');
+        $this->line('  → pipedrive:scheduled-sync         Run scheduled sync');
+        $this->line('  → pipedrive:sync-custom-fields     Sync custom fields');
+        $this->line('  → pipedrive:test-connection        Test API connection');
 
         return self::SUCCESS;
     }

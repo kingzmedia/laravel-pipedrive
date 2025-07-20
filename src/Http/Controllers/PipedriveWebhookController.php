@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Services\PipedriveWebhookService;
-use Skeylup\LaravelPipedrive\Services\PipedriveMergeDetectionService;
 use Skeylup\LaravelPipedrive\Http\Middleware\VerifyPipedriveWebhook;
+use Skeylup\LaravelPipedrive\Services\PipedriveMergeDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveWebhookService;
 
 class PipedriveWebhookController extends Controller
 {

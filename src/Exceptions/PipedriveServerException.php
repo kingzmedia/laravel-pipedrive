@@ -6,13 +6,15 @@ use Throwable;
 
 /**
  * Exception for server errors (HTTP 500/503)
- * 
+ *
  * These errors are typically retryable as they indicate temporary server issues
  */
 class PipedriveServerException extends PipedriveApiException
 {
     protected bool $isTemporary = true;
+
     protected ?string $serviceStatus = null;
+
     protected ?int $estimatedRecoveryTime = null;
 
     public function __construct(
@@ -69,6 +71,7 @@ class PipedriveServerException extends PipedriveApiException
     public function setTemporary(bool $isTemporary): self
     {
         $this->isTemporary = $isTemporary;
+
         return $this;
     }
 
@@ -86,6 +89,7 @@ class PipedriveServerException extends PipedriveApiException
     public function setServiceStatus(?string $serviceStatus): self
     {
         $this->serviceStatus = $serviceStatus;
+
         return $this;
     }
 
@@ -103,6 +107,7 @@ class PipedriveServerException extends PipedriveApiException
     public function setEstimatedRecoveryTime(?int $estimatedRecoveryTime): self
     {
         $this->estimatedRecoveryTime = $estimatedRecoveryTime;
+
         return $this;
     }
 
@@ -172,7 +177,7 @@ class PipedriveServerException extends PipedriveApiException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['server'] = [
             'is_temporary' => $this->isTemporary,
             'service_status' => $this->serviceStatus,
@@ -194,7 +199,7 @@ class PipedriveServerException extends PipedriveApiException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['server'] = [
             'is_temporary' => $this->isTemporary,
             'service_status' => $this->serviceStatus,

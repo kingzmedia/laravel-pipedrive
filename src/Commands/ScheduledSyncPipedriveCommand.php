@@ -6,8 +6,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
 use Skeylup\LaravelPipedrive\Data\SyncOptions;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
 use Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService;
 
 class ScheduledSyncPipedriveCommand extends Command
@@ -32,8 +32,9 @@ class ScheduledSyncPipedriveCommand extends Command
         $isVerbose = $this->option('verbose');
 
         // Check if scheduler is enabled
-        if (!Config::get('pipedrive.sync.scheduler.enabled', false)) {
+        if (! Config::get('pipedrive.sync.scheduler.enabled', false)) {
             $this->warn('Scheduled sync is disabled in configuration. Enable it by setting PIPEDRIVE_SCHEDULER_ENABLED=true');
+
             return self::SUCCESS;
         }
 
@@ -54,9 +55,9 @@ class ScheduledSyncPipedriveCommand extends Command
         // Set memory limit if specified
         if ($memoryLimit > 0) {
             $currentLimit = ini_get('memory_limit');
-            $newLimit = $memoryLimit . 'M';
+            $newLimit = $memoryLimit.'M';
             ini_set('memory_limit', $newLimit);
-            
+
             if ($isVerbose) {
                 $this->line("📊 Memory limit changed from {$currentLimit} to {$newLimit}");
             }
@@ -66,6 +67,7 @@ class ScheduledSyncPipedriveCommand extends Command
 
         if ($isDryRun) {
             $this->info('✅ Dry run completed - configuration validated');
+
             return self::SUCCESS;
         }
 
@@ -96,10 +98,10 @@ class ScheduledSyncPipedriveCommand extends Command
             }
 
         } catch (\Exception $e) {
-            $this->error('💥 Scheduled sync failed with exception: ' . $e->getMessage());
-            
+            $this->error('💥 Scheduled sync failed with exception: '.$e->getMessage());
+
             if ($isVerbose) {
-                $this->error('Stack trace: ' . $e->getTraceAsString());
+                $this->error('Stack trace: '.$e->getTraceAsString());
             }
 
             // Log the error
@@ -117,11 +119,12 @@ class ScheduledSyncPipedriveCommand extends Command
 
         if ($totalErrors > 0) {
             $this->error("⚠️  Scheduled sync completed with {$totalErrors} error(s) in {$duration} seconds");
+
             return self::FAILURE;
         }
 
         $this->info("🎉 Scheduled sync completed successfully in {$duration} seconds");
-        
+
         // Log successful completion
         Log::info('Pipedrive scheduled sync completed successfully', [
             'duration' => $duration,
@@ -134,10 +137,10 @@ class ScheduledSyncPipedriveCommand extends Command
     protected function displaySyncConfiguration(bool $fullData, bool $force, bool $syncCustomFields, int $limit): void
     {
         $this->line('📋 Sync Configuration:');
-        $this->line('  • Full data mode: ' . ($fullData ? '✅ Enabled' : '❌ Disabled (SAFE - scheduler always uses standard mode)'));
-        $this->line('  • Force mode: ' . ($force ? '✅ Enabled' : '❌ Disabled'));
-        $this->line('  • Sync custom fields: ' . ($syncCustomFields ? '✅ Enabled' : '❌ Disabled'));
-        $this->line('  • Record limit: ' . $limit . ' (sorted by last modified)');
+        $this->line('  • Full data mode: '.($fullData ? '✅ Enabled' : '❌ Disabled (SAFE - scheduler always uses standard mode)'));
+        $this->line('  • Force mode: '.($force ? '✅ Enabled' : '❌ Disabled'));
+        $this->line('  • Sync custom fields: '.($syncCustomFields ? '✅ Enabled' : '❌ Disabled'));
+        $this->line('  • Record limit: '.$limit.' (sorted by last modified)');
         $this->line('  • Robustness: ✅ Enabled (rate limiting, error handling, memory management)');
         $this->line('');
     }
@@ -173,15 +176,16 @@ class ScheduledSyncPipedriveCommand extends Command
         if (empty($entities)) {
             $this->warn('⚠️  No entities are enabled for synchronization.');
             $this->warn('   Configure PIPEDRIVE_ENABLED_ENTITIES environment variable to enable entities.');
+
             return self::SUCCESS;
         }
 
         if ($verbose) {
             $configSummary = $this->entityConfigService->getConfigurationSummary();
             $this->line('📋 Scheduler Entity Configuration:');
-            $this->line("  → Enabled entities: " . implode(', ', $configSummary['enabled_entities']));
-            if (!empty($configSummary['disabled_entities'])) {
-                $this->line("  → Disabled entities: " . implode(', ', $configSummary['disabled_entities']));
+            $this->line('  → Enabled entities: '.implode(', ', $configSummary['enabled_entities']));
+            if (! empty($configSummary['disabled_entities'])) {
+                $this->line('  → Disabled entities: '.implode(', ', $configSummary['disabled_entities']));
             }
         }
 
@@ -214,15 +218,15 @@ class ScheduledSyncPipedriveCommand extends Command
                     }
                 } else {
                     $totalErrors++;
-                    $this->error("    ❌ {$entityType} sync failed: " . ($result->errorMessage ?? 'Unknown error'));
+                    $this->error("    ❌ {$entityType} sync failed: ".($result->errorMessage ?? 'Unknown error'));
                 }
 
             } catch (\Exception $e) {
                 $totalErrors++;
-                $this->error("    ❌ {$entityType} sync failed with exception: " . $e->getMessage());
+                $this->error("    ❌ {$entityType} sync failed with exception: ".$e->getMessage());
 
                 if ($verbose) {
-                    $this->line("    → Exception details: " . $e->getTraceAsString());
+                    $this->line('    → Exception details: '.$e->getTraceAsString());
                 }
             }
         }

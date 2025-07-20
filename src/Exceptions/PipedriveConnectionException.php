@@ -6,17 +6,23 @@ use Throwable;
 
 /**
  * Exception for network connectivity issues
- * 
+ *
  * Handles network timeouts, DNS failures, and connection problems
  */
 class PipedriveConnectionException extends PipedriveException
 {
     protected string $connectionType = 'unknown';
+
     protected ?string $host = null;
+
     protected ?int $port = null;
+
     protected float $timeout = 0.0;
+
     protected int $connectionAttempts = 0;
+
     protected ?string $dnsError = null;
+
     protected ?string $sslError = null;
 
     public function __construct(
@@ -69,6 +75,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setConnectionType(string $connectionType): self
     {
         $this->connectionType = $connectionType;
+
         return $this;
     }
 
@@ -86,6 +93,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setHost(?string $host): self
     {
         $this->host = $host;
+
         return $this;
     }
 
@@ -103,6 +111,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setPort(?int $port): self
     {
         $this->port = $port;
+
         return $this;
     }
 
@@ -120,6 +129,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setTimeout(float $timeout): self
     {
         $this->timeout = $timeout;
+
         return $this;
     }
 
@@ -137,6 +147,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setConnectionAttempts(int $connectionAttempts): self
     {
         $this->connectionAttempts = $connectionAttempts;
+
         return $this;
     }
 
@@ -154,6 +165,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setDnsError(?string $dnsError): self
     {
         $this->dnsError = $dnsError;
+
         return $this;
     }
 
@@ -171,6 +183,7 @@ class PipedriveConnectionException extends PipedriveException
     public function setSslError(?string $sslError): self
     {
         $this->sslError = $sslError;
+
         return $this;
     }
 
@@ -258,7 +271,7 @@ class PipedriveConnectionException extends PipedriveException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['connection'] = [
             'connection_type' => $this->connectionType,
             'host' => $this->host,
@@ -284,7 +297,7 @@ class PipedriveConnectionException extends PipedriveException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['connection'] = [
             'connection_type' => $this->connectionType,
             'host' => $this->host,
@@ -357,7 +370,7 @@ class PipedriveConnectionException extends PipedriveException
         ?int $port = null
     ): static {
         $target = $port ? "{$host}:{$port}" : $host;
-        
+
         return new static(
             message: "Connection refused to {$target}",
             connectionType: 'tcp',

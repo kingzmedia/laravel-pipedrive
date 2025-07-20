@@ -2,21 +2,22 @@
 
 namespace Skeylup\LaravelPipedrive\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
-use Carbon\Carbon;
 
 /**
  * API health monitoring service
- * 
+ *
  * Provides continuous health checks, service degradation detection,
  * and circuit breaker integration for Pipedrive API
  */
 class PipedriveHealthChecker
 {
     protected array $config;
+
     protected PipedriveAuthService $authService;
+
     protected string $cachePrefix = 'pipedrive_health';
 
     public function __construct(PipedriveAuthService $authService, array $config = [])
@@ -38,7 +39,7 @@ class PipedriveHealthChecker
      */
     public function isHealthy(): bool
     {
-        if (!$this->config['enabled']) {
+        if (! $this->config['enabled']) {
             return true;
         }
 
@@ -69,18 +70,18 @@ class PipedriveHealthChecker
 
         try {
             $pipedrive = $this->authService->getPipedriveInstance();
-            
+
             // Use a lightweight endpoint for health check
             $response = $this->makeHealthCheckRequest($pipedrive);
-            
+
             $endTime = microtime(true);
             $responseTime = ($endTime - $startTime) * 1000; // Convert to milliseconds
-            
+
             $result['response_time'] = round($responseTime, 2);
             $result['status_code'] = $response->getStatusCode() ?? 200;
             $result['healthy'] = $response->isSuccess();
-            
-            if (!$result['healthy']) {
+
+            if (! $result['healthy']) {
                 $result['error'] = 'API request failed';
             }
 
@@ -109,7 +110,7 @@ class PipedriveHealthChecker
     protected function makeHealthCheckRequest($pipedrive)
     {
         $endpoint = $this->config['health_endpoint'];
-        
+
         return match ($endpoint) {
             'currencies' => $pipedrive->currencies->all(['limit' => 1]),
             'users' => $pipedrive->users->all(['limit' => 1]),
@@ -124,13 +125,13 @@ class PipedriveHealthChecker
     public function isDegraded(): bool
     {
         $recentChecks = $this->getRecentHealthChecks(5);
-        
+
         if (empty($recentChecks)) {
             return false;
         }
 
         $avgResponseTime = array_sum(array_column($recentChecks, 'response_time')) / count($recentChecks);
-        
+
         return $avgResponseTime > $this->config['degradation_threshold'];
     }
 
@@ -141,9 +142,9 @@ class PipedriveHealthChecker
     {
         $currentStatus = $this->isHealthy() ? $this->getLastHealthCheck() : $this->performHealthCheck();
         $recentChecks = $this->getRecentHealthChecks(10);
-        
+
         $stats = $this->calculateHealthStats($recentChecks);
-        
+
         return [
             'current_status' => $currentStatus,
             'is_healthy' => $currentStatus['healthy'],
@@ -177,7 +178,7 @@ class PipedriveHealthChecker
         }
 
         $totalChecks = count($recentChecks);
-        $successfulChecks = count(array_filter($recentChecks, fn($check) => $check['healthy']));
+        $successfulChecks = count(array_filter($recentChecks, fn ($check) => $check['healthy']));
         $failedChecks = $totalChecks - $successfulChecks;
         $responseTimes = array_column($recentChecks, 'response_time');
 
@@ -199,14 +200,14 @@ class PipedriveHealthChecker
     {
         $cacheKey = $this->getCacheKey('history');
         $history = Cache::get($cacheKey, []);
-        
+
         $history[] = $result;
-        
+
         // Keep only last 50 checks
         if (count($history) > 50) {
             array_shift($history);
         }
-        
+
         Cache::put($cacheKey, $history, now()->addHours(24));
     }
 
@@ -217,7 +218,7 @@ class PipedriveHealthChecker
     {
         $cacheKey = $this->getCacheKey('history');
         $history = Cache::get($cacheKey, []);
-        
+
         return array_slice($history, -$limit);
     }
 
@@ -227,6 +228,7 @@ class PipedriveHealthChecker
     public function getLastHealthCheck(): ?array
     {
         $recent = $this->getRecentHealthChecks(1);
+
         return $recent[0] ?? null;
     }
 
@@ -235,19 +237,19 @@ class PipedriveHealthChecker
      */
     public function shouldPerformHealthCheck(): bool
     {
-        if (!$this->config['enabled']) {
+        if (! $this->config['enabled']) {
             return false;
         }
 
         $lastCheck = $this->getLastHealthCheck();
-        
-        if (!$lastCheck) {
+
+        if (! $lastCheck) {
             return true;
         }
 
         $lastCheckTime = Carbon::parse($lastCheck['checked_at']);
         $intervalSeconds = $this->config['check_interval'];
-        
+
         return $lastCheckTime->addSeconds($intervalSeconds)->isPast();
     }
 
@@ -258,16 +260,16 @@ class PipedriveHealthChecker
     {
         $recentChecks = $this->getRecentHealthChecks(10);
         $consecutiveFailures = 0;
-        
+
         // Count failures from the end
         for ($i = count($recentChecks) - 1; $i >= 0; $i--) {
-            if (!$recentChecks[$i]['healthy']) {
+            if (! $recentChecks[$i]['healthy']) {
                 $consecutiveFailures++;
             } else {
                 break;
             }
         }
-        
+
         return $consecutiveFailures;
     }
 

@@ -2,27 +2,27 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Artisan;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Illuminate\Support\Facades\Queue;
 use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveCustomFieldsJob;
 use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Tests\TestCase;
 
 class CustomFieldDetectionTest extends TestCase
 {
     use RefreshDatabase;
 
     protected PipedriveCustomFieldDetectionService $detectionService;
+
     protected PipedriveCustomFieldService $customFieldService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->customFieldService = $this->app->make(PipedriveCustomFieldService::class);
         $this->detectionService = $this->app->make(PipedriveCustomFieldDetectionService::class);
     }

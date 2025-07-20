@@ -10,12 +10,19 @@ class PipedriveWebhookReceived
     use Dispatchable, SerializesModels;
 
     public array $webhookData;
+
     public string $action;
+
     public string $object;
+
     public string $objectId; // Changed to string to support both v1.0 (int) and v2.0 (string)
+
     public array $meta;
+
     public ?array $current;
+
     public ?array $previous;
+
     public string $version;
 
     /**

@@ -4,14 +4,12 @@ namespace Skeylup\LaravelPipedrive\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Skeylup\LaravelPipedrive\Tests\TestCase;
-use Skeylup\LaravelPipedrive\Events\{
-    PipedriveEntityCreated,
-    PipedriveEntityUpdated,
-    PipedriveEntityDeleted
-};
-use Skeylup\LaravelPipedrive\Services\PipedriveWebhookService;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityCreated;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityDeleted;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityUpdated;
 use Skeylup\LaravelPipedrive\Models\PipedriveDeal;
+use Skeylup\LaravelPipedrive\Services\PipedriveWebhookService;
+use Skeylup\LaravelPipedrive\Tests\TestCase;
 
 class PipedriveEventsTest extends TestCase
 {
@@ -20,10 +18,10 @@ class PipedriveEventsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Run migrations
         $this->artisan('migrate');
-        
+
         // Fake events
         Event::fake();
     }
@@ -32,7 +30,7 @@ class PipedriveEventsTest extends TestCase
     public function it_emits_created_event_on_webhook_create()
     {
         $webhookService = app(PipedriveWebhookService::class);
-        
+
         $webhookData = [
             'meta' => [
                 'action' => 'added',
@@ -61,7 +59,7 @@ class PipedriveEventsTest extends TestCase
 
         // Verify the event was emitted
         Event::assertDispatched(PipedriveEntityCreated::class, function ($event) {
-            return $event->entityType === 'deal' 
+            return $event->entityType === 'deal'
                 && $event->entity instanceof PipedriveDeal
                 && $event->getPipedriveId() === 123
                 && $event->source === 'webhook';
@@ -85,7 +83,7 @@ class PipedriveEventsTest extends TestCase
         ]);
 
         $webhookService = app(PipedriveWebhookService::class);
-        
+
         $webhookData = [
             'meta' => [
                 'action' => 'updated',
@@ -121,7 +119,7 @@ class PipedriveEventsTest extends TestCase
 
         // Verify the event was emitted
         Event::assertDispatched(PipedriveEntityUpdated::class, function ($event) {
-            return $event->entityType === 'deal' 
+            return $event->entityType === 'deal'
                 && $event->entity instanceof PipedriveDeal
                 && $event->getPipedriveId() === 123
                 && $event->source === 'webhook'
@@ -148,7 +146,7 @@ class PipedriveEventsTest extends TestCase
         ]);
 
         $webhookService = app(PipedriveWebhookService::class);
-        
+
         $webhookData = [
             'meta' => [
                 'action' => 'deleted',
@@ -175,7 +173,7 @@ class PipedriveEventsTest extends TestCase
 
         // Verify the event was emitted
         Event::assertDispatched(PipedriveEntityDeleted::class, function ($event) {
-            return $event->entityType === 'deal' 
+            return $event->entityType === 'deal'
                 && $event->pipedriveId === 123
                 && $event->source === 'webhook'
                 && $event->getEntityTitle() === 'Test Deal'
@@ -190,7 +188,7 @@ class PipedriveEventsTest extends TestCase
     public function event_includes_correct_metadata()
     {
         $webhookService = app(PipedriveWebhookService::class);
-        
+
         $webhookData = [
             'meta' => [
                 'action' => 'added',
@@ -228,7 +226,7 @@ class PipedriveEventsTest extends TestCase
     public function event_helper_methods_work_correctly()
     {
         $webhookService = app(PipedriveWebhookService::class);
-        
+
         $webhookData = [
             'meta' => [
                 'action' => 'added',

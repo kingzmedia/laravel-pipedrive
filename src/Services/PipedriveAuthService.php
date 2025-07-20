@@ -3,9 +3,8 @@
 namespace Skeylup\LaravelPipedrive\Services;
 
 use Devio\Pipedrive\Pipedrive;
-use Devio\Pipedrive\PipedriveTokenStorage;
-use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 use InvalidArgumentException;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
 
 class PipedriveAuthService
 {
@@ -83,7 +82,7 @@ class PipedriveAuthService
 
             // For OAuth, ensure token is valid and refreshed if needed
             if ($this->isUsingOAuth()) {
-                if (!$this->ensureValidToken($pipedrive)) {
+                if (! $this->ensureValidToken($pipedrive)) {
                     return [
                         'success' => false,
                         'message' => 'No valid OAuth token found. Please re-authenticate.',
@@ -106,14 +105,14 @@ class PipedriveAuthService
 
             return [
                 'success' => false,
-                'message' => 'Connection failed: ' . ($response ? $response->getStatusCode() : 'No response'),
+                'message' => 'Connection failed: '.($response ? $response->getStatusCode() : 'No response'),
                 'error' => $response ? $response->getContent() : 'No response received',
             ];
 
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Connection error: ' . $e->getMessage(),
+                'message' => 'Connection error: '.$e->getMessage(),
                 'error' => $e->getTraceAsString(),
             ];
         }
@@ -148,7 +147,7 @@ class PipedriveAuthService
      */
     public function getAuthorizationUrl(array $options = []): string
     {
-        if (!$this->isUsingOAuth()) {
+        if (! $this->isUsingOAuth()) {
             throw new InvalidArgumentException('OAuth is not configured. Please set auth_method to "oauth" in your configuration.');
         }
 
@@ -173,12 +172,13 @@ class PipedriveAuthService
         }
 
         // Only add state if explicitly provided and not empty
-        if (isset($options['state']) && !empty($options['state'])) {
+        if (isset($options['state']) && ! empty($options['state'])) {
             $params['state'] = $options['state'];
         }
 
         $query = http_build_query($params);
-        return 'https://oauth.pipedrive.com/oauth/authorize?' . $query;
+
+        return 'https://oauth.pipedrive.com/oauth/authorize?'.$query;
     }
 
     /**
@@ -186,7 +186,7 @@ class PipedriveAuthService
      */
     public function exchangeCodeForToken(string $code): bool
     {
-        if (!$this->isUsingOAuth()) {
+        if (! $this->isUsingOAuth()) {
             throw new InvalidArgumentException('OAuth is not configured. Please set auth_method to "oauth" in your configuration.');
         }
 
@@ -199,10 +199,10 @@ class PipedriveAuthService
 
             return true;
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Pipedrive OAuth error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            \Illuminate\Support\Facades\Log::error('Pipedrive OAuth error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
-            throw new InvalidArgumentException('Failed to exchange authorization code for token: ' . $e->getMessage());
+            throw new InvalidArgumentException('Failed to exchange authorization code for token: '.$e->getMessage());
         }
     }
 
@@ -212,14 +212,14 @@ class PipedriveAuthService
      */
     protected function ensureValidToken(Pipedrive $pipedrive): bool
     {
-        if (!$this->isUsingOAuth()) {
+        if (! $this->isUsingOAuth()) {
             return true;
         }
 
         $tokenStorage = app(PipedriveTokenStorageInterface::class);
         $token = $tokenStorage->getToken();
 
-        if (!$token) {
+        if (! $token) {
             return false;
         }
 
@@ -229,9 +229,11 @@ class PipedriveAuthService
                 \Illuminate\Support\Facades\Log::info('Pipedrive token needs refresh, refreshing...');
                 $token->refreshIfNeeded($pipedrive);
                 \Illuminate\Support\Facades\Log::info('Pipedrive token refreshed successfully');
+
                 return true;
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to refresh Pipedrive token: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('Failed to refresh Pipedrive token: '.$e->getMessage());
+
                 return false;
             }
         }
@@ -244,10 +246,10 @@ class PipedriveAuthService
      */
     public function getTokenStatus(): array
     {
-        if (!$this->isUsingOAuth()) {
+        if (! $this->isUsingOAuth()) {
             return [
                 'auth_method' => 'token',
-                'status' => 'N/A for token auth'
+                'status' => 'N/A for token auth',
             ];
         }
 
@@ -255,11 +257,11 @@ class PipedriveAuthService
             $tokenStorage = app(PipedriveTokenStorageInterface::class);
             $token = $tokenStorage->getToken();
 
-            if (!$token) {
+            if (! $token) {
                 return [
                     'auth_method' => 'oauth',
                     'status' => 'no_token',
-                    'message' => 'No token found'
+                    'message' => 'No token found',
                 ];
             }
 
@@ -276,7 +278,7 @@ class PipedriveAuthService
             return [
                 'auth_method' => 'oauth',
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -286,7 +288,7 @@ class PipedriveAuthService
      */
     public function clearToken(): void
     {
-        if (!$this->isUsingOAuth()) {
+        if (! $this->isUsingOAuth()) {
             return;
         }
 

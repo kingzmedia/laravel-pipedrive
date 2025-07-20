@@ -4,15 +4,13 @@ namespace Skeylup\LaravelPipedrive\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
-use Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService;
-use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
-use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
 use Skeylup\LaravelPipedrive\Data\SyncOptions;
 use Skeylup\LaravelPipedrive\Data\SyncResult;
+use Skeylup\LaravelPipedrive\Jobs\SyncPipedriveEntityJob;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityConfigService;
 use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
-use Devio\Pipedrive\Pipedrive;
+use Skeylup\LaravelPipedrive\Traits\EmitsPipedriveEvents;
 
 class SyncPipedriveEntitiesCommand extends Command
 {
@@ -27,7 +25,9 @@ class SyncPipedriveEntitiesCommand extends Command
     public $description = 'Synchronize entities from Pipedrive API using the robust centralized job system. By default, fetches latest modifications (sorted by update_time DESC, max 500 records). Use --full-data to retrieve all data with pagination.';
 
     protected PipedriveAuthService $authService;
+
     protected PipedriveMemoryManager $memoryManager;
+
     protected PipedriveEntityConfigService $entityConfigService;
 
     public function __construct(
@@ -61,9 +61,9 @@ class SyncPipedriveEntitiesCommand extends Command
             $configSummary = $this->entityConfigService->getConfigurationSummary();
             $this->line('📋 Entity Configuration:');
             $this->line("  → Total entities: {$configSummary['total_entities']}");
-            $this->line("  → Enabled: {$configSummary['enabled_count']} (" . implode(', ', $configSummary['enabled_entities']) . ")");
-            if (!empty($configSummary['disabled_entities'])) {
-                $this->line("  → Disabled: {$configSummary['disabled_count']} (" . implode(', ', $configSummary['disabled_entities']) . ")");
+            $this->line("  → Enabled: {$configSummary['enabled_count']} (".implode(', ', $configSummary['enabled_entities']).')');
+            if (! empty($configSummary['disabled_entities'])) {
+                $this->line("  → Disabled: {$configSummary['disabled_count']} (".implode(', ', $configSummary['disabled_entities']).')');
             }
             $this->line("  → Configuration source: {$configSummary['configuration_source']}");
         }
@@ -77,8 +77,9 @@ class SyncPipedriveEntitiesCommand extends Command
             // Check memory limit
             $this->checkMemoryRequirements();
 
-            if (!$force && !$this->confirm('Do you want to continue?', false)) {
+            if (! $force && ! $this->confirm('Do you want to continue?', false)) {
                 $this->info('Operation cancelled.');
+
                 return self::SUCCESS;
             }
 
@@ -90,32 +91,36 @@ class SyncPipedriveEntitiesCommand extends Command
         // Test connection first
         try {
             $connectionTest = $this->authService->testConnection();
-            if (!$connectionTest['success']) {
-                $this->error('❌ Failed to connect to Pipedrive: ' . $connectionTest['message']);
+            if (! $connectionTest['success']) {
+                $this->error('❌ Failed to connect to Pipedrive: '.$connectionTest['message']);
+
                 return self::FAILURE;
             }
 
-            $this->info('✅ Connected to Pipedrive as: ' . $connectionTest['user'] . ' (' . $connectionTest['company'] . ')');
-            $this->info('🔐 Using authentication method: ' . $this->authService->getAuthMethod());
+            $this->info('✅ Connected to Pipedrive as: '.$connectionTest['user'].' ('.$connectionTest['company'].')');
+            $this->info('🔐 Using authentication method: '.$this->authService->getAuthMethod());
 
         } catch (\Exception $e) {
-            $this->error('❌ Error testing Pipedrive connection: ' . $e->getMessage());
+            $this->error('❌ Error testing Pipedrive connection: '.$e->getMessage());
+
             return self::FAILURE;
         }
 
         // Validate entity type
         if ($entityType) {
-            if (!in_array($entityType, $allEntities)) {
-                $this->error("❌ Invalid entity type. Available types: " . implode(', ', $allEntities));
+            if (! in_array($entityType, $allEntities)) {
+                $this->error('❌ Invalid entity type. Available types: '.implode(', ', $allEntities));
+
                 return self::FAILURE;
             }
 
-            if (!$this->entityConfigService->isEntityEnabled($entityType)) {
+            if (! $this->entityConfigService->isEntityEnabled($entityType)) {
                 $this->warn("⚠️  Entity '{$entityType}' is disabled in configuration.");
                 $this->warn("   To enable it, add '{$entityType}' to PIPEDRIVE_ENABLED_ENTITIES environment variable.");
 
-                if (!$force && !$this->confirm("Do you want to sync '{$entityType}' anyway?")) {
+                if (! $force && ! $this->confirm("Do you want to sync '{$entityType}' anyway?")) {
                     $this->info('Operation cancelled.');
+
                     return self::SUCCESS;
                 }
             }
@@ -126,6 +131,7 @@ class SyncPipedriveEntitiesCommand extends Command
             if (empty($enabledEntities)) {
                 $this->warn('⚠️  No entities are enabled for synchronization.');
                 $this->warn('   Configure PIPEDRIVE_ENABLED_ENTITIES environment variable to enable entities.');
+
                 return self::SUCCESS;
             }
 
@@ -134,12 +140,14 @@ class SyncPipedriveEntitiesCommand extends Command
                 $result = $this->syncEntityUsingJob($entity, $limit, $force, $fullData, $verbose);
                 if ($result === self::FAILURE) {
                     $this->error("❌ Failed to sync {$entity}, stopping execution.");
+
                     return self::FAILURE;
                 }
                 $totalResults[] = $entity;
             }
 
-            $this->info('✅ All enabled entities synchronization completed! Synced: ' . implode(', ', $totalResults));
+            $this->info('✅ All enabled entities synchronization completed! Synced: '.implode(', ', $totalResults));
+
             return self::SUCCESS;
         }
     }
@@ -157,7 +165,7 @@ class SyncPipedriveEntitiesCommand extends Command
         $this->info("🔄 Syncing {$entityType}...");
 
         if ($fullData) {
-            $this->line("  → Full data mode: Retrieving ALL data with pagination (sorted by creation date, oldest first)");
+            $this->line('  → Full data mode: Retrieving ALL data with pagination (sorted by creation date, oldest first)');
         } else {
             $this->line("  → Standard mode: Retrieving latest modifications (sorted by update_time DESC, max {$limit} records)");
         }
@@ -173,8 +181,8 @@ class SyncPipedriveEntitiesCommand extends Command
             );
 
             if ($verbose) {
-                $this->line("  → Options: " . json_encode($options->toArray(), JSON_PRETTY_PRINT));
-                $this->line("  → Memory stats before sync: " . json_encode($this->memoryManager->getMemoryStats(), JSON_PRETTY_PRINT));
+                $this->line('  → Options: '.json_encode($options->toArray(), JSON_PRETTY_PRINT));
+                $this->line('  → Memory stats before sync: '.json_encode($this->memoryManager->getMemoryStats(), JSON_PRETTY_PRINT));
             }
 
             // Execute job synchronously for command
@@ -186,15 +194,16 @@ class SyncPipedriveEntitiesCommand extends Command
             if ($result->isSuccess()) {
                 return self::SUCCESS;
             } else {
-                $this->error("❌ Sync failed for {$entityType}: " . ($result->errorMessage ?? 'Unknown error'));
+                $this->error("❌ Sync failed for {$entityType}: ".($result->errorMessage ?? 'Unknown error'));
+
                 return self::FAILURE;
             }
 
         } catch (\Exception $e) {
-            $this->error("❌ Error syncing {$entityType}: " . $e->getMessage());
+            $this->error("❌ Error syncing {$entityType}: ".$e->getMessage());
 
             if ($verbose) {
-                $this->line("  → Exception details: " . $e->getTraceAsString());
+                $this->line('  → Exception details: '.$e->getTraceAsString());
             }
 
             Log::error("Error syncing {$entityType} via job", [
@@ -227,7 +236,7 @@ class SyncPipedriveEntitiesCommand extends Command
         }
 
         // Display statistics
-        $this->line("  📊 Results:");
+        $this->line('  📊 Results:');
         $this->line("    • Synced: {$summary['totals']['synced']}");
         $this->line("    • Updated: {$summary['totals']['updated']}");
         $this->line("    • Skipped: {$summary['totals']['skipped']}");
@@ -236,30 +245,30 @@ class SyncPipedriveEntitiesCommand extends Command
         $this->line("    • Execution time: {$summary['timing']['formatted_execution_time']}");
 
         if ($summary['totals']['total_processed'] > 0) {
-            $this->line("    • Success rate: " . number_format($summary['rates']['success_rate'], 1) . "%");
-            $this->line("    • Processing speed: " . number_format($summary['rates']['processing_speed'], 1) . " items/sec");
+            $this->line('    • Success rate: '.number_format($summary['rates']['success_rate'], 1).'%');
+            $this->line('    • Processing speed: '.number_format($summary['rates']['processing_speed'], 1).' items/sec');
         }
 
         // Show detailed information in verbose mode
         if ($verbose) {
             $detailedReport = $result->getDetailedReport();
 
-            if (!empty($detailedReport['memory_stats'])) {
-                $this->line("  🧠 Memory stats:");
+            if (! empty($detailedReport['memory_stats'])) {
+                $this->line('  🧠 Memory stats:');
                 $memStats = $detailedReport['memory_stats'];
                 $this->line("    • Usage: {$memStats['memory_used_formatted']} / {$memStats['memory_limit_formatted']} ({$memStats['usage_percent']}%)");
                 $this->line("    • Batch size: {$memStats['current_batch_size']}");
             }
 
-            if (!empty($detailedReport['rate_limit_stats'])) {
-                $this->line("  🚦 Rate limit stats:");
+            if (! empty($detailedReport['rate_limit_stats'])) {
+                $this->line('  🚦 Rate limit stats:');
                 $rateStats = $detailedReport['rate_limit_stats'];
                 $this->line("    • Usage: {$rateStats['current_usage']}/{$rateStats['daily_budget']} tokens ({$rateStats['usage_percentage']}%)");
                 $this->line("    • Remaining: {$rateStats['remaining_tokens']} tokens");
             }
 
-            if (!empty($detailedReport['error_items'])) {
-                $this->line("  ⚠️  Error items:");
+            if (! empty($detailedReport['error_items'])) {
+                $this->line('  ⚠️  Error items:');
                 foreach (array_slice($detailedReport['error_items'], 0, 5) as $errorItem) {
                     $this->line("    • ID {$errorItem['id']}: {$errorItem['error']}");
                 }
@@ -277,7 +286,6 @@ class SyncPipedriveEntitiesCommand extends Command
      * Check memory requirements for full-data operations
      */
 
-
     /**
      * Check memory requirements for full-data mode
      */
@@ -291,14 +299,14 @@ class SyncPipedriveEntitiesCommand extends Command
         // Recommend at least 1GB for full-data mode
         $recommendedBytes = 1024 * 1024 * 1024; // 1GB
 
-        $this->info("💾 Memory Check:");
+        $this->info('💾 Memory Check:');
         $this->info("   Current limit: {$memoryLimit}");
         $this->info("   Current usage: {$currentUsageMB}MB");
-        $this->info("   Recommended for full-data: 1GB+");
+        $this->info('   Recommended for full-data: 1GB+');
 
         if ($memoryLimitBytes !== -1 && $memoryLimitBytes < $recommendedBytes) {
             $this->error('❌ MEMORY WARNING: Your PHP memory limit may be insufficient for full-data mode.');
-            $this->error('   Current limit: ' . $memoryLimit);
+            $this->error('   Current limit: '.$memoryLimit);
             $this->error('   Recommended: 1GB or higher');
             $this->error('');
             $this->error('💡 Solutions:');
@@ -307,9 +315,9 @@ class SyncPipedriveEntitiesCommand extends Command
             $this->error('   3. Sync specific entities with smaller datasets');
             $this->error('   4. Update php.ini: memory_limit = 2048M');
             $this->error('');
- 
+
         } else {
-            $this->info("✅ Memory limit appears sufficient for full-data mode.");
+            $this->info('✅ Memory limit appears sufficient for full-data mode.');
         }
     }
 
@@ -340,8 +348,6 @@ class SyncPipedriveEntitiesCommand extends Command
         return $value;
     }
 
-
-
     /**
      * Apply API delay to prevent rate limiting
      * Based on user preference for 0.3s delay between API calls
@@ -352,7 +358,7 @@ class SyncPipedriveEntitiesCommand extends Command
         usleep(300000); // 300,000 microseconds = 0.3 seconds
 
         if ($this->getOutput()->isVerbose()) {
-            $this->line("  → Applied 0.3s API delay to prevent rate limiting");
+            $this->line('  → Applied 0.3s API delay to prevent rate limiting');
         }
     }
 
@@ -365,7 +371,7 @@ class SyncPipedriveEntitiesCommand extends Command
         $this->applyApiDelay();
 
         if ($this->getOutput()->isVerbose()) {
-            $this->line("  → Making API call for {$entityType} with options: " . json_encode($options));
+            $this->line("  → Making API call for {$entityType} with options: ".json_encode($options));
         }
 
         return match ($entityType) {
@@ -388,17 +394,17 @@ class SyncPipedriveEntitiesCommand extends Command
     {
         // Try to get a meaningful display name for the record
         if (isset($data['title'])) {
-            return $data['title'] . " (ID: {$data['id']})";
+            return $data['title']." (ID: {$data['id']})";
         }
-        
+
         if (isset($data['name'])) {
-            return $data['name'] . " (ID: {$data['id']})";
+            return $data['name']." (ID: {$data['id']})";
         }
-        
+
         if (isset($data['subject'])) {
-            return $data['subject'] . " (ID: {$data['id']})";
+            return $data['subject']." (ID: {$data['id']})";
         }
-        
+
         return "ID: {$data['id']}";
     }
 }

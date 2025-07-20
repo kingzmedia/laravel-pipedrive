@@ -2,19 +2,24 @@
 
 namespace Skeylup\LaravelPipedrive\Events;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Database\Eloquent\Model;
 
 class PipedriveEntityUpdated
 {
     use Dispatchable, SerializesModels;
 
     public string $entityType;
+
     public Model $entity;
+
     public array $originalData;
+
     public array $changes;
+
     public string $source;
+
     public ?array $metadata;
 
     /**
@@ -137,7 +142,7 @@ class PipedriveEntityUpdated
      */
     public function hasChangedAny(array $fields): bool
     {
-        return !empty(array_intersect($fields, $this->getChangedFields()));
+        return ! empty(array_intersect($fields, $this->getChangedFields()));
     }
 
     /**
@@ -163,7 +168,7 @@ class PipedriveEntityUpdated
             'changed_fields' => $this->getChangedFields(),
             'changes_count' => count($this->changes),
             'updated_at' => $this->entity->updated_at?->toISOString(),
-            'has_metadata' => !empty($this->metadata),
+            'has_metadata' => ! empty($this->metadata),
         ];
     }
 

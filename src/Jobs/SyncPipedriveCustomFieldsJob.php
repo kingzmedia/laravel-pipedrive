@@ -7,15 +7,17 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class SyncPipedriveCustomFieldsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected ?string $entityType;
+
     protected bool $force;
+
     protected bool $fullData;
 
     /**
@@ -56,15 +58,15 @@ class SyncPipedriveCustomFieldsJob implements ShouldQueue
 
             // Build command arguments
             $arguments = [];
-            
+
             if ($this->entityType) {
                 $arguments['--entity'] = $this->entityType;
             }
-            
+
             if ($this->force) {
                 $arguments['--force'] = true;
             }
-            
+
             if ($this->fullData) {
                 $arguments['--full-data'] = true;
             }
@@ -121,11 +123,11 @@ class SyncPipedriveCustomFieldsJob implements ShouldQueue
     public function tags(): array
     {
         $tags = ['pipedrive', 'custom-fields', 'sync'];
-        
+
         if ($this->entityType) {
             $tags[] = "entity:{$this->entityType}";
         }
-        
+
         return $tags;
     }
 

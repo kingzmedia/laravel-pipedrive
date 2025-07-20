@@ -2,11 +2,10 @@
 
 namespace Skeylup\LaravelPipedrive\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
+use Illuminate\View\View;
 use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 
 class PipedriveOAuthController
@@ -24,10 +23,10 @@ class PipedriveOAuthController
     public function authorize(Request $request): View|RedirectResponse
     {
         // Check if OAuth is configured
-        if (!$this->isOAuthConfigured()) {
+        if (! $this->isOAuthConfigured()) {
             return view('pipedrive::oauth.error', [
                 'error' => 'OAuth not configured',
-                'message' => 'Please configure PIPEDRIVE_CLIENT_ID, PIPEDRIVE_CLIENT_SECRET, and PIPEDRIVE_REDIRECT_URL in your environment variables.'
+                'message' => 'Please configure PIPEDRIVE_CLIENT_ID, PIPEDRIVE_CLIENT_SECRET, and PIPEDRIVE_REDIRECT_URL in your environment variables.',
             ]);
         }
 
@@ -35,7 +34,7 @@ class PipedriveOAuthController
         if ($this->isAlreadyAuthenticated()) {
             return view('pipedrive::oauth.success', [
                 'message' => 'Already connected to Pipedrive',
-                'action' => 'reconnect'
+                'action' => 'reconnect',
             ]);
         }
 
@@ -52,15 +51,15 @@ class PipedriveOAuthController
             return view('pipedrive::oauth.authorize', [
                 'authUrl' => $authUrl,
                 'scopes' => explode(' ', $scopes),
-                'clientId' => config('pipedrive.oauth.client_id')
+                'clientId' => config('pipedrive.oauth.client_id'),
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Pipedrive OAuth authorization error: ' . $e->getMessage());
-            
+            Log::error('Pipedrive OAuth authorization error: '.$e->getMessage());
+
             return view('pipedrive::oauth.error', [
                 'error' => 'Authorization Error',
-                'message' => 'Failed to generate authorization URL: ' . $e->getMessage()
+                'message' => 'Failed to generate authorization URL: '.$e->getMessage(),
             ]);
         }
     }
@@ -77,24 +76,24 @@ class PipedriveOAuthController
         if ($request->has('error')) {
             $error = $request->get('error');
             $errorDescription = $request->get('error_description', 'Unknown error');
-            
+
             Log::warning('Pipedrive OAuth authorization denied', [
                 'error' => $error,
-                'description' => $errorDescription
+                'description' => $errorDescription,
             ]);
 
             return view('pipedrive::oauth.error', [
                 'error' => 'Authorization Denied',
-                'message' => "Pipedrive authorization was denied: {$errorDescription}"
+                'message' => "Pipedrive authorization was denied: {$errorDescription}",
             ]);
         }
 
         // Get authorization code
         $code = $request->get('code');
-        if (!$code) {
+        if (! $code) {
             return view('pipedrive::oauth.error', [
                 'error' => 'Missing Authorization Code',
-                'message' => 'No authorization code received from Pipedrive.'
+                'message' => 'No authorization code received from Pipedrive.',
             ]);
         }
 
@@ -102,7 +101,7 @@ class PipedriveOAuthController
             // Exchange code for access token using our custom method
             $success = $this->authService->exchangeCodeForToken($code);
 
-            if (!$success) {
+            if (! $success) {
                 throw new \Exception('Failed to obtain access token');
             }
 
@@ -112,31 +111,31 @@ class PipedriveOAuthController
 
             // Token is automatically stored via DatabaseTokenStorage
             Log::info('Pipedrive OAuth token obtained successfully', [
-                'expires_at' => $token->expiresAt()
+                'expires_at' => $token->expiresAt(),
             ]);
 
             // Test the connection to ensure everything works
             $connectionTest = $this->authService->testConnection();
-            
-            if (!$connectionTest['success']) {
-                throw new \Exception('Connection test failed: ' . $connectionTest['message']);
+
+            if (! $connectionTest['success']) {
+                throw new \Exception('Connection test failed: '.$connectionTest['message']);
             }
 
             return view('pipedrive::oauth.success', [
                 'message' => 'Successfully connected to Pipedrive!',
                 'user' => $connectionTest['user'] ?? 'Unknown',
                 'company' => $connectionTest['company'] ?? 'Unknown',
-                'action' => 'connected'
+                'action' => 'connected',
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Pipedrive OAuth callback error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('Pipedrive OAuth callback error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return view('pipedrive::oauth.error', [
                 'error' => 'Token Exchange Failed',
-                'message' => 'Failed to exchange authorization code for access token: ' . $e->getMessage()
+                'message' => 'Failed to exchange authorization code for access token: '.$e->getMessage(),
             ]);
         }
     }
@@ -161,15 +160,15 @@ class PipedriveOAuthController
 
             return view('pipedrive::oauth.success', [
                 'message' => 'Successfully disconnected from Pipedrive',
-                'action' => 'disconnected'
+                'action' => 'disconnected',
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Pipedrive OAuth disconnect error: ' . $e->getMessage());
+            Log::error('Pipedrive OAuth disconnect error: '.$e->getMessage());
 
             return view('pipedrive::oauth.error', [
                 'error' => 'Disconnect Failed',
-                'message' => 'Failed to disconnect from Pipedrive: ' . $e->getMessage()
+                'message' => 'Failed to disconnect from Pipedrive: '.$e->getMessage(),
             ]);
         }
     }
@@ -191,7 +190,7 @@ class PipedriveOAuthController
             'isConfigured' => $isConfigured,
             'isAuthenticated' => $isAuthenticated,
             'connectionTest' => $connectionTest,
-            'authMethod' => $this->authService->getAuthMethod()
+            'authMethod' => $this->authService->getAuthMethod(),
         ]);
     }
 
@@ -200,9 +199,9 @@ class PipedriveOAuthController
      */
     protected function isOAuthConfigured(): bool
     {
-        return !empty(config('pipedrive.oauth.client_id')) &&
-               !empty(config('pipedrive.oauth.client_secret')) &&
-               !empty(config('pipedrive.oauth.redirect_url'));
+        return ! empty(config('pipedrive.oauth.client_id')) &&
+               ! empty(config('pipedrive.oauth.client_secret')) &&
+               ! empty(config('pipedrive.oauth.redirect_url'));
     }
 
     /**
@@ -213,8 +212,8 @@ class PipedriveOAuthController
         try {
             $tokenStorage = app(\Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface::class);
             $token = $tokenStorage->getToken();
-            
-            return $token !== null && !$token->needsRefresh();
+
+            return $token !== null && ! $token->needsRefresh();
         } catch (\Exception $e) {
             return false;
         }

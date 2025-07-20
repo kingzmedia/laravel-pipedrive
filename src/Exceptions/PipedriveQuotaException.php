@@ -6,14 +6,17 @@ use Throwable;
 
 /**
  * Exception for quota/payment required errors (HTTP 402)
- * 
+ *
  * Indicates account limits or payment issues
  */
 class PipedriveQuotaException extends PipedriveApiException
 {
     protected string $quotaType = 'unknown';
+
     protected int $currentUsage = 0;
+
     protected int $quotaLimit = 0;
+
     protected ?string $upgradeUrl = null;
 
     public function __construct(
@@ -71,6 +74,7 @@ class PipedriveQuotaException extends PipedriveApiException
     public function setQuotaType(string $quotaType): self
     {
         $this->quotaType = $quotaType;
+
         return $this;
     }
 
@@ -88,6 +92,7 @@ class PipedriveQuotaException extends PipedriveApiException
     public function setCurrentUsage(int $currentUsage): self
     {
         $this->currentUsage = $currentUsage;
+
         return $this;
     }
 
@@ -105,6 +110,7 @@ class PipedriveQuotaException extends PipedriveApiException
     public function setQuotaLimit(int $quotaLimit): self
     {
         $this->quotaLimit = $quotaLimit;
+
         return $this;
     }
 
@@ -122,6 +128,7 @@ class PipedriveQuotaException extends PipedriveApiException
     public function setUpgradeUrl(?string $upgradeUrl): self
     {
         $this->upgradeUrl = $upgradeUrl;
+
         return $this;
     }
 
@@ -159,7 +166,7 @@ class PipedriveQuotaException extends PipedriveApiException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['quota'] = [
             'quota_type' => $this->quotaType,
             'current_usage' => $this->currentUsage,
@@ -179,7 +186,7 @@ class PipedriveQuotaException extends PipedriveApiException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['quota'] = [
             'quota_type' => $this->quotaType,
             'current_usage' => $this->currentUsage,

@@ -11,14 +11,14 @@ use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
 
 /**
  * Pipedrive Query Optimization Service
- * 
+ *
  * Provides intelligent query optimization, pagination, and performance monitoring
  * for Pipedrive entities with automatic caching integration.
  */
 class PipedriveQueryOptimizationService
 {
     protected PipedriveCacheInterface $cacheService;
-    
+
     /**
      * Default pagination settings
      */
@@ -49,7 +49,7 @@ class PipedriveQueryOptimizationService
         array $options = []
     ): Builder|LengthAwarePaginator|Collection {
         $startTime = microtime(true);
-        
+
         // Extract options
         $perPage = $options['per_page'] ?? $this->paginationDefaults['per_page'];
         $maxPerPage = $options['max_per_page'] ?? $this->paginationDefaults['max_per_page'];
@@ -66,14 +66,15 @@ class PipedriveQueryOptimizationService
             $cached = $this->getCachedResult($cacheKey);
             if ($cached !== null) {
                 $this->logQueryPerformance('cache_hit', $startTime, $cacheKey);
+
                 return $cached;
             }
         }
 
         // Determine if we should paginate
-        if (!$forceCollection) {
+        if (! $forceCollection) {
             $totalCount = $this->getOptimizedCount($query);
-            
+
             if ($totalCount > $this->paginationDefaults['auto_paginate_threshold']) {
                 $result = $this->createOptimizedPagination($query, $perPage, $totalCount);
             } else {
@@ -89,7 +90,7 @@ class PipedriveQueryOptimizationService
         }
 
         $this->logQueryPerformance('query_executed', $startTime, $cacheKey);
-        
+
         return $result;
     }
 
@@ -100,12 +101,12 @@ class PipedriveQueryOptimizationService
     {
         // Clone the query to avoid modifying the original
         $countQuery = clone $query;
-        
+
         // Remove unnecessary parts for counting
         $countQuery->getQuery()->orders = null;
         $countQuery->getQuery()->limit = null;
         $countQuery->getQuery()->offset = null;
-        
+
         return $countQuery->count();
     }
 
@@ -158,7 +159,7 @@ class PipedriveQueryOptimizationService
         int $chunkSize = 1000
     ): \Generator {
         // Select only necessary fields to reduce memory usage
-        if (!empty($selectFields)) {
+        if (! empty($selectFields)) {
             $query->select($selectFields);
         }
 
@@ -180,8 +181,9 @@ class PipedriveQueryOptimizationService
             return cache()->get($cacheKey);
         } catch (\Exception $e) {
             Log::warning("Failed to retrieve cached result for key: {$cacheKey}", [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -196,7 +198,7 @@ class PipedriveQueryOptimizationService
             cache()->put($cacheKey, $result, $ttl);
         } catch (\Exception $e) {
             Log::warning("Failed to cache result for key: {$cacheKey}", [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -207,7 +209,7 @@ class PipedriveQueryOptimizationService
     protected function logQueryPerformance(string $type, float $startTime, ?string $cacheKey = null): void
     {
         $executionTime = (microtime(true) - $startTime) * 1000; // Convert to milliseconds
-        
+
         $logData = [
             'type' => $type,
             'execution_time_ms' => round($executionTime, 2),
@@ -229,16 +231,16 @@ class PipedriveQueryOptimizationService
     public function analyzeQueryPerformance(Builder $query): array
     {
         $startTime = microtime(true);
-        
+
         // Get query SQL and bindings
         $sql = $query->toSql();
         $bindings = $query->getBindings();
-        
+
         // Execute EXPLAIN ANALYZE if using PostgreSQL
         $explainResult = null;
         if (DB::getDriverName() === 'pgsql') {
             try {
-                $explainResult = DB::select("EXPLAIN ANALYZE " . $sql, $bindings);
+                $explainResult = DB::select('EXPLAIN ANALYZE '.$sql, $bindings);
             } catch (\Exception $e) {
                 Log::warning('Failed to execute EXPLAIN ANALYZE', ['error' => $e->getMessage()]);
             }
@@ -246,7 +248,7 @@ class PipedriveQueryOptimizationService
 
         // Get basic count
         $count = $this->getOptimizedCount($query);
-        
+
         $executionTime = (microtime(true) - $startTime) * 1000;
 
         return [

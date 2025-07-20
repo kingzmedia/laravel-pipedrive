@@ -2,11 +2,9 @@
 
 namespace Skeylup\LaravelPipedrive\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
 
 class PipedriveEntityLink extends Model
 {
@@ -69,13 +67,13 @@ class PipedriveEntityLink extends Model
     public function scopeForEntity(Builder $query, string $entityType, int $entityId): Builder
     {
         return $query->where('pipedrive_entity_type', $entityType)
-                    ->where('pipedrive_entity_id', $entityId);
+            ->where('pipedrive_entity_id', $entityId);
     }
 
     public function scopeForModel(Builder $query, Model $model): Builder
     {
         return $query->where('linkable_type', get_class($model))
-                    ->where('linkable_id', $model->getKey());
+            ->where('linkable_id', $model->getKey());
     }
 
     public function scopeSynced(Builder $query): Builder
@@ -175,8 +173,8 @@ class PipedriveEntityLink extends Model
     public function getLocalPipedriveModel(): ?Model
     {
         $modelClass = $this->getPipedriveModelClass();
-        
-        if (!$modelClass) {
+
+        if (! $modelClass) {
             return null;
         }
 
@@ -189,13 +187,13 @@ class PipedriveEntityLink extends Model
     public function syncLocalPipedriveModel(): bool
     {
         $localModel = $this->getLocalPipedriveModel();
-        
+
         if ($localModel) {
             $this->update([
                 'pipedrive_model_type' => get_class($localModel),
                 'pipedrive_model_id' => $localModel->getKey(),
             ]);
-            
+
             return true;
         }
 
@@ -236,7 +234,7 @@ class PipedriveEntityLink extends Model
      */
     public function getLastSyncAgeInDays(): ?int
     {
-        if (!$this->last_synced_at) {
+        if (! $this->last_synced_at) {
             return null;
         }
 
@@ -247,10 +245,10 @@ class PipedriveEntityLink extends Model
      * Migrate entity relations from one Pipedrive entity to another
      * Used when entities are merged in Pipedrive
      *
-     * @param string $entityType The entity type (deals, persons, organizations, etc.)
-     * @param int $mergedId The ID of the entity being merged (source)
-     * @param int $survivingId The ID of the entity that survives (target)
-     * @param string $strategy Strategy for handling conflicts: 'keep_both', 'keep_surviving', 'keep_merged'
+     * @param  string  $entityType  The entity type (deals, persons, organizations, etc.)
+     * @param  int  $mergedId  The ID of the entity being merged (source)
+     * @param  int  $survivingId  The ID of the entity that survives (target)
+     * @param  string  $strategy  Strategy for handling conflicts: 'keep_both', 'keep_surviving', 'keep_merged'
      * @return array Migration results with counts
      */
     public static function migrateEntityRelations(
@@ -334,7 +332,7 @@ class PipedriveEntityLink extends Model
                     }
 
                     $results['details'][] = [
-                        'action' => 'conflict_' . $strategy,
+                        'action' => 'conflict_'.$strategy,
                         'linkable_type' => $relation->linkable_type,
                         'linkable_id' => $relation->linkable_id,
                     ];

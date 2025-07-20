@@ -3,24 +3,24 @@
 namespace Skeylup\LaravelPipedrive\Data;
 
 use Carbon\Carbon;
-use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Data;
 
 abstract class BasePipedriveData extends Data
 {
     public function __construct(
         public int $id,
-        
+
         #[MapInputName('add_time')]
         #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s')]
         public ?Carbon $pipedrive_add_time = null,
-        
+
         #[MapInputName('update_time')]
         #[WithCast(DateTimeInterfaceCast::class, format: 'Y-m-d H:i:s')]
         public ?Carbon $pipedrive_update_time = null,
-        
+
         public bool $active_flag = true,
     ) {}
 
@@ -30,20 +30,20 @@ abstract class BasePipedriveData extends Data
     public function toDatabase(): array
     {
         $data = $this->toArray();
-        
+
         // Rename id to pipedrive_id for database storage
         $data['pipedrive_id'] = $data['id'];
         unset($data['id']);
-        
+
         // Convert Carbon instances to strings for database
         if ($this->pipedrive_add_time) {
             $data['pipedrive_add_time'] = $this->pipedrive_add_time->format('Y-m-d H:i:s');
         }
-        
+
         if ($this->pipedrive_update_time) {
             $data['pipedrive_update_time'] = $this->pipedrive_update_time->format('Y-m-d H:i:s');
         }
-        
+
         return $data;
     }
 
@@ -65,7 +65,7 @@ abstract class BasePipedriveData extends Data
                 }
             }
         }
-        
+
         return static::from($data);
     }
 }

@@ -69,7 +69,7 @@ enum PipedriveEntityType: string
      */
     public static function all(): array
     {
-        return array_map(fn($case) => $case->value, self::cases());
+        return array_map(fn ($case) => $case->value, self::cases());
     }
 
     /**
@@ -81,6 +81,7 @@ enum PipedriveEntityType: string
         foreach (self::cases() as $case) {
             $result[$case->value] = $case->getDisplayName();
         }
+
         return $result;
     }
 
@@ -97,7 +98,7 @@ enum PipedriveEntityType: string
      */
     public static function fromString(string $type): self
     {
-        if (!self::isValid($type)) {
+        if (! self::isValid($type)) {
             throw new \InvalidArgumentException("Invalid Pipedrive entity type: {$type}");
         }
 

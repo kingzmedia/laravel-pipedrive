@@ -6,16 +6,21 @@ use Throwable;
 
 /**
  * Exception for memory-related errors
- * 
+ *
  * Handles memory limit issues during data processing
  */
 class PipedriveMemoryException extends PipedriveException
 {
     protected int $memoryUsed = 0;
+
     protected int $memoryLimit = 0;
+
     protected float $memoryUsagePercent = 0.0;
+
     protected int $batchSize = 0;
+
     protected int $recommendedBatchSize = 0;
+
     protected string $operation = 'unknown';
 
     public function __construct(
@@ -66,6 +71,7 @@ class PipedriveMemoryException extends PipedriveException
     public function setMemoryUsed(int $memoryUsed): self
     {
         $this->memoryUsed = $memoryUsed;
+
         return $this;
     }
 
@@ -83,6 +89,7 @@ class PipedriveMemoryException extends PipedriveException
     public function setMemoryLimit(int $memoryLimit): self
     {
         $this->memoryLimit = $memoryLimit;
+
         return $this;
     }
 
@@ -100,6 +107,7 @@ class PipedriveMemoryException extends PipedriveException
     public function setMemoryUsagePercent(float $memoryUsagePercent): self
     {
         $this->memoryUsagePercent = $memoryUsagePercent;
+
         return $this;
     }
 
@@ -117,6 +125,7 @@ class PipedriveMemoryException extends PipedriveException
     public function setBatchSize(int $batchSize): self
     {
         $this->batchSize = $batchSize;
+
         return $this;
     }
 
@@ -134,6 +143,7 @@ class PipedriveMemoryException extends PipedriveException
     public function setRecommendedBatchSize(int $recommendedBatchSize): self
     {
         $this->recommendedBatchSize = $recommendedBatchSize;
+
         return $this;
     }
 
@@ -151,6 +161,7 @@ class PipedriveMemoryException extends PipedriveException
     public function setOperation(string $operation): self
     {
         $this->operation = $operation;
+
         return $this;
     }
 
@@ -228,7 +239,7 @@ class PipedriveMemoryException extends PipedriveException
 
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, 2) . ' ' . $units[$pow];
+        return round($bytes, 2).' '.$units[$pow];
     }
 
     /**
@@ -237,7 +248,7 @@ class PipedriveMemoryException extends PipedriveException
     public function getErrorInfo(): array
     {
         $info = parent::getErrorInfo();
-        
+
         $info['memory'] = [
             'memory_used' => $this->memoryUsed,
             'memory_used_formatted' => $this->getMemoryUsedFormatted(),
@@ -262,7 +273,7 @@ class PipedriveMemoryException extends PipedriveException
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         $array['memory'] = [
             'memory_used' => $this->memoryUsed,
             'memory_limit' => $this->memoryLimit,
@@ -288,10 +299,10 @@ class PipedriveMemoryException extends PipedriveException
         $memoryUsagePercent = $memoryLimit > 0 ? ($memoryUsed / $memoryLimit) * 100 : 0;
 
         $message = $customMessage ?? "Memory usage at {$memoryUsagePercent}% during {$operation}";
-        
+
         // Calculate recommended batch size (reduce by 50% if over 80% memory usage)
-        $recommendedBatchSize = $memoryUsagePercent > 80 && $batchSize > 0 
-            ? max(10, (int) ($batchSize * 0.5)) 
+        $recommendedBatchSize = $memoryUsagePercent > 80 && $batchSize > 0
+            ? max(10, (int) ($batchSize * 0.5))
             : $batchSize;
 
         return new static(
@@ -311,7 +322,7 @@ class PipedriveMemoryException extends PipedriveException
     protected static function getMemoryLimitInBytes(): int
     {
         $memoryLimit = ini_get('memory_limit');
-        
+
         if ($memoryLimit === '-1') {
             return PHP_INT_MAX;
         }

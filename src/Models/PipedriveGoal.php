@@ -9,7 +9,7 @@ class PipedriveGoal extends BasePipedriveModel
 {
     protected $table = 'pipedrive_goals';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'title',
         'type',
@@ -42,24 +42,33 @@ class PipedriveGoal extends BasePipedriveModel
      * Goal types constants
      */
     public const TYPE_DEALS_WON = 'deals_won';
+
     public const TYPE_DEALS_PROGRESSED = 'deals_progressed';
+
     public const TYPE_ACTIVITIES_COMPLETED = 'activities_completed';
+
     public const TYPE_ACTIVITIES_ADDED = 'activities_added';
+
     public const TYPE_REVENUE_FORECAST = 'revenue_forecast';
 
     /**
      * Assignee types constants
      */
     public const ASSIGNEE_PERSON = 'person';
+
     public const ASSIGNEE_TEAM = 'team';
+
     public const ASSIGNEE_COMPANY = 'company';
 
     /**
      * Interval constants
      */
     public const INTERVAL_WEEKLY = 'weekly';
+
     public const INTERVAL_MONTHLY = 'monthly';
+
     public const INTERVAL_QUARTERLY = 'quarterly';
+
     public const INTERVAL_YEARLY = 'yearly';
 
     public static function getPipedriveEntityName(): string
@@ -96,7 +105,7 @@ class PipedriveGoal extends BasePipedriveModel
     public function scopeInProgress(Builder $query): Builder
     {
         return $query->where('duration_start', '<=', now())
-                    ->where('duration_end', '>=', now());
+            ->where('duration_end', '>=', now());
     }
 
     public function scopeCompleted(Builder $query): Builder
@@ -108,6 +117,7 @@ class PipedriveGoal extends BasePipedriveModel
     public function isInProgress(): bool
     {
         $now = now();
+
         return $this->duration_start <= $now && $this->duration_end >= $now;
     }
 
@@ -118,12 +128,12 @@ class PipedriveGoal extends BasePipedriveModel
 
     public function getProgressPercentage(): string
     {
-        return number_format($this->progress ?? 0, 1) . '%';
+        return number_format($this->progress ?? 0, 1).'%';
     }
 
     public function getCompletionRate(): float
     {
-        if (!$this->expected_outcome || $this->expected_outcome == 0) {
+        if (! $this->expected_outcome || $this->expected_outcome == 0) {
             return 0;
         }
 
@@ -133,7 +143,7 @@ class PipedriveGoal extends BasePipedriveModel
     public function getFormattedExpectedOutcome(): string
     {
         if ($this->currency) {
-            return $this->currency . ' ' . number_format($this->expected_outcome ?? 0, 2);
+            return $this->currency.' '.number_format($this->expected_outcome ?? 0, 2);
         }
 
         return number_format($this->expected_outcome ?? 0, 2);
@@ -142,7 +152,7 @@ class PipedriveGoal extends BasePipedriveModel
     public function getFormattedOutcome(): string
     {
         if ($this->currency) {
-            return $this->currency . ' ' . number_format($this->outcome ?? 0, 2);
+            return $this->currency.' '.number_format($this->outcome ?? 0, 2);
         }
 
         return number_format($this->outcome ?? 0, 2);

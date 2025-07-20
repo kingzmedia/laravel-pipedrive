@@ -4,12 +4,10 @@ namespace Skeylup\LaravelPipedrive\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
-use Skeylup\LaravelPipedrive\Events\{
-    PipedriveEntityCreated,
-    PipedriveEntityUpdated,
-    PipedriveEntityDeleted,
-    PipedriveEntityMerged
-};
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityCreated;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityDeleted;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityMerged;
+use Skeylup\LaravelPipedrive\Events\PipedriveEntityUpdated;
 
 trait EmitsPipedriveEvents
 {
@@ -105,7 +103,7 @@ trait EmitsPipedriveEvents
     protected function getEntityTypeFromModel(Model $model): string
     {
         $modelClass = get_class($model);
-        
+
         // Map model classes to entity types
         $modelMap = [
             \Skeylup\LaravelPipedrive\Models\PipedriveActivity::class => 'activities',
@@ -175,9 +173,9 @@ trait EmitsPipedriveEvents
         ?array $metadata = null
     ): void {
         // Create a temporary model instance to get the entity type
-        $tempModel = new $modelClass();
+        $tempModel = new $modelClass;
         $entityType = $this->getEntityTypeFromModelSafe($tempModel);
-        
+
         $this->emitEntityDeleted($entityType, $pipedriveId, $localId, $entityData, $source, $metadata);
     }
 
@@ -270,7 +268,7 @@ trait EmitsPipedriveEvents
 
         foreach ($current as $field => $newValue) {
             $oldValue = $previous[$field] ?? null;
-            
+
             if ($oldValue !== $newValue) {
                 $changes[$field] = [
                     'old' => $oldValue,

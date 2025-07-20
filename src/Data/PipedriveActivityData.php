@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
-use Spatie\LaravelData\Attributes\Validation\Nullable;
 
 class PipedriveActivityData extends BasePipedriveData
 {
@@ -115,7 +114,7 @@ class PipedriveActivityData extends BasePipedriveData
             \Log::error('Error creating PipedriveActivityData DTO', [
                 'error' => $e->getMessage(),
                 'data' => $filteredData,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         }

@@ -10,10 +10,15 @@ class PipedriveEntityDeleted
     use Dispatchable, SerializesModels;
 
     public string $entityType;
+
     public int $pipedriveId;
+
     public ?int $localId;
+
     public array $entityData;
+
     public string $source;
+
     public ?array $metadata;
 
     /**
@@ -104,8 +109,8 @@ class PipedriveEntityDeleted
      */
     public function getEntityTitle(): ?string
     {
-        return $this->getEntityData('title') 
-            ?? $this->getEntityData('name') 
+        return $this->getEntityData('title')
+            ?? $this->getEntityData('name')
             ?? $this->getEntityData('subject')
             ?? null;
     }
@@ -132,7 +137,7 @@ class PipedriveEntityDeleted
             'had_local_record' => $this->hadLocalRecord(),
             'entity_title' => $this->getEntityTitle(),
             'deleted_at' => now()->toISOString(),
-            'has_metadata' => !empty($this->metadata),
+            'has_metadata' => ! empty($this->metadata),
         ];
     }
 
@@ -190,6 +195,7 @@ class PipedriveEntityDeleted
     public function getDeletedValue(): ?float
     {
         $value = $this->getEntityData('value');
+
         return $value !== null ? (float) $value : null;
     }
 

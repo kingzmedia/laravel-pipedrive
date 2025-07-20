@@ -9,7 +9,7 @@ class PipedriveStage extends BasePipedriveModel
 {
     protected $table = 'pipedrive_stages';
 
-        protected $fillable = [
+    protected $fillable = [
         'pipedrive_id',
         'name',
         'order_nr',
@@ -77,16 +77,16 @@ class PipedriveStage extends BasePipedriveModel
 
     public function getProbabilityPercentage(): ?string
     {
-        return $this->deal_probability ? $this->deal_probability . '%' : null;
+        return $this->deal_probability ? $this->deal_probability.'%' : null;
     }
 
     public function getRottenDaysText(): ?string
     {
-        if (!$this->rotten_days) {
+        if (! $this->rotten_days) {
             return null;
         }
 
-        return $this->rotten_days . ' day' . ($this->rotten_days > 1 ? 's' : '');
+        return $this->rotten_days.' day'.($this->rotten_days > 1 ? 's' : '');
     }
 
     // Relations

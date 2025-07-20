@@ -2,22 +2,20 @@
 
 namespace Skeylup\LaravelPipedrive\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
-use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
 use Skeylup\LaravelPipedrive\Enums\PipedriveEntityType;
+use Skeylup\LaravelPipedrive\Jobs\PushToPipedriveJob;
+use Skeylup\LaravelPipedrive\Models\PipedriveCustomField;
+use Skeylup\LaravelPipedrive\Models\PipedriveDeal;
+use Skeylup\LaravelPipedrive\Models\PipedriveEntityLink;
+use Skeylup\LaravelPipedrive\Models\PipedriveOrganization;
+use Skeylup\LaravelPipedrive\Models\PipedrivePerson;
 use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
 use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Skeylup\LaravelPipedrive\Jobs\PushToPipedriveJob;
-use Skeylup\LaravelPipedrive\Models\{
-    PipedriveActivity, PipedriveDeal, PipedriveFile, PipedriveNote,
-    PipedriveOrganization, PipedrivePerson, PipedrivePipeline,
-    PipedriveProduct, PipedriveStage, PipedriveUser, PipedriveGoal
-};
 
 trait HasPipedriveEntity
 {
@@ -36,6 +34,7 @@ trait HasPipedriveEntity
 
         // Auto-suggest based on model name
         $suggestions = PipedriveEntityType::getSuggestedForModel(static::class);
+
         return $suggestions[0] ?? PipedriveEntityType::DEALS;
     }
 
@@ -61,8 +60,8 @@ trait HasPipedriveEntity
     public function primaryPipedriveEntityLink(): MorphOne
     {
         return $this->morphOne(PipedriveEntityLink::class, 'linkable')
-                    ->where('is_primary', true)
-                    ->where('is_active', true);
+            ->where('is_primary', true)
+            ->where('is_active', true);
     }
 
     /**
@@ -179,9 +178,9 @@ trait HasPipedriveEntity
     public function unlinkFromSpecificPipedriveEntity(string $entityType, int $entityId): bool
     {
         return $this->pipedriveEntityLinks()
-                    ->where('pipedrive_entity_type', $entityType)
-                    ->where('pipedrive_entity_id', $entityId)
-                    ->delete() > 0;
+            ->where('pipedrive_entity_type', $entityType)
+            ->where('pipedrive_entity_id', $entityId)
+            ->delete() > 0;
     }
 
     /**
@@ -206,9 +205,9 @@ trait HasPipedriveEntity
     public function getSpecificPipedriveEntities(string $entityType): Collection
     {
         return $this->pipedriveEntityLinks()
-                    ->where('pipedrive_entity_type', $entityType)
-                    ->active()
-                    ->get();
+            ->where('pipedrive_entity_type', $entityType)
+            ->active()
+            ->get();
     }
 
     /**
@@ -217,10 +216,10 @@ trait HasPipedriveEntity
     public function getPrimaryPipedriveEntity(): ?Model
     {
         $link = $this->pipedriveEntityLinks()
-                     ->where('pipedrive_entity_type', $this->getDefaultPipedriveEntityTypeString())
-                     ->primary()
-                     ->active()
-                     ->first();
+            ->where('pipedrive_entity_type', $this->getDefaultPipedriveEntityTypeString())
+            ->primary()
+            ->active()
+            ->first();
 
         return $link ? $link->getLocalPipedriveModel() : null;
     }
@@ -239,10 +238,10 @@ trait HasPipedriveEntity
     public function getPrimaryPipedriveDeal(): ?PipedriveDeal
     {
         $link = $this->pipedriveEntityLinks()
-                     ->where('pipedrive_entity_type', 'deals')
-                     ->primary()
-                     ->active()
-                     ->first();
+            ->where('pipedrive_entity_type', 'deals')
+            ->primary()
+            ->active()
+            ->first();
 
         return $link ? $link->getLocalPipedriveModel() : null;
     }
@@ -261,10 +260,10 @@ trait HasPipedriveEntity
     public function getPrimaryPipedrivePerson(): ?PipedrivePerson
     {
         $link = $this->pipedriveEntityLinks()
-                     ->where('pipedrive_entity_type', 'persons')
-                     ->primary()
-                     ->active()
-                     ->first();
+            ->where('pipedrive_entity_type', 'persons')
+            ->primary()
+            ->active()
+            ->first();
 
         return $link ? $link->getLocalPipedriveModel() : null;
     }
@@ -283,10 +282,10 @@ trait HasPipedriveEntity
     public function getPrimaryPipedriveOrganization(): ?PipedriveOrganization
     {
         $link = $this->pipedriveEntityLinks()
-                     ->where('pipedrive_entity_type', 'organizations')
-                     ->primary()
-                     ->active()
-                     ->first();
+            ->where('pipedrive_entity_type', 'organizations')
+            ->primary()
+            ->active()
+            ->first();
 
         return $link ? $link->getLocalPipedriveModel() : null;
     }
@@ -308,10 +307,10 @@ trait HasPipedriveEntity
     public function isLinkedToSpecificPipedriveEntity(string $entityType, int $entityId): bool
     {
         return $this->pipedriveEntityLinks()
-                    ->where('pipedrive_entity_type', $entityType)
-                    ->where('pipedrive_entity_id', $entityId)
-                    ->active()
-                    ->exists();
+            ->where('pipedrive_entity_type', $entityType)
+            ->where('pipedrive_entity_id', $entityId)
+            ->active()
+            ->exists();
     }
 
     /**
@@ -328,9 +327,9 @@ trait HasPipedriveEntity
     public function getLinkedPipedriveEntityTypes(): Collection
     {
         return $this->pipedriveEntityLinks()
-                    ->active()
-                    ->pluck('pipedrive_entity_type')
-                    ->unique();
+            ->active()
+            ->pluck('pipedrive_entity_type')
+            ->unique();
     }
 
     /**
@@ -387,7 +386,7 @@ trait HasPipedriveEntity
     ): array {
         $primaryEntity = $this->getPrimaryPipedriveEntity();
 
-        if (!$primaryEntity) {
+        if (! $primaryEntity) {
             throw new \Exception('No primary Pipedrive entity found for this model');
         }
 
@@ -419,8 +418,8 @@ trait HasPipedriveEntity
             // Call Pipedrive API to update the entity
             $response = $this->callPipedriveUpdate($pipedrive, $entityType, $pipedriveId, $updateData);
 
-            if (!$response || !isset($response['success']) || !$response['success']) {
-                throw new \Exception('Pipedrive API update failed: ' . ($response['error'] ?? 'Unknown error'));
+            if (! $response || ! isset($response['success']) || ! $response['success']) {
+                throw new \Exception('Pipedrive API update failed: '.($response['error'] ?? 'Unknown error'));
             }
 
             // Update local database with the modifications
@@ -546,7 +545,7 @@ trait HasPipedriveEntity
     {
         $primaryEntity = $this->getPrimaryPipedriveEntity();
 
-        if (!$primaryEntity) {
+        if (! $primaryEntity) {
             return [
                 'error' => 'No primary Pipedrive entity found for this model',
                 'has_entity' => false,
@@ -589,7 +588,7 @@ trait HasPipedriveEntity
         }
 
         // Add custom fields with proper key mapping
-        if (!empty($customFields)) {
+        if (! empty($customFields)) {
             $customFieldService = app(PipedriveCustomFieldService::class);
 
             foreach ($customFields as $fieldName => $value) {
@@ -599,7 +598,7 @@ trait HasPipedriveEntity
                     ->active()
                     ->first();
 
-                if (!$field) {
+                if (! $field) {
                     // Try to find by key if name doesn't work
                     $field = PipedriveCustomField::where('entity_type', $entityType)
                         ->where('key', $fieldName)
@@ -616,7 +615,7 @@ trait HasPipedriveEntity
                         'available_fields' => PipedriveCustomField::where('entity_type', $entityType)
                             ->active()
                             ->pluck('name', 'key')
-                            ->toArray()
+                            ->toArray(),
                     ]);
                 }
             }
@@ -674,7 +673,7 @@ trait HasPipedriveEntity
         }
 
         // Update custom fields in pipedrive_data
-        if (!empty($customFields)) {
+        if (! empty($customFields)) {
             $pipedriveData = $entity->pipedrive_data ?? [];
 
             foreach ($customFields as $fieldName => $value) {
@@ -709,7 +708,7 @@ trait HasPipedriveEntity
         $fillable = $entity->getFillable();
 
         foreach ($fillable as $field) {
-            if (!in_array($field, ['pipedrive_data', 'pipedrive_id'])) {
+            if (! in_array($field, ['pipedrive_data', 'pipedrive_id'])) {
                 $value = $entity->$field;
 
                 // Format the value for display
@@ -744,7 +743,7 @@ trait HasPipedriveEntity
 
         foreach ($pipedriveData as $key => $value) {
             // Skip if this is a basic field or system field
-            if (in_array($key, ['id', 'add_time', 'update_time']) || !str_contains($key, '_')) {
+            if (in_array($key, ['id', 'add_time', 'update_time']) || ! str_contains($key, '_')) {
                 continue;
             }
 

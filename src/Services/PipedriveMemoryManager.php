@@ -7,15 +7,18 @@ use Skeylup\LaravelPipedrive\Exceptions\PipedriveMemoryException;
 
 /**
  * Adaptive memory management service
- * 
+ *
  * Provides real-time memory monitoring, adaptive pagination,
  * and memory alerts for Pipedrive operations
  */
 class PipedriveMemoryManager
 {
     protected array $config;
+
     protected int $initialBatchSize;
+
     protected int $currentBatchSize;
+
     protected array $memoryHistory = [];
 
     public function __construct(array $config = [])
@@ -40,6 +43,7 @@ class PipedriveMemoryManager
     public function isMemorySafe(): bool
     {
         $usagePercent = $this->getMemoryUsagePercent();
+
         return $usagePercent < $this->config['memory_threshold_percent'];
     }
 
@@ -50,7 +54,7 @@ class PipedriveMemoryManager
     {
         $memoryUsed = memory_get_usage(true);
         $memoryLimit = $this->getMemoryLimitInBytes();
-        
+
         if ($memoryLimit === 0) {
             return 0.0;
         }
@@ -87,7 +91,7 @@ class PipedriveMemoryManager
      */
     public function getAdaptiveBatchSize(): int
     {
-        if (!$this->config['adaptive_pagination']) {
+        if (! $this->config['adaptive_pagination']) {
             return $this->currentBatchSize;
         }
 
@@ -99,7 +103,7 @@ class PipedriveMemoryManager
             $reductionFactor = min(0.5, ($usagePercent - $threshold) / 20); // Max 50% reduction
             $newBatchSize = (int) ($this->currentBatchSize * (1 - $reductionFactor));
             $this->currentBatchSize = max($this->config['min_batch_size'], $newBatchSize);
-            
+
             Log::info('Reduced batch size due to memory usage', [
                 'memory_usage_percent' => $usagePercent,
                 'old_batch_size' => $this->currentBatchSize / (1 - $reductionFactor),
@@ -112,7 +116,7 @@ class PipedriveMemoryManager
             $increaseFactor = 0.1; // 10% increase
             $newBatchSize = (int) ($this->currentBatchSize * (1 + $increaseFactor));
             $this->currentBatchSize = min($this->config['max_batch_size'], $newBatchSize);
-            
+
             Log::debug('Increased batch size due to low memory usage', [
                 'memory_usage_percent' => $usagePercent,
                 'old_batch_size' => $this->currentBatchSize / (1 + $increaseFactor),
@@ -130,7 +134,7 @@ class PipedriveMemoryManager
     {
         $usagePercent = $this->getMemoryUsagePercent();
         $memoryUsed = $this->getMemoryUsage();
-        
+
         // Record memory usage history
         $this->recordMemoryUsage($usagePercent, $operation);
 
@@ -153,12 +157,12 @@ class PipedriveMemoryManager
     public function forceGarbageCollection(): void
     {
         $memoryBefore = memory_get_usage(true);
-        
+
         gc_collect_cycles();
-        
+
         $memoryAfter = memory_get_usage(true);
         $memoryFreed = $memoryBefore - $memoryAfter;
-        
+
         if ($memoryFreed > 0) {
             Log::debug('Garbage collection freed memory', [
                 'memory_before' => $this->formatBytes($memoryBefore),
@@ -176,7 +180,7 @@ class PipedriveMemoryManager
     public function checkMemoryThreshold(string $operation = 'unknown', int $batchSize = 0): void
     {
         $usagePercent = $this->getMemoryUsagePercent();
-        
+
         if ($usagePercent > $this->config['critical_threshold_percent']) {
             throw PipedriveMemoryException::fromCurrentMemoryUsage($operation, $batchSize);
         }
@@ -290,7 +294,7 @@ class PipedriveMemoryManager
 
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, 2) . ' ' . $units[$pow];
+        return round($bytes, 2).' '.$units[$pow];
     }
 
     /**
@@ -299,7 +303,7 @@ class PipedriveMemoryManager
     protected function getMemoryLimitInBytes(): int
     {
         $memoryLimit = ini_get('memory_limit');
-        
+
         if ($memoryLimit === '-1') {
             return PHP_INT_MAX;
         }

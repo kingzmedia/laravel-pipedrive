@@ -2,38 +2,36 @@
 
 namespace Skeylup\LaravelPipedrive;
 
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Skeylup\LaravelPipedrive\Commands\LaravelPipedriveCommand;
-use Skeylup\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
-use Skeylup\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
-use Skeylup\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
-use Skeylup\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
-use Skeylup\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
-use Skeylup\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
+use Illuminate\Support\Facades\Gate;
 use Skeylup\LaravelPipedrive\Commands\ClearPipedriveCacheCommand;
 use Skeylup\LaravelPipedrive\Commands\ClearPipedriveOAuthTokenCommand;
-use Skeylup\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
-use Skeylup\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
 use Skeylup\LaravelPipedrive\Commands\InstallPipedriveCommand;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
-use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
-use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
-use Skeylup\LaravelPipedrive\Services\PipedriveEntityLinkService;
-use Skeylup\LaravelPipedrive\Services\PipedriveCacheService;
-use Skeylup\LaravelPipedrive\Services\PipedriveQueryOptimizationService;
-use Skeylup\LaravelPipedrive\Services\DatabaseTokenStorage;
-use Skeylup\LaravelPipedrive\Services\PersistentTokenStorage;
-use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Skeylup\LaravelPipedrive\Commands\LaravelPipedriveCommand;
+use Skeylup\LaravelPipedrive\Commands\ManagePipedriveEntityLinksCommand;
+use Skeylup\LaravelPipedrive\Commands\ManagePipedriveWebhooksCommand;
+use Skeylup\LaravelPipedrive\Commands\MigratePipedriveTokenCommand;
+use Skeylup\LaravelPipedrive\Commands\ScheduledSyncPipedriveCommand;
+use Skeylup\LaravelPipedrive\Commands\ShowPipedriveConfigCommand;
+use Skeylup\LaravelPipedrive\Commands\SyncPipedriveCustomFieldsCommand;
+use Skeylup\LaravelPipedrive\Commands\SyncPipedriveEntitiesCommand;
+use Skeylup\LaravelPipedrive\Commands\TestPipedriveConnectionCommand;
 use Skeylup\LaravelPipedrive\Contracts\PipedriveCacheInterface;
-
-// Robustness Services
-use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Skeylup\LaravelPipedrive\Contracts\PipedriveTokenStorageInterface;
+use Skeylup\LaravelPipedrive\Services\PersistentTokenStorage;
+use Skeylup\LaravelPipedrive\Services\PipedriveAuthService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCacheService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldDetectionService;
+use Skeylup\LaravelPipedrive\Services\PipedriveCustomFieldService;
+use Skeylup\LaravelPipedrive\Services\PipedriveEntityLinkService;
 use Skeylup\LaravelPipedrive\Services\PipedriveErrorHandler;
-use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
 use Skeylup\LaravelPipedrive\Services\PipedriveHealthChecker;
+// Robustness Services
+use Skeylup\LaravelPipedrive\Services\PipedriveMemoryManager;
 use Skeylup\LaravelPipedrive\Services\PipedriveParsingService;
-use Illuminate\Support\Facades\Gate;
+use Skeylup\LaravelPipedrive\Services\PipedriveQueryOptimizationService;
+use Skeylup\LaravelPipedrive\Services\PipedriveRateLimitManager;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class LaravelPipedriveServiceProvider extends PackageServiceProvider
 {
@@ -173,7 +171,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
             }
 
             // If no user is authenticated, deny access
-            if (!$user) {
+            if (! $user) {
                 return false;
             }
 
@@ -182,12 +180,12 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
             $authorizedUserIds = config('pipedrive.dashboard.authorized_user_ids', []);
 
             // Allow access if user email is in authorized list
-            if (!empty($authorizedEmails) && in_array($user->email, $authorizedEmails)) {
+            if (! empty($authorizedEmails) && in_array($user->email, $authorizedEmails)) {
                 return true;
             }
 
             // Allow access if user ID is in authorized list
-            if (!empty($authorizedUserIds) && in_array($user->id, $authorizedUserIds)) {
+            if (! empty($authorizedUserIds) && in_array($user->id, $authorizedUserIds)) {
                 return true;
             }
 
@@ -204,7 +202,7 @@ class LaravelPipedriveServiceProvider extends PackageServiceProvider
 
     protected function registerScheduledSync(): void
     {
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
